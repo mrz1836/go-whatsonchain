@@ -2,7 +2,7 @@
 **go-whatsonchain** is the unofficial golang implementation for the whatsonchain.com API
 
 [![Build Status](https://travis-ci.org/mrz1836/go-whatsonchain.svg?branch=master)](https://travis-ci.org/mrz1836/go-whatsonchain)
-[![Report](https://goreportcard.com/badge/github.com/mrz1836/go-whatsonchain?style=flat&p=1)](https://goreportcard.com/report/github.com/mrz1836/go-whatsonchain)
+[![Report](https://goreportcard.com/badge/github.com/mrz1836/go-whatsonchain?style=flat)](https://goreportcard.com/report/github.com/mrz1836/go-whatsonchain)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/01708ca3079e4933bafb3b39fe2aaa9d)](https://www.codacy.com/app/mrz1818/go-whatsonchain?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mrz1836/go-whatsonchain&amp;utm_campaign=Badge_Grade)
 [![Release](https://img.shields.io/github/release-pre/mrz1836/go-whatsonchain.svg?style=flat)](https://github.com/mrz1836/go-whatsonchain/releases)
 [![standard-readme compliant](https://img.shields.io/badge/standard--readme-OK-green.svg?style=flat)](https://github.com/RichardLitt/standard-readme)
@@ -114,4 +114,4 @@ Support the development of this project 🙏
 
 ## License
 
-![License](https://img.shields.io/github/license/mrz1836/go-whatsonchain.svg?style=flat&p=1)
+![License](https://img.shields.io/github/license/mrz1836/go-whatsonchain.svg?style=flat)
