@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -96,11 +97,39 @@ func NewClient() (c *Client, err error) {
 	return
 }
 
+// GetHealth gets the status from whatsonchain
+//
+// For more information: https://developers.whatsonchain.com/#health
+func (c *Client) GetHealth() (status string, err error) {
+	return c.Request("woc", "GET", nil)
+}
+
+// GetChainInfo gets the chain info from whatsonchain
+//
+// For more information: https://developers.whatsonchain.com/#chain-info
+func (c *Client) GetChainInfo() (chainInfo *ChainInfo, err error) {
+
+	var resp string
+	resp, err = c.Request("chain/info", "GET", nil)
+	if err != nil {
+		return
+	}
+
+	chainInfo = new(ChainInfo)
+	if err = json.Unmarshal([]byte(resp), chainInfo); err != nil {
+		return
+	}
+	return
+}
+
 // Request is a generic whatsonchain request wrapper that can be used without constraints
-func (c *Client) Request(endpoint string, method string, params *url.Values) (response interface{}, err error) {
+func (c *Client) Request(endpoint string, method string, params *url.Values) (response string, err error) {
 
 	// Set reader
 	var bodyReader io.Reader
+
+	// Add the network value
+	endpoint = fmt.Sprintf("%s%s/%s", APIEndpoint, c.Parameters.Network, endpoint)
 
 	// Switch on POST vs GET
 	switch method {
@@ -112,13 +141,17 @@ func (c *Client) Request(endpoint string, method string, params *url.Values) (re
 		}
 	case "GET":
 		{
-			endpoint += "?" + params.Encode()
+			if params != nil {
+				endpoint += "?" + params.Encode()
+			}
 		}
 	}
 
 	// Store for debugging purposes
 	c.LastRequest.Method = method
 	c.LastRequest.URL = endpoint
+
+	log.Println(endpoint)
 
 	// Start the request
 	var request *http.Request
@@ -154,9 +187,10 @@ func (c *Client) Request(endpoint string, method string, params *url.Values) (re
 	}
 
 	// Parse the response
-	if err = json.Unmarshal(body, response); err != nil {
+	response = string(body)
+	/*if err = json.Unmarshal(body, response); err != nil {
 		return
-	}
+	}*/
 
 	// Done
 	return
