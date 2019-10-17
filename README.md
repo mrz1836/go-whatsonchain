@@ -36,10 +36,17 @@ $ dep ensure -update -v
 You can view the generated [documentation here](https://godoc.org/github.com/mrz1836/go-whatsonchain).
 
 ### Features
-- Complete coverage for the [whatsonchain.com](https://developers.whatsonchain.com/) API
 - Client is completely configurable
-- Customize API Key and User Agent per request
+- Customize User Agent per request
 - Using [heimdall http client](https://github.com/gojek/heimdall) with exponential backoff & more
+- Coverage for the [whatsonchain.com](https://developers.whatsonchain.com/) API
+    - [x] Health
+    - [x] Chain Info
+    - [x] Blocks
+    - [ ] Transactions
+    - [ ] Mempool
+    - [ ] Address
+    - [ ] Search
 
 ## Examples & Tests
 All unit tests and [examples](whatsonchain_test.go) run via [Travis CI](https://travis-ci.org/mrz1836/go-whatsonchain) and uses [Go version 1.13.x](https://golang.org/doc/go1.13). View the [deployment configuration file](.travis.yml).
@@ -90,11 +97,6 @@ func main() {
 
     // Create a client with your api key
     client, _ := whatsonchain.NewClient("your-api-key")
-
-
-    // Use the whatsonchain response
-    fmt.Println(response.Person.Names[0].Display)
-    // Output: Jeff Preston Bezos
 }
 ```
 
