@@ -90,15 +90,17 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"github.com/mrz1836/go-whatsonchain"
 )
 
 func main() {
 
-    // Create a client with your api key
-    client, _ := whatsonchain.NewClient("your-api-key")
+    // Create a client
+    client, _ := whatsonchain.NewClient()
+
+    // Get a balance for an address
+    balance, _ := client.AddressBalance("1JSSSgcyufLgbXFw6WAXyXgBrmgFpnqXWh")
+    fmt.Println("confirmed balance", balance.Confirmed)
 }
 ```
 
