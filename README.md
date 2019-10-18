@@ -53,10 +53,6 @@ You can view the generated [documentation here](https://godoc.org/github.com/mrz
 ## Examples & Tests
 All unit tests and [examples](whatsonchain_test.go) run via [Travis CI](https://travis-ci.org/mrz1836/go-whatsonchain) and uses [Go version 1.13.x](https://golang.org/doc/go1.13). View the [deployment configuration file](.travis.yml).
 
-- [helper examples & tests](helper_test.go)
-- [whatsonchain examples &  tests](whatsonchain_test.go)
-- [response tests](response_test.go)
-
 Run all tests (including integration tests)
 ```bash
 $ cd ../go-whatsonchain
@@ -81,8 +77,6 @@ Read more about this Go project's [code standards](CODE_STANDARDS.md).
 
 ## Usage
 - View the [whatsonchain examples & benchmarks](whatsonchain_test.go)
-- View the [helper examples & benchmarks](helper_test.go)
-- View the [response tests](response_test.go)
 
 Basic implementation:
 ```golang

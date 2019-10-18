@@ -11,8 +11,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/url"
-	"strings"
 
 	"github.com/gojek/heimdall"
 	"github.com/gojek/heimdall/httpclient"
@@ -105,7 +103,7 @@ func NewClient() (c *Client, err error) {
 }
 
 // Request is a generic whatsonchain request wrapper that can be used without constraints
-func (c *Client) Request(endpoint string, method string, params *url.Values, payload []byte) (response string, err error) {
+func (c *Client) Request(endpoint string, method string, payload []byte) (response string, err error) {
 
 	// Set reader
 	var bodyReader io.Reader
@@ -117,19 +115,7 @@ func (c *Client) Request(endpoint string, method string, params *url.Values, pay
 	switch method {
 	case "POST":
 		{
-			if len(payload) > 0 {
-				bodyReader = bytes.NewBuffer(payload)
-			} else {
-				encodedParams := params.Encode()
-				bodyReader = strings.NewReader(encodedParams)
-				c.LastRequest.PostData = encodedParams
-			}
-		}
-	case "GET":
-		{
-			if params != nil {
-				endpoint += "?" + params.Encode()
-			}
+			bodyReader = bytes.NewBuffer(payload)
 		}
 	}
 
@@ -148,11 +134,7 @@ func (c *Client) Request(endpoint string, method string, params *url.Values, pay
 
 	// Set the content type on POST
 	if method == "POST" {
-		if len(payload) > 0 {
-			request.Header.Set("Content-Type", "application/json")
-		} else {
-			request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		}
+		request.Header.Set("Content-Type", "application/json")
 	}
 
 	// Fire the http request
@@ -191,7 +173,7 @@ func (c *Client) GetHealth() (status string, err error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/woc
 
-	return c.Request("woc", "GET", nil, nil)
+	return c.Request("woc", "GET", nil)
 }
 
 // GetChainInfo this endpoint retrieves various state info of the chain for the selected network.
@@ -201,7 +183,7 @@ func (c *Client) GetChainInfo() (chainInfo *ChainInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/chain/info
-	resp, err = c.Request("chain/info", "GET", nil, nil)
+	resp, err = c.Request("chain/info", "GET", nil)
 	if err != nil {
 		return
 	}
@@ -220,7 +202,7 @@ func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>
-	resp, err = c.Request("block/hash/"+hash, "GET", nil, nil)
+	resp, err = c.Request("block/hash/"+hash, "GET", nil)
 	if err != nil {
 		return
 	}
@@ -240,7 +222,7 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/height/<height>
-	resp, err = c.Request(fmt.Sprintf("block/height/%d", height), "GET", nil, nil)
+	resp, err = c.Request(fmt.Sprintf("block/height/%d", height), "GET", nil)
 	if err != nil {
 		return
 	}
@@ -261,7 +243,7 @@ func (c *Client) GetBlockPages(hash string, page int) (txList *BlockPagesInfo, e
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>/page/1
-	resp, err = c.Request(fmt.Sprintf("block/hash/%s/page/%d", hash, page), "GET", nil, nil)
+	resp, err = c.Request(fmt.Sprintf("block/hash/%s/page/%d", hash, page), "GET", nil)
 	if err != nil {
 		return
 	}
@@ -281,7 +263,7 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>
-	resp, err = c.Request("tx/hash/"+hash, "GET", nil, nil)
+	resp, err = c.Request("tx/hash/"+hash, "GET", nil)
 	if err != nil {
 		return
 	}
@@ -295,7 +277,7 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 }
 
 // BroadcastTx will broadcast transaction using this endpoint.
-// Get txid in response or error msg from node.
+// Get tx_id in response or error msg from node.
 //
 // Form more information: https://developers.whatsonchain.com/#broadcast-transaction
 func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
@@ -305,7 +287,7 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 	postData := []byte(stringVal)
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
-	txID, err = c.Request("tx/raw", "POST", nil, postData)
+	txID, err = c.Request("tx/raw", "POST", postData)
 	if err != nil {
 		return
 	}
@@ -327,7 +309,7 @@ func (c *Client) AddressInfo(address string) (addressInfo *AddressInfo, err erro
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/info
-	resp, err = c.Request("address/"+address+"/info", "GET", nil, nil)
+	resp, err = c.Request("address/"+address+"/info", "GET", nil)
 	if err != nil {
 		return
 	}
@@ -346,7 +328,7 @@ func (c *Client) AddressBalance(address string) (balance *AddressBalance, err er
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/balance
-	resp, err = c.Request("address/"+address+"/balance", "GET", nil, nil)
+	resp, err = c.Request("address/"+address+"/balance", "GET", nil)
 	if err != nil {
 		return
 	}
@@ -365,7 +347,7 @@ func (c *Client) AddressHistory(address string) (history AddressHistory, err err
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/history
-	resp, err = c.Request("address/"+address+"/history", "GET", nil, nil)
+	resp, err = c.Request("address/"+address+"/history", "GET", nil)
 	if err != nil {
 		return
 	}
@@ -384,7 +366,7 @@ func (c *Client) AddressUnspentTransactions(address string) (history AddressHist
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/unspent
-	resp, err = c.Request("address/"+address+"/unspent", "GET", nil, nil)
+	resp, err = c.Request("address/"+address+"/unspent", "GET", nil)
 	if err != nil {
 		return
 	}
