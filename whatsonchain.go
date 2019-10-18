@@ -1,6 +1,7 @@
 package whatsonchain
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -101,7 +102,7 @@ func NewClient() (c *Client, err error) {
 }
 
 // Request is a generic whatsonchain request wrapper that can be used without constraints
-func (c *Client) Request(endpoint string, method string, params *url.Values) (response string, err error) {
+func (c *Client) Request(endpoint string, method string, params *url.Values, payload []byte) (response string, err error) {
 
 	// Set reader
 	var bodyReader io.Reader
@@ -113,9 +114,13 @@ func (c *Client) Request(endpoint string, method string, params *url.Values) (re
 	switch method {
 	case "POST":
 		{
-			encodedParams := params.Encode()
-			bodyReader = strings.NewReader(encodedParams)
-			c.LastRequest.PostData = encodedParams
+			if len(payload) > 0 {
+				bodyReader = bytes.NewBuffer(payload)
+			} else {
+				encodedParams := params.Encode()
+				bodyReader = strings.NewReader(encodedParams)
+				c.LastRequest.PostData = encodedParams
+			}
 		}
 	case "GET":
 		{
@@ -140,7 +145,11 @@ func (c *Client) Request(endpoint string, method string, params *url.Values) (re
 
 	// Set the content type on POST
 	if method == "POST" {
-		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		if len(payload) > 0 {
+			request.Header.Set("Content-Type", "application/json")
+		} else {
+			request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		}
 	}
 
 	// Fire the http request
@@ -151,8 +160,8 @@ func (c *Client) Request(endpoint string, method string, params *url.Values) (re
 
 	// Close the response body
 	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			log.Printf("error closing response body: %s", err.Error())
+		if bodyErr := resp.Body.Close(); bodyErr != nil {
+			log.Printf("error closing response body: %s", bodyErr.Error())
 		}
 	}()
 
@@ -179,7 +188,7 @@ func (c *Client) GetHealth() (status string, err error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/woc
 
-	return c.Request("woc", "GET", nil)
+	return c.Request("woc", "GET", nil, nil)
 }
 
 // GetChainInfo gets the chain info from whatsonchain
@@ -189,7 +198,7 @@ func (c *Client) GetChainInfo() (chainInfo *ChainInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/chain/info
-	resp, err = c.Request("chain/info", "GET", nil)
+	resp, err = c.Request("chain/info", "GET", nil, nil)
 	if err != nil {
 		return
 	}
@@ -208,7 +217,7 @@ func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>
-	resp, err = c.Request("block/hash/"+hash, "GET", nil)
+	resp, err = c.Request("block/hash/"+hash, "GET", nil, nil)
 	if err != nil {
 		return
 	}
@@ -228,7 +237,7 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/height/<height>
-	resp, err = c.Request(fmt.Sprintf("block/height/%d", height), "GET", nil)
+	resp, err = c.Request(fmt.Sprintf("block/height/%d", height), "GET", nil, nil)
 	if err != nil {
 		return
 	}
@@ -248,7 +257,7 @@ func (c *Client) GetBlockPages(hash string, page int) (txList *BlockPagesInfo, e
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>/page/1
-	resp, err = c.Request(fmt.Sprintf("block/hash/%s/page/%d", hash, page), "GET", nil)
+	resp, err = c.Request(fmt.Sprintf("block/hash/%s/page/%d", hash, page), "GET", nil, nil)
 	if err != nil {
 		return
 	}
@@ -268,7 +277,7 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>
-	resp, err = c.Request("tx/hash/"+hash, "GET", nil)
+	resp, err = c.Request("tx/hash/"+hash, "GET", nil, nil)
 	if err != nil {
 		return
 	}
@@ -281,21 +290,27 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 
 }
 
-// GetTxReceiptByHash gets the pdf receipt
+// BroadcastTx will broadcast a transaction via whatsonchain
 //
-// Form more information: https://developers.whatsonchain.com/#download-receipt
-/*func (c *Client) GetTxReceiptByHash(hash string) (pdfFile string, err error) {
+// Form more information: https://developers.whatsonchain.com/#broadcast-transaction
+func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 
-	var resp string
-	// https://<network>.whatsonchain.com/receipt/<hash>
-	resp, err = c.Request("tx/hash/"+hash, "GET", nil)
+	// Start the post data
+	stringVal := fmt.Sprintf(`{"txhex":"%s"}`, txHex)
+	postData := []byte(stringVal)
+
+	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
+	txID, err = c.Request("tx/raw", "POST", nil, postData)
 	if err != nil {
 		return
 	}
 
-	if err = json.Unmarshal([]byte(resp), pdfFile); err != nil {
+	// Got an error
+	if c.LastRequest.StatusCode > 200 {
+		err = fmt.Errorf("error broadcasting: %s", txID)
+		txID = "" // remove the error message
 		return
 	}
-	return
 
-}*/
+	return
+}

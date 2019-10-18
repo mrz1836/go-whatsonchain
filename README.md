@@ -43,9 +43,10 @@ You can view the generated [documentation here](https://godoc.org/github.com/mrz
     - [x] Health
     - [x] Chain Info
     - [x] Blocks
-    - [ ] Transactions
-    - [ ] Mempool
+    - [x] Transactions
     - [ ] Address
+    - [ ] Receipt
+    - [ ] Mempool
     - [ ] Search
 
 ## Examples & Tests
