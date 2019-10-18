@@ -121,7 +121,7 @@ type ScriptSigInfo struct {
 	Hex string `json:"hex"`
 }
 
-// VinInfo is the vin info inside the CoinbaseTxInfo
+// VoutInfo is the vout info inside the CoinbaseTxInfo
 type VoutInfo struct {
 	N            int64            `json:"n"`
 	ScriptPubKey ScriptPubKeyInfo `json:"scriptPubKey"`
