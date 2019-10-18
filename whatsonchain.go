@@ -1,3 +1,6 @@
+/*
+Package whatsonchain is the unofficial golang implementation for the whatsonchain.com API
+*/
 package whatsonchain
 
 import (
