@@ -181,7 +181,7 @@ func (c *Client) Request(endpoint string, method string, params *url.Values, pay
 	return
 }
 
-// GetHealth gets the status from whatsonchain
+// GetHealth simple endpoint to show API server is up and running
 //
 // For more information: https://developers.whatsonchain.com/#health
 func (c *Client) GetHealth() (status string, err error) {
@@ -191,7 +191,7 @@ func (c *Client) GetHealth() (status string, err error) {
 	return c.Request("woc", "GET", nil, nil)
 }
 
-// GetChainInfo gets the chain info from whatsonchain
+// GetChainInfo this endpoint retrieves various state info of the chain for the selected network.
 //
 // For more information: https://developers.whatsonchain.com/#chain-info
 func (c *Client) GetChainInfo() (chainInfo *ChainInfo, err error) {
@@ -210,7 +210,7 @@ func (c *Client) GetChainInfo() (chainInfo *ChainInfo, err error) {
 	return
 }
 
-// GetBlockByHash gets the block info
+// GetBlockByHash this endpoint retrieves block details with given hash.
 //
 // Form more information: https://developers.whatsonchain.com/#get-by-hash
 func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
@@ -230,7 +230,7 @@ func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
 
 }
 
-// GetBlockByHeight gets the block info
+// GetBlockByHeight this endpoint retrieves block details with given block height.
 //
 // Form more information: https://developers.whatsonchain.com/#get-by-height
 func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error) {
@@ -250,7 +250,8 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 
 }
 
-// GetBlockPages gets the block info
+// GetBlockPages If the block has more that 1000 transactions the page URIs will
+// be provided in the pages element when getting a block by hash or height.
 //
 // Form more information: https://developers.whatsonchain.com/#get-block-pages
 func (c *Client) GetBlockPages(hash string, page int) (txList *BlockPagesInfo, err error) {
@@ -270,7 +271,7 @@ func (c *Client) GetBlockPages(hash string, page int) (txList *BlockPagesInfo, e
 
 }
 
-// GetTxByHash gets the tx info
+// GetTxByHash this endpoint retrieves transaction details with given transaction hash
 //
 // Form more information: https://developers.whatsonchain.com/#get-by-tx-hash
 func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
@@ -290,7 +291,8 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 
 }
 
-// BroadcastTx will broadcast a transaction via whatsonchain
+// BroadcastTx will broadcast transaction using this endpoint.
+// Get txid in response or error msg from node.
 //
 // Form more information: https://developers.whatsonchain.com/#broadcast-transaction
 func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
@@ -312,5 +314,81 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 		return
 	}
 
+	return
+}
+
+// AddressInfo this endpoint retrieves various address info.
+//
+// Form more information: https://developers.whatsonchain.com/#address
+func (c *Client) AddressInfo(address string) (addressInfo *AddressInfo, err error) {
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/info
+	resp, err = c.Request("address/"+address+"/info", "GET", nil, nil)
+	if err != nil {
+		return
+	}
+
+	addressInfo = new(AddressInfo)
+	if err = json.Unmarshal([]byte(resp), addressInfo); err != nil {
+		return
+	}
+	return
+}
+
+// AddressBalance this endpoint retrieves confirmed and unconfirmed address balance.
+//
+// Form more information: https://developers.whatsonchain.com/#get-balance
+func (c *Client) AddressBalance(address string) (balance *AddressBalance, err error) {
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/balance
+	resp, err = c.Request("address/"+address+"/balance", "GET", nil, nil)
+	if err != nil {
+		return
+	}
+
+	balance = new(AddressBalance)
+	if err = json.Unmarshal([]byte(resp), balance); err != nil {
+		return
+	}
+	return
+}
+
+// AddressHistory this endpoint retrieves confirmed and unconfirmed address transactions.
+//
+// Form more information: https://developers.whatsonchain.com/#get-history
+func (c *Client) AddressHistory(address string) (history AddressHistory, err error) {
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/history
+	resp, err = c.Request("address/"+address+"/history", "GET", nil, nil)
+	if err != nil {
+		return
+	}
+
+	history = *new(AddressHistory)
+	if err = json.Unmarshal([]byte(resp), &history); err != nil {
+		return
+	}
+	return
+}
+
+// AddressUnspentTransactions this endpoint retrieves ordered list of UTXOs.
+//
+// Form more information: https://developers.whatsonchain.com/#get-unspent-transactions
+func (c *Client) AddressUnspentTransactions(address string) (history AddressHistory, err error) {
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/unspent
+	resp, err = c.Request("address/"+address+"/unspent", "GET", nil, nil)
+	if err != nil {
+		return
+	}
+
+	history = *new(AddressHistory)
+	if err = json.Unmarshal([]byte(resp), &history); err != nil {
+		return
+	}
 	return
 }
