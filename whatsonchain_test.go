@@ -268,7 +268,7 @@ func TestClient_AddressBalance(t *testing.T) {
 		t.Fatal("error occurred: " + err.Error())
 	}
 
-	// todo: not so easy to test for unless you leave a wallet with utxos just for this test ;-)
+	// todo: not so easy to test for unless you leave a wallet with unspent transactions just for this test ;-)
 	/*if resp.Unconfirmed != 0 {
 		t.Fatal("failed to get the unconfirmed value", resp.Unconfirmed)
 	}
@@ -330,7 +330,7 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 		t.Fatal("error occurred: " + err.Error())
 	}
 
-	// todo: not so easy to test for unless you leave a wallet with utxos just for this test ;-)
+	// todo: not so easy to test for unless you leave a wallet with unspent transactions just for this test ;-)
 	/*if len(resp) == 0 {
 		t.Fatal("failed to get history values", resp)
 	}*/

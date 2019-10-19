@@ -1,5 +1,5 @@
 # go-whatsonchain
-**go-whatsonchain** is the unofficial golang implementation for the whatsonchain.com API
+**go-whatsonchain** is the unofficial golang implementation for the [whatsonchain.com API](https://developers.whatsonchain.com/)
 
 [![Build Status](https://travis-ci.com/mrz1836/go-whatsonchain.svg?branch=master&v=2)](https://travis-ci.com/mrz1836/go-whatsonchain)
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/go-whatsonchain?style=flat&v=2)](https://goreportcard.com/report/github.com/mrz1836/go-whatsonchain)
@@ -38,6 +38,7 @@ You can view the generated [documentation here](https://godoc.org/github.com/mrz
 ### Features
 - Client is completely configurable
 - Customize User Agent per request
+- Customize the network per request (main, test or stn)
 - Using [heimdall http client](https://github.com/gojek/heimdall) with exponential backoff & more
 - Current coverage for the [whatsonchain.com](https://developers.whatsonchain.com/) API
     - [x] Health
@@ -100,7 +101,7 @@ func main() {
 
 ## Maintainers
 
-[@MrZ1836](https://github.com/mrz1836)
+[@MrZ](https://github.com/mrz1836)
 
 ## Contributing
 
