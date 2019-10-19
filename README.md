@@ -114,8 +114,7 @@ Support the development of this project 🙏
 
 [WhatsOnChain](https://developers.whatsonchain.com/) for their hard work on the Whatsonchain API
 
-If you're looking for a python version, checkout [this package](https://github.com/AustEcon/whatsonchain)
-
+[AustEcon's Python Version](https://github.com/AustEcon/whatsonchain)
 
 ## License
 
