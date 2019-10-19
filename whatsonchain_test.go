@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"fmt"
+	"log"
 	"testing"
 )
 
@@ -86,6 +87,15 @@ func TestClient_GetChainInfo(t *testing.T) {
 		t.Fatal("failed to get best block hash")
 	}
 
+}
+
+// ExampleClient_GetChainInfo example using GetChainInfo()
+func ExampleClient_GetChainInfo() {
+	client, _ := NewClient()
+	resp, _ := client.GetChainInfo()
+	log.Println(resp.BestBlockHash)
+	fmt.Println("0000000000000000057d09c9d9928c53aaff1f6b019ead3ceed52aca8abbc1c9")
+	// Output:0000000000000000057d09c9d9928c53aaff1f6b019ead3ceed52aca8abbc1c9
 }
 
 // TestClient_GetBlockByHash tests the GetBlockByHash()

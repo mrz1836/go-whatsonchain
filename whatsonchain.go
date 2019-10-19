@@ -1,5 +1,14 @@
 /*
 Package whatsonchain is the unofficial golang implementation for the whatsonchain.com API
+
+Example:
+
+// Create a client
+client, _ := whatsonchain.NewClient()
+
+// Get a balance for an address
+balance, _ := client.AddressBalance("1JSSSgcyufLgbXFw6WAXyXgBrmgFpnqXWh")
+fmt.Println("confirmed balance", balance.Confirmed)
 */
 package whatsonchain
 
