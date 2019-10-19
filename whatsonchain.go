@@ -8,7 +8,6 @@ client, _ := whatsonchain.NewClient()
 
 // Get a balance for an address
 balance, _ := client.AddressBalance("1JSSSgcyufLgbXFw6WAXyXgBrmgFpnqXWh")
-fmt.Println("confirmed balance", balance.Confirmed)
 */
 package whatsonchain
 

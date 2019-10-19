@@ -76,7 +76,7 @@ $ go test -bench . -benchmem
 Read more about this Go project's [code standards](CODE_STANDARDS.md).
 
 ## Usage
-- View the [whatsonchain examples & benchmarks](whatsonchain_test.go)
+- View the [whatsonchain examples](whatsonchain_test.go)
 
 Basic implementation:
 ```golang
@@ -104,13 +104,18 @@ func main() {
 
 ## Contributing
 
-If you're looking for a python version, checkout [this package](https://github.com/AustEcon/whatsonchain)
-
 View the [contributing guidelines](CONTRIBUTING.md) and follow the [code of conduct](CODE_OF_CONDUCT.md).
 
 Support the development of this project 🙏
 
 [![Donate](https://img.shields.io/badge/donate-bitcoin-brightgreen.svg)](https://mrz1818.com/?tab=tips&af=go-whatsonchain)
+
+#### Credits
+
+[WhatsOnChain](https://developers.whatsonchain.com/) for their hard work on the Whatsonchain API
+
+If you're looking for a python version, checkout [this package](https://github.com/AustEcon/whatsonchain)
+
 
 ## License
 
