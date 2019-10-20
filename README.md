@@ -113,7 +113,7 @@ Support the development of this project 🙏
 
 Support the development of [WhatsOnChain](https://tncpw.co/65733e42):
 
-[![Support](https://img.shields.io/badge/join-the-legends-blue.svg)](https://whatsonchain.com/support)
+[![Support](https://img.shields.io/badge/support-woc-blue.svg)](https://whatsonchain.com/support)
 
 #### Credits
 
