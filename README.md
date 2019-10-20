@@ -94,7 +94,7 @@ func main() {
     client, _ := whatsonchain.NewClient()
 
     // Get a balance for an address
-    balance, _ := client.AddressBalance("1JSSSgcyufLgbXFw6WAXyXgBrmgFpnqXWh")
+    balance, _ := client.AddressBalance("16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
     fmt.Println("confirmed balance", balance.Confirmed)
 }
 ```
@@ -111,9 +111,13 @@ Support the development of this project 🙏
 
 [![Donate](https://img.shields.io/badge/donate-bitcoin-brightgreen.svg)](https://mrz1818.com/?tab=tips&af=go-whatsonchain)
 
+Support the development of [WhatsOnChain](https://tncpw.co/65733e42):
+
+[![Support](https://img.shields.io/badge/join-the-legends-blue.svg)](https://whatsonchain.com/support)
+
 #### Credits
 
-[WhatsOnChain](https://developers.whatsonchain.com/) for their hard work on the Whatsonchain API
+[WhatsOnChain](https://tncpw.co/65733e42) for their hard work on the Whatsonchain API
 
 [AustEcon's Python Version](https://github.com/AustEcon/whatsonchain)
 
