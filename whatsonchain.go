@@ -199,7 +199,7 @@ func (c *Client) GetChainInfo() (chainInfo *ChainInfo, err error) {
 
 // GetBlockByHash this endpoint retrieves block details with given hash.
 //
-// Form more information: https://developers.whatsonchain.com/#get-by-hash
+// For more information: https://developers.whatsonchain.com/#get-by-hash
 func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
 
 	var resp string
@@ -219,7 +219,7 @@ func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
 
 // GetBlockByHeight this endpoint retrieves block details with given block height.
 //
-// Form more information: https://developers.whatsonchain.com/#get-by-height
+// For more information: https://developers.whatsonchain.com/#get-by-height
 func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error) {
 
 	var resp string
@@ -240,7 +240,7 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 // GetBlockPages If the block has more that 1000 transactions the page URIs will
 // be provided in the pages element when getting a block by hash or height.
 //
-// Form more information: https://developers.whatsonchain.com/#get-block-pages
+// For more information: https://developers.whatsonchain.com/#get-block-pages
 func (c *Client) GetBlockPages(hash string, page int) (txList *BlockPagesInfo, err error) {
 
 	var resp string
@@ -260,7 +260,7 @@ func (c *Client) GetBlockPages(hash string, page int) (txList *BlockPagesInfo, e
 
 // GetTxByHash this endpoint retrieves transaction details with given transaction hash
 //
-// Form more information: https://developers.whatsonchain.com/#get-by-tx-hash
+// For more information: https://developers.whatsonchain.com/#get-by-tx-hash
 func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 
 	var resp string
@@ -281,7 +281,7 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 // BroadcastTx will broadcast transaction using this endpoint.
 // Get tx_id in response or error msg from node.
 //
-// Form more information: https://developers.whatsonchain.com/#broadcast-transaction
+// For more information: https://developers.whatsonchain.com/#broadcast-transaction
 func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 
 	// Start the post data
@@ -306,7 +306,7 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 
 // AddressInfo this endpoint retrieves various address info.
 //
-// Form more information: https://developers.whatsonchain.com/#address
+// For more information: https://developers.whatsonchain.com/#address
 func (c *Client) AddressInfo(address string) (addressInfo *AddressInfo, err error) {
 
 	var resp string
@@ -325,7 +325,7 @@ func (c *Client) AddressInfo(address string) (addressInfo *AddressInfo, err erro
 
 // AddressBalance this endpoint retrieves confirmed and unconfirmed address balance.
 //
-// Form more information: https://developers.whatsonchain.com/#get-balance
+// For more information: https://developers.whatsonchain.com/#get-balance
 func (c *Client) AddressBalance(address string) (balance *AddressBalance, err error) {
 
 	var resp string
@@ -344,7 +344,7 @@ func (c *Client) AddressBalance(address string) (balance *AddressBalance, err er
 
 // AddressHistory this endpoint retrieves confirmed and unconfirmed address transactions.
 //
-// Form more information: https://developers.whatsonchain.com/#get-history
+// For more information: https://developers.whatsonchain.com/#get-history
 func (c *Client) AddressHistory(address string) (history AddressHistory, err error) {
 
 	var resp string
@@ -363,7 +363,7 @@ func (c *Client) AddressHistory(address string) (history AddressHistory, err err
 
 // AddressUnspentTransactions this endpoint retrieves ordered list of UTXOs.
 //
-// Form more information: https://developers.whatsonchain.com/#get-unspent-transactions
+// For more information: https://developers.whatsonchain.com/#get-unspent-transactions
 func (c *Client) AddressUnspentTransactions(address string) (history AddressHistory, err error) {
 
 	var resp string

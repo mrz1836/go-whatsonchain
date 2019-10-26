@@ -34,7 +34,7 @@ func BenchmarkNewClient(b *testing.B) {
 
 // TestClient_GetHealth tests the GetHealth()
 func TestClient_GetHealth(t *testing.T) {
-	// Skip tis test in short mode (not needed)
+	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
 	}
@@ -66,7 +66,7 @@ func ExampleClient_GetHealth() {
 
 // TestClient_GetChainInfo tests the GetChainInfo()
 func TestClient_GetChainInfo(t *testing.T) {
-	// Skip tis test in short mode (not needed)
+	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
 	}
@@ -100,7 +100,7 @@ func ExampleClient_GetChainInfo() {
 
 // TestClient_GetBlockByHash tests the GetBlockByHash()
 func TestClient_GetBlockByHash(t *testing.T) {
-	// Skip tis test in short mode (not needed)
+	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
 	}
@@ -126,7 +126,7 @@ func TestClient_GetBlockByHash(t *testing.T) {
 
 // TestClient_GetBlockByHeight tests the GetBlockByHeight()
 func TestClient_GetBlockByHeight(t *testing.T) {
-	// Skip tis test in short mode (not needed)
+	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
 	}
@@ -152,7 +152,7 @@ func TestClient_GetBlockByHeight(t *testing.T) {
 
 // TestClient_GetBlockPages tests the GetBlockPages()
 func TestClient_GetBlockPages(t *testing.T) {
-	// Skip tis test in short mode (not needed)
+	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
 	}
@@ -178,7 +178,7 @@ func TestClient_GetBlockPages(t *testing.T) {
 
 // TestClient_GetTxByHash tests the GetTxByHash()
 func TestClient_GetTxByHash(t *testing.T) {
-	// Skip tis test in short mode (not needed)
+	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
 	}
@@ -204,7 +204,7 @@ func TestClient_GetTxByHash(t *testing.T) {
 
 // TestClient_BroadcastTx tests the BroadcastTx()
 func TestClient_BroadcastTx(t *testing.T) {
-	// Skip tis test in short mode (not needed)
+	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
 	}
@@ -224,7 +224,7 @@ func TestClient_BroadcastTx(t *testing.T) {
 
 // TestClient_AddressInfo tests the AddressInfo()
 func TestClient_AddressInfo(t *testing.T) {
-	// Skip tis test in short mode (not needed)
+	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
 	}
@@ -250,7 +250,7 @@ func TestClient_AddressInfo(t *testing.T) {
 
 // TestClient_AddressBalance tests the AddressBalance()
 func TestClient_AddressBalance(t *testing.T) {
-	// Skip tis test in short mode (not needed)
+	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
 	}
@@ -281,7 +281,7 @@ func TestClient_AddressBalance(t *testing.T) {
 
 // TestClient_AddressHistory tests the AddressHistory()
 func TestClient_AddressHistory(t *testing.T) {
-	// Skip tis test in short mode (not needed)
+	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
 	}
@@ -312,7 +312,7 @@ func TestClient_AddressHistory(t *testing.T) {
 
 // TestClient_AddressUnspentTransactions tests the AddressUnspentTransactions()
 func TestClient_AddressUnspentTransactions(t *testing.T) {
-	// Skip tis test in short mode (not needed)
+	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
 	}
