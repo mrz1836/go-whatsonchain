@@ -113,9 +113,9 @@ func (c *Client) Request(endpoint string, method string, payload []byte) (respon
 	// Add the network value
 	endpoint = fmt.Sprintf("%s%s/%s", APIEndpoint, c.Parameters.Network, endpoint)
 
-	// Switch on POST vs GET
+	// Switch on Method
 	switch method {
-	case http.MethodPost:
+	case http.MethodPost, http.MethodPut:
 		{
 			bodyReader = bytes.NewBuffer(payload)
 		}
@@ -134,8 +134,8 @@ func (c *Client) Request(endpoint string, method string, payload []byte) (respon
 	// Change the header (user agent is in case they block default Go user agents)
 	request.Header.Set("User-Agent", c.Parameters.UserAgent)
 
-	// Set the content type on POST
-	if method == http.MethodPost {
+	// Set the content type on Method
+	if method == http.MethodPost || method == http.MethodPut {
 		request.Header.Set("Content-Type", "application/json")
 	}
 
