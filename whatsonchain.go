@@ -115,7 +115,7 @@ func (c *Client) Request(endpoint string, method string, payload []byte) (respon
 
 	// Switch on POST vs GET
 	switch method {
-	case "POST":
+	case http.MethodPost:
 		{
 			bodyReader = bytes.NewBuffer(payload)
 		}
@@ -135,7 +135,7 @@ func (c *Client) Request(endpoint string, method string, payload []byte) (respon
 	request.Header.Set("User-Agent", c.Parameters.UserAgent)
 
 	// Set the content type on POST
-	if method == "POST" {
+	if method == http.MethodPost {
 		request.Header.Set("Content-Type", "application/json")
 	}
 
@@ -175,7 +175,7 @@ func (c *Client) GetHealth() (status string, err error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/woc
 
-	return c.Request("woc", "GET", nil)
+	return c.Request("woc", http.MethodGet, nil)
 }
 
 // GetChainInfo this endpoint retrieves various state info of the chain for the selected network.
@@ -185,7 +185,7 @@ func (c *Client) GetChainInfo() (chainInfo *ChainInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/chain/info
-	resp, err = c.Request("chain/info", "GET", nil)
+	resp, err = c.Request("chain/info", http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -204,7 +204,7 @@ func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>
-	resp, err = c.Request("block/hash/"+hash, "GET", nil)
+	resp, err = c.Request("block/hash/"+hash, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -224,7 +224,7 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/height/<height>
-	resp, err = c.Request(fmt.Sprintf("block/height/%d", height), "GET", nil)
+	resp, err = c.Request(fmt.Sprintf("block/height/%d", height), http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -245,7 +245,7 @@ func (c *Client) GetBlockPages(hash string, page int) (txList *BlockPagesInfo, e
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>/page/1
-	resp, err = c.Request(fmt.Sprintf("block/hash/%s/page/%d", hash, page), "GET", nil)
+	resp, err = c.Request(fmt.Sprintf("block/hash/%s/page/%d", hash, page), http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -265,7 +265,7 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>
-	resp, err = c.Request("tx/hash/"+hash, "GET", nil)
+	resp, err = c.Request("tx/hash/"+hash, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -289,7 +289,7 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 	postData := []byte(stringVal)
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
-	txID, err = c.Request("tx/raw", "POST", postData)
+	txID, err = c.Request("tx/raw", http.MethodPost, postData)
 	if err != nil {
 		return
 	}
@@ -311,7 +311,7 @@ func (c *Client) AddressInfo(address string) (addressInfo *AddressInfo, err erro
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/info
-	resp, err = c.Request("address/"+address+"/info", "GET", nil)
+	resp, err = c.Request("address/"+address+"/info", http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -330,7 +330,7 @@ func (c *Client) AddressBalance(address string) (balance *AddressBalance, err er
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/balance
-	resp, err = c.Request("address/"+address+"/balance", "GET", nil)
+	resp, err = c.Request("address/"+address+"/balance", http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -349,7 +349,7 @@ func (c *Client) AddressHistory(address string) (history AddressHistory, err err
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/history
-	resp, err = c.Request("address/"+address+"/history", "GET", nil)
+	resp, err = c.Request("address/"+address+"/history", http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -368,7 +368,7 @@ func (c *Client) AddressUnspentTransactions(address string) (history AddressHist
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/unspent
-	resp, err = c.Request("address/"+address+"/unspent", "GET", nil)
+	resp, err = c.Request("address/"+address+"/unspent", http.MethodGet, nil)
 	if err != nil {
 		return
 	}
