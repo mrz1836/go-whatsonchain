@@ -1,5 +1,9 @@
 package whatsonchain
 
+// NetworkType is used internally to represent the possible values
+// for network in queries to be submitted: {"main", "test", "stn"}
+type NetworkType string
+
 // ChainInfo is the structure response from getting info about the chain
 type ChainInfo struct {
 	BestBlockHash        string  `json:"bestblockhash"`

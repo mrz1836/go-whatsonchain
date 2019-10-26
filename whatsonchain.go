@@ -24,10 +24,6 @@ import (
 	"github.com/gojek/heimdall/httpclient"
 )
 
-// NetworkType is used internally to represent the possible values
-// for network in queries to be submitted: {"main", "test", "stn"}
-type NetworkType string
-
 // Client holds client configuration settings
 type Client struct {
 
@@ -43,8 +39,6 @@ type Client struct {
 }
 
 // RequestParameters holds options that can affect data returned by a request.
-//
-// Source: https://developers.whatsonchain.com/#authentication
 type RequestParameters struct {
 
 	// UserAgent (optional for changing user agents)
@@ -54,7 +48,7 @@ type RequestParameters struct {
 	Network NetworkType
 }
 
-// LastRequest is used to track what was submitted to whatsonchain on the Request()
+// LastRequest is used to track what was submitted to the Request()
 type LastRequest struct {
 
 	// Method is either POST or GET
@@ -71,7 +65,7 @@ type LastRequest struct {
 }
 
 // NewClient creates a new client to submit queries with.
-// Parameters values are set to the defaults defined by WhatsOnChain.
+// Parameters values are set to the defaults defined by the API documentation.
 //
 // For more information: https://developers.whatsonchain.com/#authentication
 func NewClient() (c *Client, err error) {
@@ -100,8 +94,8 @@ func NewClient() (c *Client, err error) {
 
 	// Create default parameters
 	c.Parameters = new(RequestParameters)
-	c.Parameters.UserAgent = DefaultUserAgent
 	c.Parameters.Network = NetworkMain
+	c.Parameters.UserAgent = DefaultUserAgent
 
 	// Create a last request struct
 	c.LastRequest = new(LastRequest)
