@@ -64,7 +64,7 @@ type LastRequest struct {
 	URL string
 }
 
-// NewClient creates a new client to submit queries with.
+// NewClient creates a new client to submit requests
 // Parameters values are set to the defaults defined by the API documentation.
 //
 // For more information: https://developers.whatsonchain.com/#authentication
@@ -82,7 +82,6 @@ func NewClient() (c *Client, err error) {
 	)
 
 	// Create the http client
-	//c.HTTPClient = new(http.Client) (@mrz this was the original HTTP client)
 	c.HTTPClient = httpclient.NewClient(
 		httpclient.WithHTTPTimeout(ConnectionWithHTTPTimeout),
 		httpclient.WithRetrier(heimdall.NewRetrier(backOff)),
@@ -104,7 +103,7 @@ func NewClient() (c *Client, err error) {
 	return
 }
 
-// Request is a generic whatsonchain request wrapper that can be used without constraints
+// Request is a generic request wrapper that can be used without constraints
 func (c *Client) Request(endpoint string, method string, payload []byte) (response string, err error) {
 
 	// Set reader

@@ -8,7 +8,7 @@ import (
 
 // Package global constants and configuration
 const (
-	// APIEndpoint is where we POST queries to
+	// APIEndpoint is where we fire requests
 	APIEndpoint string = "https://api.whatsonchain.com/v1/bsv/"
 
 	// NetworkMain is for main-net
