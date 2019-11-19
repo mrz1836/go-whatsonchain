@@ -277,6 +277,27 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 
 }
 
+// GetMerkleProof this endpoint returns merkle branch to a confirmed transaction
+//
+// For more information: https://developers.whatsonchain.com/#get-merkle-proof
+func (c *Client) GetMerkleProof(hash string) (merkleInfo *MerkleInfo, err error) {
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/merkleproof
+	resp, err = c.Request("tx/"+hash+"/merkleproof", http.MethodGet, nil)
+	if err != nil {
+		return
+	}
+	log.Println(resp)
+
+	merkleInfo = new(MerkleInfo)
+	if err = json.Unmarshal([]byte(resp), merkleInfo); err != nil {
+		return
+	}
+	return
+
+}
+
 // BroadcastTx will broadcast transaction using this endpoint.
 // Get tx_id in response or error msg from node.
 //

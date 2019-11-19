@@ -58,6 +58,16 @@ type TxInfo struct {
 	Vout          []VoutInfo `json:"vout"`
 }
 
+// MerkleInfo is the response for the get merkle request
+type MerkleInfo struct {
+	BlockHeight int64        `json:"block_height"`
+	Merkle      MerkleHashes `json:"merkle"`
+	Pos         int64        `json:"pos"`
+}
+
+// MerkleHashes is the list of merkle hashes
+type MerkleHashes []string
+
 // AddressInfo is the address info for a returned address request
 type AddressInfo struct {
 	Address      string `json:"address"`

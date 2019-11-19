@@ -336,3 +336,33 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 	}*/
 
 }
+
+// TestClient_GetMerkleProof tests the GetMerkleProof()
+func TestClient_GetMerkleProof(t *testing.T) {
+	// Skip this test in short mode (not needed)
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
+
+	// Create a new client object to handle your queries (supply an API Key)
+	client, err := NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var resp *MerkleInfo
+	tx := "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96"
+	resp, err = client.GetMerkleProof(tx)
+	if err != nil {
+		t.Fatal("error occurred: " + err.Error())
+	}
+
+	if resp.BlockHeight != 575191 {
+		t.Fatal("failed to get the block height", resp.BlockHeight)
+	}
+
+	if resp.Merkle[0] != "7e0ba1980522125f1f40d19a249ab3ae036001b991776813d25aebe08e8b8a50" {
+		t.Fatal("failed to get the merkle hash", resp.Merkle[0])
+	}
+
+}
