@@ -151,3 +151,9 @@ type ScriptPubKeyInfo struct {
 	ReqSigs   int64    `json:"reqSigs"`
 	Type      string   `json:"type"`
 }
+
+// BulkBroadcastResponse is the response from a bulk broadcast request
+type BulkBroadcastResponse struct {
+	Feedback  bool   `json:"feedback"`
+	StatusURL string `json:"statusUrl"`
+}

@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"unsafe"
 
 	"github.com/gojek/heimdall"
 	"github.com/gojek/heimdall/httpclient"
@@ -104,13 +105,10 @@ func NewClient() (c *Client, err error) {
 }
 
 // Request is a generic request wrapper that can be used without constraints
-func (c *Client) Request(endpoint string, method string, payload []byte) (response string, err error) {
+func (c *Client) Request(url string, method string, payload []byte) (response string, err error) {
 
 	// Set reader
 	var bodyReader io.Reader
-
-	// Add the network value
-	endpoint = fmt.Sprintf("%s%s/%s", APIEndpoint, c.Parameters.Network, endpoint)
 
 	// Switch on Method
 	switch method {
@@ -122,11 +120,11 @@ func (c *Client) Request(endpoint string, method string, payload []byte) (respon
 
 	// Store for debugging purposes
 	c.LastRequest.Method = method
-	c.LastRequest.URL = endpoint
+	c.LastRequest.URL = url
 
 	// Start the request
 	var request *http.Request
-	if request, err = http.NewRequest(method, endpoint, bodyReader); err != nil {
+	if request, err = http.NewRequest(method, url, bodyReader); err != nil {
 		return
 	}
 
@@ -173,8 +171,8 @@ func (c *Client) Request(endpoint string, method string, payload []byte) (respon
 func (c *Client) GetHealth() (status string, err error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/woc
-
-	return c.Request("woc", http.MethodGet, nil)
+	url := fmt.Sprintf("%s%s/woc", APIEndpoint, c.Parameters.Network)
+	return c.Request(url, http.MethodGet, nil)
 }
 
 // GetChainInfo this endpoint retrieves various state info of the chain for the selected network.
@@ -184,7 +182,8 @@ func (c *Client) GetChainInfo() (chainInfo *ChainInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/chain/info
-	resp, err = c.Request("chain/info", http.MethodGet, nil)
+	url := fmt.Sprintf("%s%s/chain/info", APIEndpoint, c.Parameters.Network)
+	resp, err = c.Request(url, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -203,7 +202,8 @@ func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>
-	resp, err = c.Request("block/hash/"+hash, http.MethodGet, nil)
+	url := fmt.Sprintf("%s%s/block/hash/%s", APIEndpoint, c.Parameters.Network, hash)
+	resp, err = c.Request(url, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -223,7 +223,8 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/height/<height>
-	resp, err = c.Request(fmt.Sprintf("block/height/%d", height), http.MethodGet, nil)
+	url := fmt.Sprintf("%s%s/block/height/%d", APIEndpoint, c.Parameters.Network, height)
+	resp, err = c.Request(url, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -244,7 +245,8 @@ func (c *Client) GetBlockPages(hash string, page int) (txList *BlockPagesInfo, e
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>/page/1
-	resp, err = c.Request(fmt.Sprintf("block/hash/%s/page/%d", hash, page), http.MethodGet, nil)
+	url := fmt.Sprintf("%s%s/block/hash/%s/page/%d", APIEndpoint, c.Parameters.Network, hash, page)
+	resp, err = c.Request(url, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -264,7 +266,8 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>
-	resp, err = c.Request("tx/hash/"+hash, http.MethodGet, nil)
+	url := fmt.Sprintf("%s%s/tx/hash/%s", APIEndpoint, c.Parameters.Network, hash)
+	resp, err = c.Request(url, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -284,11 +287,11 @@ func (c *Client) GetMerkleProof(hash string) (merkleInfo *MerkleInfo, err error)
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/merkleproof
-	resp, err = c.Request("tx/"+hash+"/merkleproof", http.MethodGet, nil)
+	url := fmt.Sprintf("%s%s/tx/%s/merkleproof", APIEndpoint, c.Parameters.Network, hash)
+	resp, err = c.Request(url, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
-	log.Println(resp)
 
 	merkleInfo = new(MerkleInfo)
 	if err = json.Unmarshal([]byte(resp), merkleInfo); err != nil {
@@ -309,7 +312,8 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 	postData := []byte(stringVal)
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
-	txID, err = c.Request("tx/raw", http.MethodPost, postData)
+	url := fmt.Sprintf("%s%s/tx/raw", APIEndpoint, c.Parameters.Network)
+	txID, err = c.Request(url, http.MethodPost, postData)
 	if err != nil {
 		return
 	}
@@ -324,6 +328,64 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 	return
 }
 
+// BulkBroadcastTx will broadcast many transactions at once
+// You can bulk broadcast transactions using this endpoint.
+// 		Size per transaction should be less than 100KB
+//		Overall payload per request should be less than 10MB
+//		Max 100 transactions per request
+//		Only available for mainnet
+//
+// For more information: https://developers.whatsonchain.com/#bulk-broadcast
+func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *BulkBroadcastResponse, err error) {
+
+	// Set a max (from Whats on Chain)
+	if len(rawTxs) > 100 {
+		err = fmt.Errorf("max transactions are 100")
+		return
+	}
+
+	// Set a total max
+	if size := unsafe.Sizeof(rawTxs); size > 1e+7 {
+		err = fmt.Errorf("max overall payload of 10MB (1e+7 bytes)")
+		return
+	}
+
+	// Check size of each tx
+	for _, tx := range rawTxs {
+		if size := unsafe.Sizeof(tx); size > 102400 {
+			err = fmt.Errorf("max tx size of 100kb (102400 bytes)")
+			return
+		}
+	}
+
+	// Start the post data
+	postData, _ := json.Marshal(rawTxs)
+
+	// https://api.whatsonchain.com/v1/bsv/tx/broadcast?feedback=<feedback>
+	url := fmt.Sprintf("%stx/broadcast?feedback=%t", APIEndpoint, feedback)
+	var resp string
+	resp, err = c.Request(url, http.MethodPost, postData)
+	if err != nil {
+		return
+	}
+
+	response = new(BulkBroadcastResponse)
+	response.Feedback = feedback
+	if feedback {
+		if err = json.Unmarshal([]byte(resp), response); err != nil {
+			return
+		}
+	}
+
+	// Got an error
+	if c.LastRequest.StatusCode > 200 {
+		err = fmt.Errorf("error broadcasting: %s", resp)
+		return
+	}
+
+	return
+}
+
 // AddressInfo this endpoint retrieves various address info.
 //
 // For more information: https://developers.whatsonchain.com/#address
@@ -331,7 +393,8 @@ func (c *Client) AddressInfo(address string) (addressInfo *AddressInfo, err erro
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/info
-	resp, err = c.Request("address/"+address+"/info", http.MethodGet, nil)
+	url := fmt.Sprintf("%s%s/address/%s/info", APIEndpoint, c.Parameters.Network, address)
+	resp, err = c.Request(url, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -350,7 +413,8 @@ func (c *Client) AddressBalance(address string) (balance *AddressBalance, err er
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/balance
-	resp, err = c.Request("address/"+address+"/balance", http.MethodGet, nil)
+	url := fmt.Sprintf("%s%s/address/%s/balance", APIEndpoint, c.Parameters.Network, address)
+	resp, err = c.Request(url, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -369,7 +433,8 @@ func (c *Client) AddressHistory(address string) (history AddressHistory, err err
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/history
-	resp, err = c.Request("address/"+address+"/history", http.MethodGet, nil)
+	url := fmt.Sprintf("%s%s/address/%s/history", APIEndpoint, c.Parameters.Network, address)
+	resp, err = c.Request(url, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
@@ -388,7 +453,8 @@ func (c *Client) AddressUnspentTransactions(address string) (history AddressHist
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/unspent
-	resp, err = c.Request("address/"+address+"/unspent", http.MethodGet, nil)
+	url := fmt.Sprintf("%s%s/address/%s/unspent", APIEndpoint, c.Parameters.Network, address)
+	resp, err = c.Request(url, http.MethodGet, nil)
 	if err != nil {
 		return
 	}
