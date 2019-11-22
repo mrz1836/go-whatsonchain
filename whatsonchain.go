@@ -19,6 +19,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"unsafe"
 
 	"github.com/gojek/heimdall"
@@ -323,6 +324,9 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 		err = fmt.Errorf("error broadcasting: %s", txID)
 		txID = "" // remove the error message
 		return
+	} else {
+		// Remove quotes
+		txID = strings.Replace(txID, `"`, "", -1)
 	}
 
 	return
