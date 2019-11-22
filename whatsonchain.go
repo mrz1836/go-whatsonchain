@@ -325,8 +325,8 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 		txID = "" // remove the error message
 		return
 	} else {
-		// Remove quotes
-		txID = strings.Replace(txID, `"`, "", -1)
+		// Remove quotes or spaces
+		txID = strings.TrimSpace(strings.Replace(txID, `"`, "", -1))
 	}
 
 	return
