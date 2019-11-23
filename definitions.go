@@ -147,7 +147,7 @@ type ScriptPubKeyInfo struct {
 	Addresses []string `json:"addresses"`
 	Asm       string   `json:"asm"`
 	Hex       string   `json:"hex"`
-	OpReturn  string   `json:"opReturn"`
+	OpReturn  string   `json:"-"` // todo: support this (can be an object of key/vals based on the op return data)
 	ReqSigs   int64    `json:"reqSigs"`
 	Type      string   `json:"type"`
 }
