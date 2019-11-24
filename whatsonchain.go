@@ -90,6 +90,7 @@ func NewClient() (c *Client, err error) {
 		httpclient.WithRetryCount(ConnectionRetryCount),
 		httpclient.WithHTTPClient(&http.Client{
 			Transport: ClientDefaultTransport,
+			Timeout:   ConnectionWithHTTPTimeout,
 		}),
 	)
 

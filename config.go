@@ -30,22 +30,22 @@ const (
 	ConnectionMaximumJitterInterval = 2 * time.Millisecond
 
 	// ConnectionMaxTimeout max timeout
-	ConnectionMaxTimeout = 1000 * time.Millisecond
+	ConnectionMaxTimeout = 10 * time.Millisecond
 
 	// ConnectionRetryCount retry count
-	ConnectionRetryCount int = 3
+	ConnectionRetryCount int = 2
 
 	// ConnectionWithHTTPTimeout with http timeout
-	ConnectionWithHTTPTimeout = 1 * time.Second
+	ConnectionWithHTTPTimeout = 10 * time.Second
 
 	// ConnectionTLSHandshakeTimeout tls handshake timeout
 	ConnectionTLSHandshakeTimeout = 5 * time.Second
 
 	// ConnectionMaxIdleConnections max idle http connections
-	ConnectionMaxIdleConnections int = 128
+	ConnectionMaxIdleConnections int = 10
 
 	// ConnectionIdleTimeout idle connection timeout
-	ConnectionIdleTimeout = 30 * time.Second
+	ConnectionIdleTimeout = 20 * time.Second
 
 	// ConnectionExpectContinueTimeout expect continue timeout
 	ConnectionExpectContinueTimeout = 3 * time.Second
@@ -54,7 +54,7 @@ const (
 	ConnectionDialerTimeout = 5 * time.Second
 
 	// ConnectionDialerKeepAlive keep alive
-	ConnectionDialerKeepAlive = 30 * time.Second
+	ConnectionDialerKeepAlive = 20 * time.Second
 
 	// DefaultUserAgent is the default user agent for all requests
 	DefaultUserAgent string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.80 Safari/537.36"
