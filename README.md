@@ -21,15 +21,9 @@
 
 ## Installation
 
-**go-whatsonchain** requires a [supported release of Go](https://golang.org/doc/devel/release.html#policy) and [dep](https://github.com/golang/dep).
+**go-whatsonchain** requires a [supported release of Go](https://golang.org/doc/devel/release.html#policy).
 ```bash
 $ go get -u github.com/mrz1836/go-whatsonchain
-```
-
-Updating dependencies in **go-whatsonchain**:
-```bash
-$ cd ../go-whatsonchain
-$ dep ensure -update -v
 ```
 
 ## Documentation
