@@ -4,6 +4,18 @@ package whatsonchain
 // for network in queries to be submitted: {"main", "test", "stn"}
 type NetworkType string
 
+const (
+
+	// NetworkMain is for main-net
+	NetworkMain NetworkType = "main"
+
+	// NetworkTest is for test-net
+	NetworkTest NetworkType = "test"
+
+	//NetworkStn is for the stn-net
+	NetworkStn NetworkType = "stn"
+)
+
 // ChainInfo is the structure response from getting info about the chain
 type ChainInfo struct {
 	BestBlockHash        string  `json:"bestblockhash"`
