@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"log"
 	"testing"
+	"time"
 )
 
 // TestNewClient test new client
 func TestNewClient(t *testing.T) {
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,7 +21,7 @@ func TestNewClient(t *testing.T) {
 
 // ExampleNewClient example using NewClient()
 func ExampleNewClient() {
-	client, _ := NewClient()
+	client, _ := NewClient(NetworkMain, nil)
 	fmt.Println(client.Parameters.Network)
 	// Output:main
 }
@@ -28,7 +29,65 @@ func ExampleNewClient() {
 // BenchmarkNewClient benchmarks the NewClient method
 func BenchmarkNewClient(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_, _ = NewClient()
+		_, _ = NewClient(NetworkMain, nil)
+	}
+}
+
+// TestDefaultOptions tests setting ClientDefaultOptions()
+func TestDefaultOptions(t *testing.T) {
+
+	options := ClientDefaultOptions()
+
+	if options.UserAgent != defaultUserAgent {
+		t.Fatalf("expected value: %s got: %s", defaultUserAgent, options.UserAgent)
+	}
+
+	if options.BackOffExponentFactor != 2.0 {
+		t.Fatalf("expected value: %f got: %f", 2.0, options.BackOffExponentFactor)
+	}
+
+	if options.BackOffInitialTimeout != 2*time.Millisecond {
+		t.Fatalf("expected value: %v got: %v", 2*time.Millisecond, options.BackOffInitialTimeout)
+	}
+
+	if options.BackOffMaximumJitterInterval != 2*time.Millisecond {
+		t.Fatalf("expected value: %v got: %v", 2*time.Millisecond, options.BackOffMaximumJitterInterval)
+	}
+
+	if options.BackOffMaxTimeout != 10*time.Millisecond {
+		t.Fatalf("expected value: %v got: %v", 10*time.Millisecond, options.BackOffMaxTimeout)
+	}
+
+	if options.DialerKeepAlive != 20*time.Second {
+		t.Fatalf("expected value: %v got: %v", 20*time.Second, options.DialerKeepAlive)
+	}
+
+	if options.DialerTimeout != 5*time.Second {
+		t.Fatalf("expected value: %v got: %v", 5*time.Second, options.DialerTimeout)
+	}
+
+	if options.RequestRetryCount != 2 {
+		t.Fatalf("expected value: %v got: %v", 2, options.RequestRetryCount)
+	}
+
+	if options.RequestTimeout != 10*time.Second {
+		t.Fatalf("expected value: %v got: %v", 10*time.Second, options.RequestTimeout)
+	}
+
+	if options.TransportExpectContinueTimeout != 3*time.Second {
+		t.Fatalf("expected value: %v got: %v", 3*time.Second, options.TransportExpectContinueTimeout)
+	}
+
+	if options.TransportIdleTimeout != 20*time.Second {
+		t.Fatalf("expected value: %v got: %v", 20*time.Second, options.TransportIdleTimeout)
+	}
+
+	if options.TransportMaxIdleConnections != 10 {
+		t.Fatalf("expected value: %v got: %v", 10, options.TransportMaxIdleConnections)
+	}
+
+	if options.TransportTLSHandshakeTimeout != 5*time.Second {
+		t.Fatalf("expected value: %v got: %v", 5*time.Second, options.TransportTLSHandshakeTimeout)
 	}
 }
 
@@ -40,7 +99,7 @@ func TestClient_GetHealth(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +117,7 @@ func TestClient_GetHealth(t *testing.T) {
 
 // ExampleClient_GetHealth example using GetHealth()
 func ExampleClient_GetHealth() {
-	client, _ := NewClient()
+	client, _ := NewClient(NetworkMain, nil)
 	resp, _ := client.GetHealth()
 	fmt.Println(resp)
 	// Output:Whats On Chain
@@ -72,7 +131,7 @@ func TestClient_GetChainInfo(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -91,7 +150,7 @@ func TestClient_GetChainInfo(t *testing.T) {
 
 // ExampleClient_GetChainInfo example using GetChainInfo()
 func ExampleClient_GetChainInfo() {
-	client, _ := NewClient()
+	client, _ := NewClient(NetworkMain, nil)
 	resp, _ := client.GetChainInfo()
 	log.Println(resp.BestBlockHash)
 	fmt.Println("0000000000000000057d09c9d9928c53aaff1f6b019ead3ceed52aca8abbc1c9")
@@ -106,7 +165,7 @@ func TestClient_GetBlockByHash(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -132,7 +191,7 @@ func TestClient_GetBlockByHeight(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -158,7 +217,7 @@ func TestClient_GetBlockPages(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -184,7 +243,7 @@ func TestClient_GetTxByHash(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -210,7 +269,7 @@ func TestClient_BroadcastTx(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -230,7 +289,7 @@ func TestClient_BulkBroadcastTx(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -262,7 +321,7 @@ func TestClient_AddressInfo(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -288,7 +347,7 @@ func TestClient_AddressBalance(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -319,7 +378,7 @@ func TestClient_AddressHistory(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -350,7 +409,7 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -377,7 +436,7 @@ func TestClient_GetMerkleProof(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient()
+	client, err := NewClient(NetworkMain, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

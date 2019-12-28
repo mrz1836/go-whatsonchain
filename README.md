@@ -30,11 +30,10 @@ $ go get -u github.com/mrz1836/go-whatsonchain
 You can view the generated [documentation here](https://godoc.org/github.com/mrz1836/go-whatsonchain).
 
 ### Features
-- Client is completely configurable
-- Customize User Agent per request
-- Customize the network per request (main, test or stn)
+- [Client](client.go) is completely configurable
+- Customize the network per request (`main`, `test` or `stn`)
 - Using [heimdall http client](https://github.com/gojek/heimdall) with exponential backoff & more
-- Current coverage for the [whatsonchain.com](https://developers.whatsonchain.com/) API
+- Current coverage for the [whatsonchain.com API](https://developers.whatsonchain.com/)
     - [x] Health
     - [x] Chain Info
     - [x] Blocks
@@ -85,7 +84,7 @@ import (
 func main() {
 
     // Create a client
-    client, _ := whatsonchain.NewClient()
+    client, _ := whatsonchain.NewClient(NetworkMain, nil)
 
     // Get a balance for an address
     balance, _ := client.AddressBalance("16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")

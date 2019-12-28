@@ -17,92 +17,20 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 	"unsafe"
-
-	"github.com/gojek/heimdall"
-	"github.com/gojek/heimdall/httpclient"
 )
 
-// Client holds client configuration settings
-type Client struct {
-
-	// HTTPClient carries out the POST operations
-	HTTPClient heimdall.Client
-
-	// Parameters contains the search parameters that are submitted with your query,
-	// which may affect the data returned
-	Parameters *RequestParameters
-
-	// LastRequest is the raw information from the last request
-	LastRequest *LastRequest
-}
-
-// RequestParameters holds options that can affect data returned by a request.
-type RequestParameters struct {
-
-	// UserAgent (optional for changing user agents)
-	UserAgent string
-
-	// Network is what this search should use IE: main
-	Network NetworkType
-}
-
-// LastRequest is used to track what was submitted to the Request()
-type LastRequest struct {
-
-	// Method is either POST or GET
-	Method string
-
-	// PostData is the post data submitted if POST request
-	PostData string
-
-	// StatusCode is the last code from the request
-	StatusCode int
-
-	// URL is the url used for the request
-	URL string
-}
-
 // NewClient creates a new client to submit requests
-// Parameters values are set to the defaults defined by the API documentation.
-//
-// For more information: https://developers.whatsonchain.com/#authentication
-func NewClient() (c *Client, err error) {
+func NewClient(network NetworkType, clientOptions *Options) (c *Client, err error) {
 
-	// Create a client
-	c = new(Client)
+	// Create a client using the given options
+	c = createClient(clientOptions)
 
-	// Create exponential backoff
-	backOff := heimdall.NewExponentialBackoff(
-		ConnectionInitialTimeout,
-		ConnectionMaxTimeout,
-		ConnectionExponentFactor,
-		ConnectionMaximumJitterInterval,
-	)
+	// Set the network
+	c.Parameters.Network = network
 
-	// Create the http client
-	c.HTTPClient = httpclient.NewClient(
-		httpclient.WithHTTPTimeout(ConnectionWithHTTPTimeout),
-		httpclient.WithRetrier(heimdall.NewRetrier(backOff)),
-		httpclient.WithRetryCount(ConnectionRetryCount),
-		httpclient.WithHTTPClient(&http.Client{
-			Transport: ClientDefaultTransport,
-			Timeout:   ConnectionWithHTTPTimeout,
-		}),
-	)
-
-	// Create default parameters
-	c.Parameters = new(RequestParameters)
-	c.Parameters.Network = NetworkMain
-	c.Parameters.UserAgent = DefaultUserAgent
-
-	// Create a last request struct
-	c.LastRequest = new(LastRequest)
-
-	// Return the client
 	return
 }
 
@@ -140,15 +68,13 @@ func (c *Client) Request(url string, method string, payload []byte) (response st
 
 	// Fire the http request
 	var resp *http.Response
-	if resp, err = c.HTTPClient.Do(request); err != nil {
+	if resp, err = c.httpClient.Do(request); err != nil {
 		return
 	}
 
 	// Close the response body
 	defer func() {
-		if bodyErr := resp.Body.Close(); bodyErr != nil {
-			log.Printf("error closing response body: %s", bodyErr.Error())
-		}
+		_ = resp.Body.Close()
 	}()
 
 	// Save the status
@@ -162,8 +88,6 @@ func (c *Client) Request(url string, method string, payload []byte) (response st
 
 	// Parse the response
 	response = string(body)
-
-	// Done
 	return
 }
 
@@ -185,15 +109,12 @@ func (c *Client) GetChainInfo() (chainInfo *ChainInfo, err error) {
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/chain/info
 	url := fmt.Sprintf("%s%s/chain/info", APIEndpoint, c.Parameters.Network)
-	resp, err = c.Request(url, http.MethodGet, nil)
-	if err != nil {
+	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
 		return
 	}
 
 	chainInfo = new(ChainInfo)
-	if err = json.Unmarshal([]byte(resp), chainInfo); err != nil {
-		return
-	}
+	err = json.Unmarshal([]byte(resp), chainInfo)
 	return
 }
 
@@ -205,17 +126,13 @@ func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>
 	url := fmt.Sprintf("%s%s/block/hash/%s", APIEndpoint, c.Parameters.Network, hash)
-	resp, err = c.Request(url, http.MethodGet, nil)
-	if err != nil {
+	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
 		return
 	}
 
 	blockInfo = new(BlockInfo)
-	if err = json.Unmarshal([]byte(resp), blockInfo); err != nil {
-		return
-	}
+	err = json.Unmarshal([]byte(resp), blockInfo)
 	return
-
 }
 
 // GetBlockByHeight this endpoint retrieves block details with given block height.
@@ -226,17 +143,13 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/height/<height>
 	url := fmt.Sprintf("%s%s/block/height/%d", APIEndpoint, c.Parameters.Network, height)
-	resp, err = c.Request(url, http.MethodGet, nil)
-	if err != nil {
+	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
 		return
 	}
 
 	blockInfo = new(BlockInfo)
-	if err = json.Unmarshal([]byte(resp), blockInfo); err != nil {
-		return
-	}
+	err = json.Unmarshal([]byte(resp), blockInfo)
 	return
-
 }
 
 // GetBlockPages If the block has more that 1000 transactions the page URIs will
@@ -248,17 +161,13 @@ func (c *Client) GetBlockPages(hash string, page int) (txList *BlockPagesInfo, e
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>/page/1
 	url := fmt.Sprintf("%s%s/block/hash/%s/page/%d", APIEndpoint, c.Parameters.Network, hash, page)
-	resp, err = c.Request(url, http.MethodGet, nil)
-	if err != nil {
+	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
 		return
 	}
 
 	txList = new(BlockPagesInfo)
-	if err = json.Unmarshal([]byte(resp), txList); err != nil {
-		return
-	}
+	err = json.Unmarshal([]byte(resp), txList)
 	return
-
 }
 
 // GetTxByHash this endpoint retrieves transaction details with given transaction hash
@@ -269,17 +178,13 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>
 	url := fmt.Sprintf("%s%s/tx/hash/%s", APIEndpoint, c.Parameters.Network, hash)
-	resp, err = c.Request(url, http.MethodGet, nil)
-	if err != nil {
+	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
 		return
 	}
 
 	txInfo = new(TxInfo)
-	if err = json.Unmarshal([]byte(resp), txInfo); err != nil {
-		return
-	}
+	err = json.Unmarshal([]byte(resp), txInfo)
 	return
-
 }
 
 // GetMerkleProof this endpoint returns merkle branch to a confirmed transaction
@@ -290,17 +195,13 @@ func (c *Client) GetMerkleProof(hash string) (merkleInfo *MerkleInfo, err error)
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/merkleproof
 	url := fmt.Sprintf("%s%s/tx/%s/merkleproof", APIEndpoint, c.Parameters.Network, hash)
-	resp, err = c.Request(url, http.MethodGet, nil)
-	if err != nil {
+	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
 		return
 	}
 
 	merkleInfo = new(MerkleInfo)
-	if err = json.Unmarshal([]byte(resp), merkleInfo); err != nil {
-		return
-	}
+	err = json.Unmarshal([]byte(resp), merkleInfo)
 	return
-
 }
 
 // BroadcastTx will broadcast transaction using this endpoint.
@@ -315,8 +216,7 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
 	url := fmt.Sprintf("%s%s/tx/raw", APIEndpoint, c.Parameters.Network)
-	txID, err = c.Request(url, http.MethodPost, postData)
-	if err != nil {
+	if txID, err = c.Request(url, http.MethodPost, postData); err != nil {
 		return
 	}
 
@@ -324,7 +224,6 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 	if c.LastRequest.StatusCode > 200 {
 		err = fmt.Errorf("error broadcasting: %s", txID)
 		txID = "" // remove the error message
-		return
 	} else {
 		// Remove quotes or spaces
 		txID = strings.TrimSpace(strings.Replace(txID, `"`, "", -1))
@@ -366,11 +265,11 @@ func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *Bulk
 	// Start the post data
 	postData, _ := json.Marshal(rawTxs)
 
+	var resp string
+
 	// https://api.whatsonchain.com/v1/bsv/tx/broadcast?feedback=<feedback>
 	url := fmt.Sprintf("%stx/broadcast?feedback=%t", APIEndpoint, feedback)
-	var resp string
-	resp, err = c.Request(url, http.MethodPost, postData)
-	if err != nil {
+	if resp, err = c.Request(url, http.MethodPost, postData); err != nil {
 		return
 	}
 
@@ -385,7 +284,6 @@ func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *Bulk
 	// Got an error
 	if c.LastRequest.StatusCode > 200 {
 		err = fmt.Errorf("error broadcasting: %s", resp)
-		return
 	}
 
 	return
@@ -399,15 +297,12 @@ func (c *Client) AddressInfo(address string) (addressInfo *AddressInfo, err erro
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/info
 	url := fmt.Sprintf("%s%s/address/%s/info", APIEndpoint, c.Parameters.Network, address)
-	resp, err = c.Request(url, http.MethodGet, nil)
-	if err != nil {
+	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
 		return
 	}
 
 	addressInfo = new(AddressInfo)
-	if err = json.Unmarshal([]byte(resp), addressInfo); err != nil {
-		return
-	}
+	err = json.Unmarshal([]byte(resp), addressInfo)
 	return
 }
 
@@ -419,15 +314,12 @@ func (c *Client) AddressBalance(address string) (balance *AddressBalance, err er
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/balance
 	url := fmt.Sprintf("%s%s/address/%s/balance", APIEndpoint, c.Parameters.Network, address)
-	resp, err = c.Request(url, http.MethodGet, nil)
-	if err != nil {
+	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
 		return
 	}
 
 	balance = new(AddressBalance)
-	if err = json.Unmarshal([]byte(resp), balance); err != nil {
-		return
-	}
+	err = json.Unmarshal([]byte(resp), balance)
 	return
 }
 
@@ -439,15 +331,12 @@ func (c *Client) AddressHistory(address string) (history AddressHistory, err err
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/history
 	url := fmt.Sprintf("%s%s/address/%s/history", APIEndpoint, c.Parameters.Network, address)
-	resp, err = c.Request(url, http.MethodGet, nil)
-	if err != nil {
+	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
 		return
 	}
 
 	history = *new(AddressHistory)
-	if err = json.Unmarshal([]byte(resp), &history); err != nil {
-		return
-	}
+	err = json.Unmarshal([]byte(resp), &history)
 	return
 }
 
@@ -459,14 +348,11 @@ func (c *Client) AddressUnspentTransactions(address string) (history AddressHist
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/unspent
 	url := fmt.Sprintf("%s%s/address/%s/unspent", APIEndpoint, c.Parameters.Network, address)
-	resp, err = c.Request(url, http.MethodGet, nil)
-	if err != nil {
+	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
 		return
 	}
 
 	history = *new(AddressHistory)
-	if err = json.Unmarshal([]byte(resp), &history); err != nil {
-		return
-	}
+	err = json.Unmarshal([]byte(resp), &history)
 	return
 }
