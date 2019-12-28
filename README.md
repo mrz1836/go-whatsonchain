@@ -84,7 +84,7 @@ import (
 func main() {
 
     // Create a client
-    client, _ := whatsonchain.NewClient(NetworkMain, nil)
+    client, _ := whatsonchain.NewClient(whatsonchain.NetworkMain, nil)
 
     // Get a balance for an address
     balance, _ := client.AddressBalance("16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
