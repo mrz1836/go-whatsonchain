@@ -1,6 +1,7 @@
 # go-whatsonchain
 **go-whatsonchain** is the unofficial golang implementation for the [whatsonchain.com API](https://developers.whatsonchain.com/)
 
+[![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/go-whatsonchain)](https://golang.org/)
 [![Build Status](https://travis-ci.com/mrz1836/go-whatsonchain.svg?branch=master&v=2)](https://travis-ci.com/mrz1836/go-whatsonchain)
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/go-whatsonchain?style=flat&v=2)](https://goreportcard.com/report/github.com/mrz1836/go-whatsonchain)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f9815e59758743b9adca25c11558ab1c)](https://www.codacy.com/app/mrz1818/go-whatsonchain?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mrz1836/go-whatsonchain&amp;utm_campaign=Badge_Grade)
