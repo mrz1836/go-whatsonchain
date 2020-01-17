@@ -13,13 +13,11 @@ func (c *Client) AddressInfo(address string) (addressInfo *AddressInfo, err erro
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/info
-	url := fmt.Sprintf("%s%s/address/%s/info", apiEndpoint, c.Parameters.Network, address)
-	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%s%s/address/%s/info", apiEndpoint, c.Parameters.Network, address), http.MethodGet, nil); err != nil {
 		return
 	}
 
-	addressInfo = new(AddressInfo)
-	err = json.Unmarshal([]byte(resp), addressInfo)
+	err = json.Unmarshal([]byte(resp), &addressInfo)
 	return
 }
 
@@ -30,13 +28,11 @@ func (c *Client) AddressBalance(address string) (balance *AddressBalance, err er
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/balance
-	url := fmt.Sprintf("%s%s/address/%s/balance", apiEndpoint, c.Parameters.Network, address)
-	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%s%s/address/%s/balance", apiEndpoint, c.Parameters.Network, address), http.MethodGet, nil); err != nil {
 		return
 	}
 
-	balance = new(AddressBalance)
-	err = json.Unmarshal([]byte(resp), balance)
+	err = json.Unmarshal([]byte(resp), &balance)
 	return
 }
 
@@ -47,12 +43,10 @@ func (c *Client) AddressHistory(address string) (history AddressHistory, err err
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/history
-	url := fmt.Sprintf("%s%s/address/%s/history", apiEndpoint, c.Parameters.Network, address)
-	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%s%s/address/%s/history", apiEndpoint, c.Parameters.Network, address), http.MethodGet, nil); err != nil {
 		return
 	}
 
-	history = *new(AddressHistory)
 	err = json.Unmarshal([]byte(resp), &history)
 	return
 }
@@ -64,12 +58,10 @@ func (c *Client) AddressUnspentTransactions(address string) (history AddressHist
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/unspent
-	url := fmt.Sprintf("%s%s/address/%s/unspent", apiEndpoint, c.Parameters.Network, address)
-	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%s%s/address/%s/unspent", apiEndpoint, c.Parameters.Network, address), http.MethodGet, nil); err != nil {
 		return
 	}
 
-	history = *new(AddressHistory)
 	err = json.Unmarshal([]byte(resp), &history)
 	return
 }
@@ -105,22 +97,9 @@ func (c *Client) AddressUnspentTransactionDetails(address string, maxTransaction
 		foundTxs = foundTxs + 1
 	}
 
-	// Hashes into json
-	var postData []byte
-	if postData, err = json.Marshal(txHashes); err != nil {
-		return
-	}
-
-	// Fire the request
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/txs
-	if resp, err = c.Request(fmt.Sprintf("%s%s/txs", apiEndpoint, c.Parameters.Network), http.MethodPost, postData); err != nil {
-		return
-	}
-
-	// Unmarshal the response
+	// Get the tx details
 	var txList TxList
-	if err = json.Unmarshal([]byte(resp), &txList); err != nil {
+	if txList, err = c.GetTxsByHashes(txHashes); err != nil {
 		return
 	}
 
