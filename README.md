@@ -95,19 +95,18 @@ func main() {
 
 ## Maintainers
 
-[@MrZ](https://github.com/mrz1836)
+| [<img src="https://github.com/mrz1836.png" height="50" alt="MrZ" />](https://github.com/mrz1836) |
+|:---:|
+| [MrZ](https://github.com/mrz1836) |
+
 
 ## Contributing
 
 View the [contributing guidelines](CONTRIBUTING.md) and follow the [code of conduct](CODE_OF_CONDUCT.md).
 
-Support the development of this project 🙏
+Support the development of this project 🙏 & support [WhatsOnChain](https://tncpw.co/65733e42)
 
-[![Donate](https://img.shields.io/badge/donate-bitcoin-brightgreen.svg)](https://mrz1818.com/?tab=tips&af=go-whatsonchain)
-
-Support the development of [WhatsOnChain](https://tncpw.co/65733e42):
-
-[![Support](https://img.shields.io/badge/support-woc-blue.svg)](https://whatsonchain.com/support)
+[![Donate](https://img.shields.io/badge/donate-bitcoin-brightgreen.svg)](https://mrz1818.com/?tab=tips&af=go-whatsonchain) [![Support](https://img.shields.io/badge/support-WhatsOnChain-blue.svg)](https://whatsonchain.com/support)
 
 #### Credits
 
