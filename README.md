@@ -39,7 +39,7 @@ You can view the generated [documentation here](https://godoc.org/github.com/mrz
     - [x] Chain Info
     - [x] Blocks
     - [x] Transactions
-    - [x] Address
+    - [x] Addresses
     - [ ] Receipt
     - [ ] Statement
     - [ ] Mempool

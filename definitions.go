@@ -70,6 +70,14 @@ type TxInfo struct {
 	Vout          []VoutInfo `json:"vout"`
 }
 
+// TxList is the list of tx info structs returned from the /txs post response
+type TxList []*TxInfo
+
+// TxHashes is the list of tx hashes for the post request
+type TxHashes struct {
+	TxIDs []string `json:"txids"`
+}
+
 // MerkleInfo is the response for the get merkle request
 type MerkleInfo struct {
 	BlockHeight int64        `json:"block_height"`
