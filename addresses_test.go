@@ -112,3 +112,30 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 	}*/
 
 }
+
+// TestClient_AddressUnspentTransactions tests the AddressUnspentTransactions()
+func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
+	// Skip this test in short mode (not needed)
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
+
+	// Create a new client object to handle your queries (supply an API Key)
+	client, err := NewClient(NetworkMain, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	//var resp AddressHistory
+	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
+	//var history AddressHistory
+	//if history, err = client.AddressUnspentTransactionDetails(address, 5); err != nil {
+	if _, err = client.AddressUnspentTransactionDetails(address, 5); err != nil {
+		t.Fatal("error occurred: " + err.Error())
+	}
+
+	// todo: this is unreliable since UTXOs can change (need a static address for testing)
+	/*if len(history) == 0 {
+		t.Fatal("no utxos found")
+	}*/
+}

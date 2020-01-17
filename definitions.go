@@ -12,8 +12,11 @@ const (
 	// NetworkTest is for test-net
 	NetworkTest NetworkType = "test"
 
-	//NetworkStn is for the stn-net
+	// NetworkStn is for the stn-net
 	NetworkStn NetworkType = "stn"
+
+	// MaxTransactionsUTXO is the max allowed in the request
+	MaxTransactionsUTXO int = 20
 )
 
 // ChainInfo is the structure response from getting info about the chain
@@ -109,10 +112,11 @@ type AddressHistory []*HistoryRecord
 
 // HistoryRecord is an internal record of AddressHistory
 type HistoryRecord struct {
-	Height int64  `json:"height"`
-	TxHash string `json:"tx_hash"`
-	TxPos  int64  `json:"tx_pos"`
-	Value  int64  `json:"value"`
+	Height int64   `json:"height"`
+	Info   *TxInfo `json:"info,omitempty"` // Custom for our wrapper
+	TxHash string  `json:"tx_hash"`
+	TxPos  int64   `json:"tx_pos"`
+	Value  int64   `json:"value"`
 }
 
 // Page is used as a sub-type for BlockInfo
