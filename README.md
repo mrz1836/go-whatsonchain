@@ -99,12 +99,11 @@ func main() {
 |:---:|
 | [MrZ](https://github.com/mrz1836) |
 
-
 ## Contributing
 
 View the [contributing guidelines](CONTRIBUTING.md) and follow the [code of conduct](CODE_OF_CONDUCT.md).
 
-Support the development of this project 🙏 & support [WhatsOnChain](https://tncpw.co/65733e42)
+Support the development of this project 🙏 and support [WhatsOnChain](https://tncpw.co/65733e42)
 
 [![Donate](https://img.shields.io/badge/donate-bitcoin-brightgreen.svg)](https://mrz1818.com/?tab=tips&af=go-whatsonchain) [![Support](https://img.shields.io/badge/support-WhatsOnChain-blue.svg)](https://whatsonchain.com/support)
 
