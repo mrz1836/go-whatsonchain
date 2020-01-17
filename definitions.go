@@ -32,6 +32,9 @@ type ChainInfo struct {
 	VerificationProgress float64 `json:"verificationprogress"`
 }
 
+// CirculatingSupply is the structure response
+type CirculatingSupply float64
+
 // BlockInfo is the response info about a returned block
 type BlockInfo struct {
 	Bits              string         `json:"bits"`

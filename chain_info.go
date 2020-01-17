@@ -13,12 +13,10 @@ func (c *Client) GetChainInfo() (chainInfo *ChainInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/chain/info
-	url := fmt.Sprintf("%s%s/chain/info", apiEndpoint, c.Parameters.Network)
-	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%s%s/chain/info", apiEndpoint, c.Parameters.Network), http.MethodGet, nil); err != nil {
 		return
 	}
 
-	chainInfo = new(ChainInfo)
-	err = json.Unmarshal([]byte(resp), chainInfo)
+	err = json.Unmarshal([]byte(resp), &chainInfo)
 	return
 }
