@@ -15,13 +15,11 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>
-	url := fmt.Sprintf("%s%s/tx/hash/%s", apiEndpoint, c.Parameters.Network, hash)
-	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%s%s/tx/hash/%s", apiEndpoint, c.Parameters.Network, hash), http.MethodGet, nil); err != nil {
 		return
 	}
 
-	txInfo = new(TxInfo)
-	err = json.Unmarshal([]byte(resp), txInfo)
+	err = json.Unmarshal([]byte(resp), &txInfo)
 	return
 }
 
@@ -29,6 +27,15 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 //
 // For more information: (undocumented) // todo: update url when documented
 func (c *Client) GetTxsByHashes(hashes *TxHashes) (txList TxList, err error) {
+
+	// Max limit by WOC
+	if len(hashes.TxIDs) == 0 {
+		err = fmt.Errorf("missing hashes")
+		return
+	} else if len(hashes.TxIDs) > MaxTransactionsUTXO {
+		err = fmt.Errorf("max limit of utxos is %d and you sent %d", MaxTransactionsUTXO, len(hashes.TxIDs))
+		return
+	}
 
 	// Hashes into json
 	var postData []byte
@@ -38,12 +45,10 @@ func (c *Client) GetTxsByHashes(hashes *TxHashes) (txList TxList, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/txs
-	url := fmt.Sprintf("%s%s/txs", apiEndpoint, c.Parameters.Network)
-	if resp, err = c.Request(url, http.MethodPost, postData); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%s%s/txs", apiEndpoint, c.Parameters.Network), http.MethodPost, postData); err != nil {
 		return
 	}
 
-	//txList = new(TxList)
 	err = json.Unmarshal([]byte(resp), &txList)
 	return
 }
@@ -55,13 +60,11 @@ func (c *Client) GetMerkleProof(hash string) (merkleInfo *MerkleInfo, err error)
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/merkleproof
-	url := fmt.Sprintf("%s%s/tx/%s/merkleproof", apiEndpoint, c.Parameters.Network, hash)
-	if resp, err = c.Request(url, http.MethodGet, nil); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%s%s/tx/%s/merkleproof", apiEndpoint, c.Parameters.Network, hash), http.MethodGet, nil); err != nil {
 		return
 	}
 
-	merkleInfo = new(MerkleInfo)
-	err = json.Unmarshal([]byte(resp), merkleInfo)
+	err = json.Unmarshal([]byte(resp), &merkleInfo)
 	return
 }
 
@@ -76,8 +79,7 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 	postData := []byte(stringVal)
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
-	url := fmt.Sprintf("%s%s/tx/raw", apiEndpoint, c.Parameters.Network)
-	if txID, err = c.Request(url, http.MethodPost, postData); err != nil {
+	if txID, err = c.Request(fmt.Sprintf("%s%s/tx/raw", apiEndpoint, c.Parameters.Network), http.MethodPost, postData); err != nil {
 		return
 	}
 
@@ -129,8 +131,7 @@ func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *Bulk
 	var resp string
 
 	// https://api.whatsonchain.com/v1/bsv/tx/broadcast?feedback=<feedback>
-	url := fmt.Sprintf("%stx/broadcast?feedback=%t", apiEndpoint, feedback)
-	if resp, err = c.Request(url, http.MethodPost, postData); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%stx/broadcast?feedback=%t", apiEndpoint, feedback), http.MethodPost, postData); err != nil {
 		return
 	}
 
