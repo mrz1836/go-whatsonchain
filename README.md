@@ -37,6 +37,7 @@ You can view the generated [documentation here](https://godoc.org/github.com/mrz
 - Current coverage for the [whatsonchain.com API](https://developers.whatsonchain.com/)
     - [x] Health
     - [x] Chain Info
+    - [x] Circulating Supply
     - [x] Blocks
     - [x] Transactions
     - [x] Addresses
