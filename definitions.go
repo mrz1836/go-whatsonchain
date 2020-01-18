@@ -16,7 +16,6 @@ const (
 	NetworkStn NetworkType = "stn"
 
 	// MaxTransactionsUTXO is the max allowed in the request
-	// todo: this is a guess
 	MaxTransactionsUTXO int = 20
 )
 
