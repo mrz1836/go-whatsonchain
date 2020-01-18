@@ -32,10 +32,14 @@ func (c *Client) GetTxsByHashes(hashes *TxHashes) (txList TxList, err error) {
 	if len(hashes.TxIDs) == 0 {
 		err = fmt.Errorf("missing hashes")
 		return
-	} else if len(hashes.TxIDs) > MaxTransactionsUTXO {
+	}
+
+	// Testing turning off the limit
+	// todo: turn back on when limit is known
+	/*else if len(hashes.TxIDs) > MaxTransactionsUTXO {
 		err = fmt.Errorf("max limit of utxos is %d and you sent %d", MaxTransactionsUTXO, len(hashes.TxIDs))
 		return
-	}
+	}*/
 
 	// Hashes into json
 	var postData []byte
