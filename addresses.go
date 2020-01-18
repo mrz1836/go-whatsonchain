@@ -80,8 +80,8 @@ func (c *Client) AddressUnspentTransactionDetails(address string, maxTransaction
 		return
 	}
 
-	// Set the max to return
-	if maxTransactions < 0 || maxTransactions > MaxTransactionsUTXO {
+	// Set the max to return // testing more than the max?
+	if maxTransactions < 0 {
 		maxTransactions = MaxTransactionsUTXO
 	}
 
