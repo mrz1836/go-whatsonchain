@@ -68,13 +68,24 @@ func (c *Client) GetMerkleProof(hash string) (merkleResults MerkleResults, err e
 	return
 }
 
-// GetMerkleProof this endpoint returns raw hex for the transaction with given hash
+// GetRawTransactionData this endpoint returns raw hex for the transaction with given hash
 //
 // For more information: https://developers.whatsonchain.com/#get-raw-transaction-data
 func (c *Client) GetRawTransactionData(hash string) (hex string, err error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/hex
 	hex, err = c.Request(fmt.Sprintf("%s%s/tx/%s/hex", apiEndpoint, c.Parameters.Network, hash), http.MethodGet, nil)
+
+	return
+}
+
+// GetRawTransactionOutputData this endpoint returns raw hex for the transaction output with given hash and index
+//
+// For more information: https://developers.whatsonchain.com/#get-raw-transaction-output-data
+func (c *Client) GetRawTransactionOutputData(hash string, vOutIndex int) (hex string, err error) {
+
+	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/out/<index>/hex
+	hex, err = c.Request(fmt.Sprintf("%s%s/tx/%s/out/%d/hex", apiEndpoint, c.Parameters.Network, hash, vOutIndex), http.MethodGet, nil)
 
 	return
 }

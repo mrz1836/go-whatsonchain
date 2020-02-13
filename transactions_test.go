@@ -179,3 +179,31 @@ func TestClient_GetRawTransactionData(t *testing.T) {
 		t.Fatal("hex expected does not match", resp)
 	}
 }
+
+// TestClient_GetRawTransactionOutputData tests the GetRawTransactionOutputData()
+func TestClient_GetRawTransactionOutputData(t *testing.T) {
+	// Skip this test in short mode (not needed)
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
+
+	// Create a new client object to handle your queries (supply an API Key)
+	client, err := NewClient(NetworkMain, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var resp string
+	tx := "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96"
+	if resp, err = client.GetRawTransactionOutputData(tx, 0); err != nil {
+		t.Fatal("error occurred: " + err.Error())
+	}
+
+	if len(resp) == 0 {
+		t.Fatal("missing hex response")
+	}
+
+	if resp != "76a914492558fb8ca71a3591316d095afc0f20ef7d42f788ac" {
+		t.Fatal("hex expected does not match", resp)
+	}
+}
