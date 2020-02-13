@@ -151,3 +151,31 @@ func TestClient_GetMerkleProof(t *testing.T) {
 		t.Fatal("failed to find expected branches", resp[0].Branches)
 	}
 }
+
+// TestClient_GetRawTransactionData tests the GetRawTransactionData()
+func TestClient_GetRawTransactionData(t *testing.T) {
+	// Skip this test in short mode (not needed)
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
+
+	// Create a new client object to handle your queries (supply an API Key)
+	client, err := NewClient(NetworkMain, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var resp string
+	tx := "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96"
+	if resp, err = client.GetRawTransactionData(tx); err != nil {
+		t.Fatal("error occurred: " + err.Error())
+	}
+
+	if len(resp) == 0 {
+		t.Fatal("missing hex response")
+	}
+
+	if resp != "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c03d7c6082f7376706f6f6c2e636f6d2f3edff034600055b8467f0040ffffffff01247e814a000000001976a914492558fb8ca71a3591316d095afc0f20ef7d42f788ac00000000" {
+		t.Fatal("hex expected does not match", resp)
+	}
+}

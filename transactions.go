@@ -68,6 +68,17 @@ func (c *Client) GetMerkleProof(hash string) (merkleResults MerkleResults, err e
 	return
 }
 
+// GetMerkleProof this endpoint returns raw hex for the transaction with given hash
+//
+// For more information: https://developers.whatsonchain.com/#get-raw-transaction-data
+func (c *Client) GetRawTransactionData(hash string) (hex string, err error) {
+
+	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/hex
+	hex, err = c.Request(fmt.Sprintf("%s%s/tx/%s/hex", apiEndpoint, c.Parameters.Network, hash), http.MethodGet, nil)
+
+	return
+}
+
 // BroadcastTx will broadcast transaction using this endpoint.
 // Get tx_id in response or error msg from node.
 //
