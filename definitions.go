@@ -84,15 +84,42 @@ type TxHashes struct {
 	TxIDs []string `json:"txids"`
 }
 
+// MerkleResults is the results from the proof request
+type MerkleResults []*MerkleInfo
+
 // MerkleInfo is the response for the get merkle request
 type MerkleInfo struct {
-	BlockHeight int64        `json:"block_height"`
-	Merkle      MerkleHashes `json:"merkle"`
-	Pos         int64        `json:"pos"`
+	BlockHash  string          `json:"blockHash"`
+	Branches   []*MerkleBranch `json:"branches"`
+	Hash       string          `json:"hash"`
+	MerkleRoot string          `json:"merkleRoot"`
 }
 
-// MerkleHashes is the list of merkle hashes
-type MerkleHashes []string
+// MerkleBranch is a merkle branch
+type MerkleBranch struct {
+	Hash string `json:"hash"`
+	Pos  string `json:"pos"`
+}
+
+/*
+[
+    {
+        "blockHash": "0000000000000000091216c46973d82db057a6f9911352892b7769ed517681c3",
+        "branches": [
+            {
+                "hash": "7e0ba1980522125f1f40d19a249ab3ae036001b991776813d25aebe08e8b8a50",
+                "pos": "R"
+            },
+            {
+                "hash": "1e3a5a8946e0caf07006f6c4f76773d7e474d4f240a276844f866bd09820adb3",
+                "pos": "R"
+            }
+        ],
+        "hash": "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96",
+        "merkleRoot": "95a920b1002bed05379a0d2650bb13eb216138f28ee80172f4cf21048528dc60"
+    }
+]
+*/
 
 // AddressInfo is the address info for a returned address request
 type AddressInfo struct {

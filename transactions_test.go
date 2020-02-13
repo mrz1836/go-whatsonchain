@@ -125,17 +125,29 @@ func TestClient_GetMerkleProof(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var resp *MerkleInfo
+	var resp MerkleResults
 	tx := "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96"
 	if resp, err = client.GetMerkleProof(tx); err != nil {
 		t.Fatal("error occurred: " + err.Error())
 	}
 
-	if resp.BlockHeight != 575191 {
-		t.Fatal("failed to get the block height", resp.BlockHeight)
+	if resp == nil {
+		t.Fatal("missing results from proof")
 	}
 
-	if resp.Merkle[0] != "7e0ba1980522125f1f40d19a249ab3ae036001b991776813d25aebe08e8b8a50" {
-		t.Fatal("failed to get the merkle hash", resp.Merkle[0])
+	if resp[0].BlockHash != "0000000000000000091216c46973d82db057a6f9911352892b7769ed517681c3" {
+		t.Fatal("failed to match block hash", resp[0].BlockHash)
+	}
+
+	if resp[0].Hash != "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96" {
+		t.Fatal("failed to match hash", resp[0].Hash)
+	}
+
+	if resp[0].MerkleRoot != "95a920b1002bed05379a0d2650bb13eb216138f28ee80172f4cf21048528dc60" {
+		t.Fatal("failed to match merkle root", resp[0].MerkleRoot)
+	}
+
+	if len(resp[0].Branches) != 2 {
+		t.Fatal("failed to find expected branches", resp[0].Branches)
 	}
 }

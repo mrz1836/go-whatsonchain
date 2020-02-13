@@ -56,15 +56,15 @@ func (c *Client) GetTxsByHashes(hashes *TxHashes) (txList TxList, err error) {
 // GetMerkleProof this endpoint returns merkle branch to a confirmed transaction
 //
 // For more information: https://developers.whatsonchain.com/#get-merkle-proof
-func (c *Client) GetMerkleProof(hash string) (merkleInfo *MerkleInfo, err error) {
+func (c *Client) GetMerkleProof(hash string) (merkleResults MerkleResults, err error) {
 
 	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/merkleproof
-	if resp, err = c.Request(fmt.Sprintf("%s%s/tx/%s/merkleproof", apiEndpoint, c.Parameters.Network, hash), http.MethodGet, nil); err != nil {
+	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/proof
+	if resp, err = c.Request(fmt.Sprintf("%s%s/tx/%s/proof", apiEndpoint, c.Parameters.Network, hash), http.MethodGet, nil); err != nil {
 		return
 	}
 
-	err = json.Unmarshal([]byte(resp), &merkleInfo)
+	err = json.Unmarshal([]byte(resp), &merkleResults)
 	return
 }
 
