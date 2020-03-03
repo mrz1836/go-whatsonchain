@@ -40,7 +40,7 @@ func TestClient_AddressBalance(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//var resp *AddressBalance
+	// var resp *AddressBalance
 	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
 	if _, err = client.AddressBalance(address); err != nil {
 		t.Fatal("error occurred: " + err.Error())
@@ -100,7 +100,7 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//var resp AddressHistory
+	// var resp AddressHistory
 	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
 	if _, err = client.AddressUnspentTransactions(address); err != nil {
 		t.Fatal("error occurred: " + err.Error())
@@ -126,10 +126,10 @@ func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//var resp AddressHistory
+	// var resp AddressHistory
 	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
-	//var history AddressHistory
-	//if history, err = client.AddressUnspentTransactionDetails(address, 5); err != nil {
+	// var history AddressHistory
+	// if history, err = client.AddressUnspentTransactionDetails(address, 5); err != nil {
 	if _, err = client.AddressUnspentTransactionDetails(address, 5); err != nil {
 		t.Fatal("error occurred: " + err.Error())
 	}
