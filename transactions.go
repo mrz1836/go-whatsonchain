@@ -209,9 +209,7 @@ func (c *Client) DownloadReceipt(hash string) (pdfRawContent string, err error) 
 
 	// https://<network>.whatsonchain.com/receipt/<hash>
 	// todo: this endpoint does not follow the convention of the WOC API v1
-	if pdfRawContent, err = c.Request(fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Parameters.Network, hash), http.MethodGet, nil); err != nil {
-		return
-	}
+	pdfRawContent, err = c.Request(fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Parameters.Network, hash), http.MethodGet, nil)
 
 	return
 }

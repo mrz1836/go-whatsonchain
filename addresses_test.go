@@ -1,6 +1,9 @@
 package whatsonchain
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 // TestClient_AddressInfo tests the AddressInfo()
 func TestClient_AddressInfo(t *testing.T) {
@@ -138,4 +141,32 @@ func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
 	/*if len(history) == 0 {
 		t.Fatal("no utxos found")
 	}*/
+}
+
+// TestClient_DownloadStatement tests the DownloadStatement()
+func TestClient_DownloadStatement(t *testing.T) {
+	// Skip this test in short mode (not needed)
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
+
+	// Create a new client object to handle your queries (supply an API Key)
+	client, err := NewClient(NetworkMain, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var resp string
+	hash := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
+	if resp, err = client.DownloadStatement(hash); err != nil {
+		t.Fatal("error occurred: " + err.Error())
+	}
+
+	if len(resp) == 0 {
+		t.Fatal("expected pdf contents")
+	}
+
+	if !strings.Contains(resp, "PDF") {
+		t.Fatal("expected PDF inside the contents")
+	}
 }

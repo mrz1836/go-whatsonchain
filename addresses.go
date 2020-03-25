@@ -115,3 +115,16 @@ func (c *Client) AddressUnspentTransactionDetails(address string, maxTransaction
 
 	return
 }
+
+// DownloadStatement this endpoint downloads an address statement (PDF)
+// The contents will be returned in plain-text and need to be converted to a file.pdf
+//
+// For more information: https://developers.whatsonchain.com/#download-statement
+func (c *Client) DownloadStatement(address string) (pdfRawContent string, err error) {
+
+	// https://<network>.whatsonchain.com/statement/<hash>
+	// todo: this endpoint does not follow the convention of the WOC API v1
+	pdfRawContent, err = c.Request(fmt.Sprintf("https://%s.whatsonchain.com/statement/%s", c.Parameters.Network, address), http.MethodGet, nil)
+
+	return
+}
