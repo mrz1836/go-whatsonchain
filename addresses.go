@@ -99,7 +99,7 @@ func (c *Client) AddressUnspentTransactionDetails(address string, maxTransaction
 
 	// Get the tx details
 	var txList TxList
-	if txList, err = c.GetTxsByHashes(txHashes); err != nil {
+	if txList, err = c.BulkTransactionDetails(txHashes); err != nil {
 		return
 	}
 
