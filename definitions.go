@@ -192,3 +192,17 @@ type BulkBroadcastResponse struct {
 	Feedback  bool   `json:"feedback"`
 	StatusURL string `json:"statusUrl"`
 }
+
+// MempoolInfo is the response for the get mempool info request
+type MempoolInfo struct {
+	Bytes         int64 `json:"bytes"`
+	MaxMempool    int64 `json:"maxmempool"`
+	MempoolMinFee int64 `json:"mempoolminfee"`
+	Size          int64 `json:"size"`
+	Usage         int64 `json:"usage"`
+}
+
+// MempoolTransactions is the response for the get mempool transactions request
+type MempoolTransactions struct {
+	Bytes int64 `json:"bytes"`
+}
