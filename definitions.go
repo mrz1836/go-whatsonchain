@@ -202,7 +202,13 @@ type MempoolInfo struct {
 	Usage         int64 `json:"usage"`
 }
 
-// MempoolTransactions is the response for the get mempool transactions request
-type MempoolTransactions struct {
-	Bytes int64 `json:"bytes"`
+// ScriptList is the list of script history records
+type ScriptList []*ScriptRecord
+
+// ScriptRecord is the script history record
+type ScriptRecord struct {
+	Height int64  `json:"height"`
+	TxHash string `json:"tx_hash"`
+	TxPos  int64  `json:"tx_pos"`
+	Value  int64  `json:"value"`
 }
