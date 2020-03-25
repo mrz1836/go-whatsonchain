@@ -23,10 +23,11 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 	return
 }
 
-// GetTxsByHashes this endpoint retrieves transaction details with given transaction hashes
+// BulkTransactionDetails this fetches details for multiple transactions in single request
+// Max 20 transactions per request
 //
-// For more information: (undocumented) // todo: update url when documented
-func (c *Client) GetTxsByHashes(hashes *TxHashes) (txList TxList, err error) {
+// For more information: https://developers.whatsonchain.com/#bulk-transaction-details
+func (c *Client) BulkTransactionDetails(hashes *TxHashes) (txList TxList, err error) {
 
 	// Max limit by WOC
 	if len(hashes.TxIDs) == 0 {
@@ -124,6 +125,14 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 //		Max 100 transactions per request
 //		Only available for mainnet
 //
+// Tip: First transaction in the list should have an output to WOC tip address '16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA'
+//
+// Feedback: true/false: true if response from the node is required for each transaction, otherwise, set it to false.
+// (For stress testing set it to false). When set to true a unique url is provided to check the progress of the
+// submitted transactions, eg 'QUEUED' or 'PROCESSED', with response data from node. You can poll the provided unique
+// url until all transactions are marked as 'PROCESSED'. Progress of the transactions are tracked on this unique url
+// for up to 5 hours.
+//
 // For more information: https://developers.whatsonchain.com/#bulk-broadcast
 func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *BulkBroadcastResponse, err error) {
 
@@ -168,6 +177,40 @@ func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *Bulk
 	// Got an error
 	if c.LastRequest.StatusCode > 200 {
 		err = fmt.Errorf("error broadcasting: %s", resp)
+	}
+
+	return
+}
+
+// DecodeTransaction this endpoint decodes raw transaction
+//
+// For more information: https://developers.whatsonchain.com/#decode-transaction
+func (c *Client) DecodeTransaction(txHex string) (txInfo *TxInfo, err error) {
+
+	// Start the post data
+	stringVal := fmt.Sprintf(`{"txhex":"%s"}`, txHex)
+	postData := []byte(stringVal)
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/tx/decode
+	if resp, err = c.Request(fmt.Sprintf("%s%s/tx/decode", apiEndpoint, c.Parameters.Network), http.MethodPost, postData); err != nil {
+		return
+	}
+
+	err = json.Unmarshal([]byte(resp), &txInfo)
+	return
+}
+
+// DownloadReceipt this endpoint downloads a transaction receipt (PDF)
+// The contents will be returned in plain-text and need to be converted to a file.pdf
+//
+// For more information: https://developers.whatsonchain.com/#download-receipt
+func (c *Client) DownloadReceipt(hash string) (pdfRawContent string, err error) {
+
+	// https://<network>.whatsonchain.com/receipt/<hash>
+	// todo: this endpoint does not follow the convention of the WOC API v1
+	if pdfRawContent, err = c.Request(fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Parameters.Network, hash), http.MethodGet, nil); err != nil {
+		return
 	}
 
 	return

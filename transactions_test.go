@@ -1,6 +1,9 @@
 package whatsonchain
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 // TestClient_GetTxByHash tests the GetTxByHash()
 func TestClient_GetTxByHash(t *testing.T) {
@@ -27,8 +30,8 @@ func TestClient_GetTxByHash(t *testing.T) {
 
 }
 
-// TestClient_GetTxsByHashes tests the GetTxsByHashes()
-func TestClient_GetTxsByHashes(t *testing.T) {
+// TestClient_BulkTransactionDetails tests the BulkTransactionDetails()
+func TestClient_BulkTransactionDetails(t *testing.T) {
 	// Skip this test in short mode (not needed)
 	if testing.Short() {
 		t.Skip("skipping testing in short mode")
@@ -44,7 +47,7 @@ func TestClient_GetTxsByHashes(t *testing.T) {
 	hashes.TxIDs = append(hashes.TxIDs, "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258")
 
 	var resp TxList
-	if resp, err = client.GetTxsByHashes(hashes); err != nil {
+	if resp, err = client.BulkTransactionDetails(hashes); err != nil {
 		t.Fatal("error occurred: " + err.Error())
 	}
 
@@ -205,5 +208,60 @@ func TestClient_GetRawTransactionOutputData(t *testing.T) {
 
 	if resp != "76a914492558fb8ca71a3591316d095afc0f20ef7d42f788ac" {
 		t.Fatal("hex expected does not match", resp)
+	}
+}
+
+// TestClient_DecodeTransaction tests the DecodeTransaction()
+func TestClient_DecodeTransaction(t *testing.T) {
+	// Skip this test in short mode (not needed)
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
+
+	// Create a new client object to handle your queries (supply an API Key)
+	client, err := NewClient(NetworkMain, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	txHex := "0100000001d1bda0bde67183817b21af863adaa31fda8cafcf2083ca1eaba3054496cbde10010000006a47304402205fddd6abab6b8e94f36bfec51ba2e1f3a91b5327efa88264b5530d0c86538723022010e51693e3d52347d4d2ff142b85b460d3953e625d1e062a5fa2569623fb0ea94121029df3723daceb1fef64fa0558371bc48cc3a7a8e35d8e05b87137dc129a9d4598ffffffff0115d40000000000001976a91459cc95a8cde59ceda718dbf70e612dba4034552688ac00000000"
+	var txInfo *TxInfo
+	if txInfo, err = client.DecodeTransaction(txHex); err != nil {
+		t.Fatal("error occurred", err.Error())
+	}
+	if txInfo == nil {
+		t.Fatal("expected tx info returned")
+	}
+	if txInfo.TxID != "6a7c821fd13c5cec773f7e221479651804197866469e92a4d6d47e1fd34d090d" {
+		t.Fatal("decode failed, invalid tx id", txInfo.TxID)
+	}
+
+}
+
+// TestClient_DownloadReceipt tests the DownloadReceipt()
+func TestClient_DownloadReceipt(t *testing.T) {
+	// Skip this test in short mode (not needed)
+	if testing.Short() {
+		t.Skip("skipping testing in short mode")
+	}
+
+	// Create a new client object to handle your queries (supply an API Key)
+	client, err := NewClient(NetworkMain, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var resp string
+	hash := "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96"
+	if resp, err = client.DownloadReceipt(hash); err != nil {
+		t.Fatal("error occurred: " + err.Error())
+	}
+
+	if len(resp) == 0 {
+		t.Fatal("expected pdf contents")
+	}
+
+	if !strings.Contains(resp, "PDF") {
+		t.Fatal("expected PDF inside the contents")
 	}
 }
