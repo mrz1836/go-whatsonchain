@@ -213,8 +213,19 @@ type ScriptRecord struct {
 	Value  int64  `json:"value"`
 }
 
-// ExchangeRate is the structure response from getting the current exchange rate
+// ExchangeRate is the response from getting the current exchange rate
 type ExchangeRate struct {
 	Currency string `json:"currency"`
 	Rate     string `json:"rate"`
+}
+
+// SearchResults is the response from searching for explorer links
+type SearchResults struct {
+	Results []*SearchResult `json:"results"`
+}
+
+// SearchResult is the actual result for the search (included in SearchResults)
+type SearchResult struct {
+	Type string `json:"type"`
+	URL  string `json:"url"`
 }
