@@ -36,15 +36,41 @@ You can view the generated [documentation here](https://godoc.org/github.com/mrz
 - Using [heimdall http client](https://github.com/gojek/heimdall) with exponential backoff & more
 - Current coverage for the [whatsonchain.com API](https://developers.whatsonchain.com/)
     - [x] Health
+        - [x] Get API Status
     - [x] Chain Info
-    - [x] Circulating Supply
-    - [x] Blocks
-    - [x] Transactions
-    - [x] Addresses
-    - [ ] Receipt
-    - [ ] Statement
-    - [ ] Mempool
-    - [ ] Search
+        - [x] Get Blockchain Info
+        - [x] Get Circulating Supply
+    - [x] Block
+        - [x] Get by Hash
+        - [x] Get by Height
+        - [x] Get Block Pages
+    - [x] Transaction
+        - [x] Get by TX Hash
+        - [x] Broadcast Transaction
+        - [x] Bulk Broadcast
+        - [x] Bulk Transaction Details
+        - [x] Decode Transaction
+        - [x] Download Receipt
+        - [x] Get Raw Transaction Data
+        - [x] Get Raw Transaction Output
+        - [x] Get Merkle Proof
+    - [x] Mempool
+        - [x] Get Mempool Info
+        - [x] Get Mempool Transactions
+    - [x] Address
+        - [x] Get Address Info
+        - [x] Get Balance
+        - [x] Get History
+        - [x] Get Unspent Transactions
+        - [x] Get Unspent Transaction Details (Custom)
+        - [x] Download Statement
+    - [x] Script
+        - [x] Get Script History
+        - [x] Get Script Unspent Transactions
+    - [x] Exchange Rate
+        - [x] Get Exchange Rate
+    - [x] Search
+        - [x] Get Explorer Links
 
 ## Examples & Tests
 All unit tests and [examples](whatsonchain_test.go) run via [Travis CI](https://travis-ci.org/mrz1836/go-whatsonchain) and uses [Go version 1.14.x](https://golang.org/doc/go1.14). View the [deployment configuration file](.travis.yml).
