@@ -212,3 +212,9 @@ type ScriptRecord struct {
 	TxPos  int64  `json:"tx_pos"`
 	Value  int64  `json:"value"`
 }
+
+// ExchangeRate is the structure response from getting the current exchange rate
+type ExchangeRate struct {
+	Currency string `json:"currency"`
+	Rate     string `json:"rate"`
+}
