@@ -1,5 +1,5 @@
 # go-whatsonchain
-**go-whatsonchain** is the unofficial golang implementation for the [whatsonchain.com API](https://developers.whatsonchain.com/)
+> The unofficial golang implementation for the [whatsonchain.com API](https://developers.whatsonchain.com/)
 
 [![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/go-whatsonchain)](https://golang.org/)
 [![Build Status](https://travis-ci.com/mrz1836/go-whatsonchain.svg?branch=master&v=2)](https://travis-ci.com/mrz1836/go-whatsonchain)
