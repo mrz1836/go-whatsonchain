@@ -67,48 +67,66 @@ func (c *Client) AddressUnspentTransactions(address string) (history AddressHist
 }
 
 // AddressUnspentTransactionDetails this endpoint retrieves transaction details for a given address
-// Max returned is the limit in the definitions.go
+// Use max transactions to filter if there are more UTXOs returned than needed by the user
 //
 // For more information: (custom request for this go wrapper)
 func (c *Client) AddressUnspentTransactionDetails(address string, maxTransactions int) (history AddressHistory, err error) {
 
 	// Get the address UTXO history
-	var tempHistory AddressHistory
-	if tempHistory, err = c.AddressUnspentTransactions(address); err != nil {
+	var utxos AddressHistory
+	if utxos, err = c.AddressUnspentTransactions(address); err != nil {
 		return
-	} else if len(tempHistory) == 0 {
+	} else if len(utxos) == 0 {
 		return
 	}
 
-	// Set the max to return // testing more than the max?
-	if maxTransactions < 0 || maxTransactions > MaxTransactionsUTXO {
-		maxTransactions = MaxTransactionsUTXO
-	}
-
-	// Get the hashes
-	txHashes := new(TxHashes)
-	foundTxs := 0
-	for index, tx := range tempHistory {
-		if foundTxs >= maxTransactions {
-			break
+	// Do we have a "custom max" amount?
+	if maxTransactions > 0 {
+		total := len(utxos)
+		if total > maxTransactions {
+			utxos = utxos[:total-(total-maxTransactions)]
 		}
-		txHashes.TxIDs = append(txHashes.TxIDs, tx.TxHash)
-		history = append(history, tempHistory[index])
-		foundTxs = foundTxs + 1
 	}
 
-	// Get the tx details
-	var txList TxList
-	if txList, err = c.BulkTransactionDetails(txHashes); err != nil {
-		return
-	}
+	// Loop as long as we still have utxos to get
+	for len(utxos) > 0 {
 
-	// Add to the history list
-	for index, tx := range txList {
-		for _, utxo := range history {
-			if utxo.TxHash == tx.TxID {
-				utxo.Info = txList[index]
-				continue
+		// Get the hashes
+		txHashes := new(TxHashes)
+		foundTxs := 0
+		for index, tx := range utxos {
+
+			// Only grab the max that can be sent
+			if foundTxs >= MaxTransactionsUTXO {
+				break
+			}
+
+			// Append to the list to send and return
+			txHashes.TxIDs = append(txHashes.TxIDs, tx.TxHash)
+			history = append(history, tx)
+
+			// Removing from our list to fetch (reducing the list each pass)
+			if len(utxos) >= MaxTransactionsUTXO {
+				utxos = append(utxos[:index], utxos[index+1:]...)
+			} else {
+				utxos = AddressHistory{}
+			}
+			foundTxs = foundTxs + 1
+		}
+
+		// Get the tx details
+		var txList TxList
+		if txList, err = c.BulkTransactionDetails(txHashes); err != nil {
+			return
+		}
+
+		// Add to the history list
+		for index, tx := range txList {
+			for _, utxo := range history {
+				if utxo.TxHash == tx.TxID {
+					utxo.Info = txList[index]
+					continue
+				}
 			}
 		}
 	}
