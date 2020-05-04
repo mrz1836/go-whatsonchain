@@ -28,7 +28,7 @@ before_script:
 script:
  - golint
  - go vet
- - go test -short -race -coverprofile=coverage.txt -covermode=atomic
+ - go test -race -coverprofile=coverage.txt -covermode=atomic
 
 # After build success
 after_success:

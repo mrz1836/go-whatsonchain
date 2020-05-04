@@ -91,6 +91,7 @@ make help
 
 List of all current commands:
 ```text
+all                            Runs lint, test-short and vet
 bench                          Run all benchmarks in the Go application
 clean                          Remove previous builds and any test cache data
 clean-mods                     Remove all the Go mod cache
@@ -101,10 +102,9 @@ lint                           Run the Go lint application
 release                        Full production release (creates release in Github)
 release-test                   Full production test release (everything except deploy)
 release-snap                   Test the full release (build binaries)
-run-examples                   Runs all the examples
-tag                            Generate a new tag and push (IE: make tag version=0.0.0)
-tag-remove                     Remove a tag if found (IE: make tag-remove version=0.0.0)
-tag-update                     Update an existing tag to current commit (IE: make tag-update version=0.0.0)
+tag                            Generate a new tag and push (IE: tag version=0.0.0)
+tag-remove                     Remove a tag if found (IE: tag-remove version=0.0.0)
+tag-update                     Update an existing tag to current commit (IE: tag-update version=0.0.0)
 test                           Runs vet, lint and ALL tests
 test-short                     Runs vet, lint and tests (excludes integration tests)
 update                         Update all project dependencies
@@ -136,7 +136,7 @@ make bench
 Read more about this Go project's [code standards](CODE_STANDARDS.md).
 
 ## Usage
-- View the [whatsonchain examples](whatsonchain_test.go)
+View the [whatsonchain examples](whatsonchain_test.go)
 
 Basic implementation:
 ```go
