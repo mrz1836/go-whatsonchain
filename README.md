@@ -107,6 +107,7 @@ tag-remove                     Remove a tag if found (IE: tag-remove version=0.0
 tag-update                     Update an existing tag to current commit (IE: tag-update version=0.0.0)
 test                           Runs vet, lint and ALL tests
 test-short                     Runs vet, lint and tests (excludes integration tests)
+test-travis                    Runs tests via Travis (also exports coverage)
 update                         Update all project dependencies
 update-releaser                Update the goreleaser application
 vet                            Run the Go vet application
