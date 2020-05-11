@@ -123,49 +123,6 @@ vet                            Run the Go vet application
 ```
 </details>
 
-<details>
-<summary><strong><code>Library Deployment</code></strong></summary>
-
-[goreleaser](https://github.com/goreleaser/goreleaser) for easy binary or library deployment to Github and can be installed via: `brew install goreleaser`.
-
-The [.goreleaser.yml](.goreleaser.yml) file is used to configure [goreleaser](https://github.com/goreleaser/goreleaser).
-
-Use `make release-snap` to create a snapshot version of the release, and finally `make release` to ship to production.
-</details>
-
-<details>
-<summary><strong><code>Makefile Commands</code></strong></summary>
-
-View all `makefile` commands
-```shell script
-make help
-```
-
-List of all current commands:
-```text
-all                            Runs lint, test-short and vet
-bench                          Run all benchmarks in the Go application
-clean                          Remove previous builds and any test cache data
-clean-mods                     Remove all the Go mod cache
-coverage                       Shows the test coverage
-godocs                         Sync the latest tag with GoDocs
-help                           Show all make commands available
-lint                           Run the Go lint application
-release                        Full production release (creates release in Github)
-release-test                   Full production test release (everything except deploy)
-release-snap                   Test the full release (build binaries)
-tag                            Generate a new tag and push (IE: tag version=0.0.0)
-tag-remove                     Remove a tag if found (IE: tag-remove version=0.0.0)
-tag-update                     Update an existing tag to current commit (IE: tag-update version=0.0.0)
-test                           Runs vet, lint and ALL tests
-test-short                     Runs vet, lint and tests (excludes integration tests)
-test-travis                    Runs tests via Travis (also exports coverage)
-update                         Update all project dependencies
-update-releaser                Update the goreleaser application
-vet                            Run the Go vet application
-```
-</details>
-
 <br/>
 
 ## Examples & Tests
