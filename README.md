@@ -82,6 +82,7 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-what
 
 <details>
 <summary><strong><code>Library Deployment</code></strong></summary>
+<br/>
 
 [goreleaser](https://github.com/goreleaser/goreleaser) for easy binary or library deployment to Github and can be installed via: `brew install goreleaser`.
 
@@ -92,6 +93,7 @@ Use `make release-snap` to create a snapshot version of the release, and finally
 
 <details>
 <summary><strong><code>Makefile Commands</code></strong></summary>
+<br/>
 
 View all `makefile` commands
 ```shell script
