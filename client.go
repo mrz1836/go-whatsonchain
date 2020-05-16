@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gojek/heimdall"
-	"github.com/gojek/heimdall/httpclient"
+	"github.com/gojektech/heimdall/v6"
+	"github.com/gojektech/heimdall/v6/httpclient"
 )
 
 const (
