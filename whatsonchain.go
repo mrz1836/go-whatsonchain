@@ -21,14 +21,12 @@ import (
 	"net/http"
 )
 
-// NewClient creates a new client to submit requests
+// NewClient creates a new client for WOC requests
 func NewClient(network NetworkType, clientOptions *Options) (c *Client, err error) {
 
-	// Create a client using the given options
+	// Create a client using the given options & set network
 	c = createClient(clientOptions)
-
-	// Set the network
-	c.Parameters.Network = network
+	c.Network = network
 
 	return
 }
@@ -39,12 +37,10 @@ func (c *Client) Request(url string, method string, payload []byte) (response st
 	// Set reader
 	var bodyReader io.Reader
 
-	// Switch on Method
-	switch method {
-	case http.MethodPost, http.MethodPut:
-		{
-			bodyReader = bytes.NewBuffer(payload)
-		}
+	// Add post data if applicable
+	if method == http.MethodPost || method == http.MethodPut {
+		bodyReader = bytes.NewBuffer(payload)
+		c.LastRequest.PostData = string(payload)
 	}
 
 	// Store for debugging purposes
@@ -58,7 +54,7 @@ func (c *Client) Request(url string, method string, payload []byte) (response st
 	}
 
 	// Change the header (user agent is in case they block default Go user agents)
-	request.Header.Set("User-Agent", c.Parameters.UserAgent)
+	request.Header.Set("User-Agent", c.UserAgent)
 
 	// Set the content type on Method
 	if method == http.MethodPost || method == http.MethodPut {
@@ -68,6 +64,9 @@ func (c *Client) Request(url string, method string, payload []byte) (response st
 	// Fire the http request
 	var resp *http.Response
 	if resp, err = c.httpClient.Do(request); err != nil {
+		if resp != nil {
+			c.LastRequest.StatusCode = resp.StatusCode
+		}
 		return
 	}
 
@@ -76,7 +75,7 @@ func (c *Client) Request(url string, method string, payload []byte) (response st
 		_ = resp.Body.Close()
 	}()
 
-	// Save the status
+	// Set the status
 	c.LastRequest.StatusCode = resp.StatusCode
 
 	// Read the body
@@ -85,7 +84,7 @@ func (c *Client) Request(url string, method string, payload []byte) (response st
 		return
 	}
 
-	// Parse the response
+	// Return the raw JSON response
 	response = string(body)
 	return
 }

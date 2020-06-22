@@ -12,20 +12,26 @@ import (
 const (
 
 	// version is the current version
-	version = "v1"
+	version = "v0.5.0"
 
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-whatsonchain: " + version
 
 	// apiEndpoint is where we fire requests
-	apiEndpoint string = "https://api.whatsonchain.com/" + version + "/bsv/"
+	apiEndpoint string = "https://api.whatsonchain.com/v1/bsv/"
 )
+
+// httpInterface is used for the http client (mocking heimdall)
+type httpInterface interface {
+	Do(req *http.Request) (*http.Response, error)
+}
 
 // Client is the parent struct that wraps the heimdall client
 type Client struct {
-	httpClient  heimdall.Client // carries out the http operations
-	LastRequest *LastRequest    // is the raw information from the last request
-	Parameters  *Parameters     // contains application specific values
+	httpClient  httpInterface // carries out the http operations (heimdall client)
+	LastRequest *LastRequest  // is the raw information from the last request
+	Network     NetworkType   // is the BitcoinSV network to use
+	UserAgent   string        // optional for changing user agents
 }
 
 // Options holds all the configuration for connection, dialer and transport
@@ -51,12 +57,6 @@ type LastRequest struct {
 	PostData   string `json:"post_data"`   // postData is the post data submitted if POST/PUT request
 	StatusCode int    `json:"status_code"` // statusCode is the last code from the request
 	URL        string `json:"url"`         // url is the url used for the request
-}
-
-// Parameters are application specific values for requests
-type Parameters struct {
-	Network   NetworkType // is the BitcoinSV network to use
-	UserAgent string      // (optional for changing user agents)
 }
 
 // ClientDefaultOptions will return an Options struct with the default settings
@@ -132,10 +132,8 @@ func createClient(options *Options) (c *Client) {
 		)
 	}
 
-	// Create a last request and parameters struct
+	// Create a last request
 	c.LastRequest = new(LastRequest)
-	c.Parameters = &Parameters{
-		UserAgent: options.UserAgent,
-	}
+	c.UserAgent = options.UserAgent
 	return
 }

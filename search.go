@@ -18,7 +18,7 @@ func (c *Client) GetExplorerLinks(query string) (results SearchResults, err erro
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/search/links
-	if resp, err = c.Request(fmt.Sprintf("%s%s/search/links", apiEndpoint, c.Parameters.Network), http.MethodPost, postData); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%s%s/search/links", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
 		return
 	}
 

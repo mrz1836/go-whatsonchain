@@ -15,7 +15,7 @@ func (c *Client) GetChainInfo() (chainInfo *ChainInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/chain/info
-	if resp, err = c.Request(fmt.Sprintf("%s%s/chain/info", apiEndpoint, c.Parameters.Network), http.MethodGet, nil); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%s%s/chain/info", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -30,7 +30,7 @@ func (c *Client) GetCirculatingSupply() (supply float64, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/circulatingsupply
-	if resp, err = c.Request(fmt.Sprintf("%s%s/circulatingsupply", apiEndpoint, c.Parameters.Network), http.MethodGet, nil); err != nil {
+	if resp, err = c.Request(fmt.Sprintf("%s%s/circulatingsupply", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
 		return
 	}
 
