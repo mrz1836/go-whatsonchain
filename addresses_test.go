@@ -154,14 +154,8 @@ invalid
 func TestClient_AddressInfo(t *testing.T) {
 	t.Parallel()
 
-	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient(NetworkTest, nil)
-	if err != nil {
-		t.Fatalf("%s: error occurred: %s", t.Name(), err.Error())
-	}
-
-	// Set the mocking interface
-	client.httpClient = &mockHTTPAddresses{}
+	// New mock client
+	client := newMockClient(t, &mockHTTPAddresses{})
 
 	// Create the list of tests
 	var tests = []struct {
@@ -177,8 +171,7 @@ func TestClient_AddressInfo(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		var output *AddressInfo
-		if output, err = client.AddressInfo(test.input); err == nil && test.expectedError {
+		if output, err := client.AddressInfo(test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted and [%s] expected", t.Name(), test.input, test.expected)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%v] error [%s]", t.Name(), test.input, test.expected, output, err.Error())
@@ -194,14 +187,8 @@ func TestClient_AddressInfo(t *testing.T) {
 func TestClient_AddressBalance(t *testing.T) {
 	t.Parallel()
 
-	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient(NetworkTest, nil)
-	if err != nil {
-		t.Fatalf("%s: error occurred: %s", t.Name(), err.Error())
-	}
-
-	// Set the mocking interface
-	client.httpClient = &mockHTTPAddresses{}
+	// New mock client
+	client := newMockClient(t, &mockHTTPAddresses{})
 
 	// Create the list of tests
 	var tests = []struct {
@@ -217,8 +204,7 @@ func TestClient_AddressBalance(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		var output *AddressBalance
-		if output, err = client.AddressBalance(test.input); err == nil && test.expectedError {
+		if output, err := client.AddressBalance(test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -236,14 +222,8 @@ func TestClient_AddressBalance(t *testing.T) {
 func TestClient_AddressHistory(t *testing.T) {
 	t.Parallel()
 
-	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient(NetworkTest, nil)
-	if err != nil {
-		t.Fatalf("%s: error occurred: %s", t.Name(), err.Error())
-	}
-
-	// Set the mocking interface
-	client.httpClient = &mockHTTPAddresses{}
+	// New mock client
+	client := newMockClient(t, &mockHTTPAddresses{})
 
 	// Create the list of tests
 	var tests = []struct {
@@ -260,8 +240,7 @@ func TestClient_AddressHistory(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		var output AddressHistory
-		if output, err = client.AddressHistory(test.input); err == nil && test.expectedError {
+		if output, err := client.AddressHistory(test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -279,14 +258,8 @@ func TestClient_AddressHistory(t *testing.T) {
 func TestClient_AddressUnspentTransactions(t *testing.T) {
 	t.Parallel()
 
-	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient(NetworkTest, nil)
-	if err != nil {
-		t.Fatalf("%s: error occurred: %s", t.Name(), err.Error())
-	}
-
-	// Set the mocking interface
-	client.httpClient = &mockHTTPAddresses{}
+	// New mock client
+	client := newMockClient(t, &mockHTTPAddresses{})
 
 	// Create the list of tests
 	var tests = []struct {
@@ -304,8 +277,7 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		var output AddressHistory
-		if output, err = client.AddressUnspentTransactions(test.input); err == nil && test.expectedError {
+		if output, err := client.AddressUnspentTransactions(test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -325,14 +297,8 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
 	t.Parallel()
 
-	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient(NetworkTest, nil)
-	if err != nil {
-		t.Fatalf("%s: error occurred: %s", t.Name(), err.Error())
-	}
-
-	// Set the mocking interface
-	client.httpClient = &mockHTTPAddresses{}
+	// New mock client
+	// client := newMockClient(t, &mockHTTPAddresses{})
 
 	// var resp AddressHistory
 	/*address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
@@ -342,7 +308,6 @@ func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
 		t.Fatal("error occurred: " + err.Error())
 	}
 	*/
-	// todo: this is unreliable since UTXOs can change (need a static address for testing)
 	/*if len(history) == 0 {
 		t.Fatal("no utxos found")
 	}*/
@@ -352,14 +317,8 @@ func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
 func TestClient_DownloadStatement(t *testing.T) {
 	t.Parallel()
 
-	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient(NetworkTest, nil)
-	if err != nil {
-		t.Fatalf("%s: error occurred: %s", t.Name(), err.Error())
-	}
-
-	// Set the mocking interface
-	client.httpClient = &mockHTTPAddresses{}
+	// New mock client
+	client := newMockClient(t, &mockHTTPAddresses{})
 
 	// Create the list of tests
 	var tests = []struct {
@@ -374,8 +333,7 @@ func TestClient_DownloadStatement(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		var output string
-		if output, err = client.DownloadStatement(test.input); err == nil && test.expectedError {
+		if output, err := client.DownloadStatement(test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())

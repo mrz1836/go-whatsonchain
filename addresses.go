@@ -69,7 +69,7 @@ func (c *Client) AddressUnspentTransactions(address string) (history AddressHist
 // AddressUnspentTransactionDetails this endpoint retrieves transaction details for a given address
 // Use max transactions to filter if there are more UTXOs returned than needed by the user
 //
-// For more information: (custom request for this go wrapper)
+// For more information: (custom request for this go package)
 func (c *Client) AddressUnspentTransactionDetails(address string, maxTransactions int) (history AddressHistory, err error) {
 
 	// Get the address UTXO history

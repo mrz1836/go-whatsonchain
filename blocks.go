@@ -32,7 +32,10 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 		return
 	}
 
-	err = json.Unmarshal([]byte(resp), &blockInfo)
+	// Added this condition (for bad block heights, 200 success but empty result - no JSON response)
+	if len(resp) > 0 {
+		err = json.Unmarshal([]byte(resp), &blockInfo)
+	}
 	return
 }
 
@@ -40,7 +43,7 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 // be provided in the pages element when getting a block by hash or height.
 //
 // For more information: https://developers.whatsonchain.com/#get-block-pages
-func (c *Client) GetBlockPages(hash string, page int) (txList *BlockPagesInfo, err error) {
+func (c *Client) GetBlockPages(hash string, page int) (txList BlockPagesInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>/page/1

@@ -89,3 +89,13 @@ func TestDefaultOptions(t *testing.T) {
 		t.Fatalf("expected value: %v got: %v", 5*time.Second, options.TransportTLSHandshakeTimeout)
 	}
 }
+
+// newMockClient returns a client for mocking
+func newMockClient(t *testing.T, httpClient httpInterface) *Client {
+	client, err := NewClient(NetworkTest, nil)
+	if err != nil {
+		t.Fatalf("%s: error occurred: %s", t.Name(), err.Error())
+	}
+	client.httpClient = httpClient
+	return client
+}
