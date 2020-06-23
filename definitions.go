@@ -238,3 +238,99 @@ type SearchResult struct {
 	Type string `json:"type"`
 	URL  string `json:"url"`
 }
+
+// FeeQuotes is the structure response from getting quotes from Merchant API
+type FeeQuotes struct {
+	Quotes []*QuoteProvider `json:"quotes"`
+}
+
+// QuoteProvider is the structure response for a quote provider (which has quotes)
+type QuoteProvider struct {
+	Payload         string `json:"payload"`
+	ProviderID      string `json:"providerId"`
+	ProviderName    string `json:"providerName"`
+	PublicKey       string `json:"publicKey"`
+	Quote           *Quote `json:"quote"`
+	Signature       string `json:"signature"`
+	TxStatusURL     string `json:"txStatusUrl"`
+	TxSubmissionURL string `json:"txSubmissionUrl"`
+}
+
+// Quote is the structure response for a quote
+type Quote struct {
+	APIVersion                string      `json:"apiVersion"`
+	CurrentHighestBlockHash   string      `json:"currentHighestBlockHash"`
+	CurrentHighestBlockHeight int64       `json:"currentHighestBlockHeight"`
+	ExpiryTime                string      `json:"expiryTime"`
+	Fees                      []*FeeQuote `json:"fees"`
+	MinerID                   string      `json:"minerId"`
+	MinerReputation           interface{} `json:"minerReputation"`
+	Timestamp                 string      `json:"timestamp"`
+}
+
+// FeeQuote is the structure response for a fee in a quote
+type FeeQuote struct {
+	FeeType   string `json:"feeType"`
+	MiningFee *Fee   `json:"miningFee"`
+	RelayFee  *Fee   `json:"relayFee"`
+}
+
+// Fee is the actual fee (satoshis per byte)
+type Fee struct {
+	Bytes    int `json:"bytes"`
+	Satoshis int `json:"satoshis"`
+}
+
+// SubmissionResponse is the response from submitting a tx via Merchant API
+type SubmissionResponse struct {
+	Error        *MerchantError    `json:"error"`
+	Payload      string            `json:"payload"`
+	ProviderID   string            `json:"providerId"`
+	ProviderName string            `json:"providerName"`
+	PublicKey    string            `json:"publicKey"`
+	Response     *MerchantResponse `json:"response"`
+	Signature    string            `json:"signature"`
+}
+
+// MerchantResponse is the response from a tx submission
+type MerchantResponse struct {
+	APIVersion                string `json:"apiVersion"`
+	CurrentHighestBlockHash   string `json:"currentHighestBlockHash"`
+	CurrentHighestBlockHeight int64  `json:"currentHighestBlockHeight"`
+	MinerID                   string `json:"minerId"`
+	ResultDescription         string `json:"resultDescription"`
+	ReturnResult              string `json:"returnResult"`
+	Timestamp                 string `json:"timestamp"`
+	TxID                      string `json:"txid"`
+	TxSecondMempoolExpiry     int    `json:"txSecondMempoolExpiry"`
+}
+
+// MerchantError is the error response from a bad tx submission
+type MerchantError struct {
+	Code   int    `json:"code"`
+	Error  string `json:"error"`
+	Status int    `json:"status"`
+}
+
+// StatusResponse is the response from requesting a status update
+type StatusResponse struct {
+	Payload      string          `json:"payload"`
+	ProviderID   string          `json:"providerId"`
+	ProviderName string          `json:"providerName"`
+	PublicKey    string          `json:"publicKey"`
+	Signature    string          `json:"signature"`
+	Status       *MerchantStatus `json:"status"`
+}
+
+// MerchantStatus is the response from a status request
+type MerchantStatus struct {
+	APIVersion            string `json:"apiVersion"`
+	BlockHash             string `json:"blockHash"`
+	BlockHeight           int64  `json:"blockHeight"`
+	Confirmations         int64  `json:"confirmations"`
+	MinerID               string `json:"minerId"`
+	ResultDescription     string `json:"resultDescription"`
+	ReturnResult          string `json:"returnResult"`
+	Timestamp             string `json:"timestamp"`
+	TxSecondMempoolExpiry int    `json:"txSecondMempoolExpiry"`
+}
