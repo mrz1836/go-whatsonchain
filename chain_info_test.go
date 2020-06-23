@@ -73,7 +73,7 @@ func TestClient_GetChainInfo(t *testing.T) {
 	t.Parallel()
 
 	// New mock client
-	client := newMockClient(t, &mockHTTPChainValid{})
+	client := newMockClient(&mockHTTPChainValid{})
 
 	// Test the valid response
 	info, err := client.GetChainInfo()
@@ -86,7 +86,7 @@ func TestClient_GetChainInfo(t *testing.T) {
 	}
 
 	// New invalid mock client
-	client = newMockClient(t, &mockHTTPChainInvalid{})
+	client = newMockClient(&mockHTTPChainInvalid{})
 
 	// Test invalid response
 	_, err = client.GetChainInfo()
@@ -97,7 +97,7 @@ func TestClient_GetChainInfo(t *testing.T) {
 
 // ExampleClient_GetChainInfo example using GetChainInfo()
 func ExampleClient_GetChainInfo() {
-	client, _ := NewClient(NetworkMain, nil)
+	client := NewClient(NetworkMain, nil)
 	resp, _ := client.GetChainInfo()
 	log.Println(resp.BestBlockHash)
 	fmt.Println("0000000000000000057d09c9d9928c53aaff1f6b019ead3ceed52aca8abbc1c9")
@@ -109,7 +109,7 @@ func TestClient_GetCirculatingSupply(t *testing.T) {
 	t.Parallel()
 
 	// New mock client
-	client := newMockClient(t, &mockHTTPChainValid{})
+	client := newMockClient(&mockHTTPChainValid{})
 
 	// Test the valid response
 	supply, err := client.GetCirculatingSupply()
@@ -120,7 +120,7 @@ func TestClient_GetCirculatingSupply(t *testing.T) {
 	}
 
 	// New invalid mock client
-	client = newMockClient(t, &mockHTTPChainInvalid{})
+	client = newMockClient(&mockHTTPChainInvalid{})
 
 	// Test invalid response
 	_, err = client.GetCirculatingSupply()
@@ -131,7 +131,7 @@ func TestClient_GetCirculatingSupply(t *testing.T) {
 
 // ExampleClient_GetCirculatingSupply example using GetCirculatingSupply()
 func ExampleClient_GetCirculatingSupply() {
-	client, _ := NewClient(NetworkMain, nil)
+	client := NewClient(NetworkMain, nil)
 	supply, _ := client.GetCirculatingSupply()
 	log.Printf("%f", supply)
 	fmt.Println("18225787.5")

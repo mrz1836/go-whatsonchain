@@ -22,7 +22,7 @@ import (
 )
 
 // NewClient creates a new client for WOC requests
-func NewClient(network NetworkType, clientOptions *Options) (c *Client, err error) {
+func NewClient(network NetworkType, clientOptions *Options) (c *Client) {
 
 	// Create a client using the given options & set network
 	c = createClient(clientOptions)

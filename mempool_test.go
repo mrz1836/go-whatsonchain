@@ -13,13 +13,10 @@ func TestClient_GetMempoolInfo(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient(NetworkMain, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := NewClient(NetworkMain, nil)
 
-	var resp *MempoolInfo
-	if resp, err = client.GetMempoolInfo(); err != nil {
+	resp, err := client.GetMempoolInfo()
+	if err != nil {
 		t.Fatal("error occurred: " + err.Error())
 	}
 
@@ -38,13 +35,10 @@ func TestClient_GetMempoolTransactions(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient(NetworkMain, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := NewClient(NetworkMain, nil)
 
-	var transactions []string
-	if transactions, err = client.GetMempoolTransactions(); err != nil {
+	transactions, err := client.GetMempoolTransactions()
+	if err != nil {
 
 		// Skip if it takes more than 10 seconds (the request works, but too many Txs)
 		if strings.Contains(err.Error(), "deadline exceeded") {

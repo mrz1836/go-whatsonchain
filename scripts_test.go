@@ -10,14 +10,11 @@ func TestClient_GetScriptHistory(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient(NetworkMain, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := NewClient(NetworkMain, nil)
 
-	var resp ScriptList
 	scriptHash := "995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3"
-	if resp, err = client.GetScriptHistory(scriptHash); err != nil {
+	resp, err := client.GetScriptHistory(scriptHash)
+	if err != nil {
 		t.Fatal("error occurred: " + err.Error())
 	}
 
@@ -40,14 +37,12 @@ func TestClient_GetScriptUnspentTransactions(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient(NetworkMain, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := NewClient(NetworkMain, nil)
 
 	// var resp ScriptList
 	scriptHash := "995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3"
-	if _, err = client.GetScriptUnspentTransactions(scriptHash); err != nil {
+	_, err := client.GetScriptUnspentTransactions(scriptHash)
+	if err != nil {
 		t.Fatal("error occurred: " + err.Error())
 	}
 

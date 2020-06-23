@@ -155,7 +155,7 @@ func TestClient_AddressInfo(t *testing.T) {
 	t.Parallel()
 
 	// New mock client
-	client := newMockClient(t, &mockHTTPAddresses{})
+	client := newMockClient(&mockHTTPAddresses{})
 
 	// Create the list of tests
 	var tests = []struct {
@@ -188,7 +188,7 @@ func TestClient_AddressBalance(t *testing.T) {
 	t.Parallel()
 
 	// New mock client
-	client := newMockClient(t, &mockHTTPAddresses{})
+	client := newMockClient(&mockHTTPAddresses{})
 
 	// Create the list of tests
 	var tests = []struct {
@@ -223,7 +223,7 @@ func TestClient_AddressHistory(t *testing.T) {
 	t.Parallel()
 
 	// New mock client
-	client := newMockClient(t, &mockHTTPAddresses{})
+	client := newMockClient(&mockHTTPAddresses{})
 
 	// Create the list of tests
 	var tests = []struct {
@@ -259,7 +259,7 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 	t.Parallel()
 
 	// New mock client
-	client := newMockClient(t, &mockHTTPAddresses{})
+	client := newMockClient(&mockHTTPAddresses{})
 
 	// Create the list of tests
 	var tests = []struct {
@@ -320,7 +320,7 @@ func TestClient_DownloadStatement(t *testing.T) {
 	t.Parallel()
 
 	// New mock client
-	client := newMockClient(t, &mockHTTPAddresses{})
+	client := newMockClient(&mockHTTPAddresses{})
 
 	// Create the list of tests
 	var tests = []struct {

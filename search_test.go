@@ -10,15 +10,13 @@ func TestClient_GetExplorerLinks(t *testing.T) {
 	}
 
 	// Create a new client object to handle your queries (supply an API Key)
-	client, err := NewClient(NetworkMain, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	client := NewClient(NetworkMain, nil)
 
 	// Test searching for block hash
 	query := "000000000000000002080d0ad78d08691d956d08fb8556339b6dd84fbbfdf1bc"
-	var results SearchResults
-	if results, err = client.GetExplorerLinks(query); err != nil {
+
+	results, err := client.GetExplorerLinks(query)
+	if err != nil {
 		t.Fatal("error occurred", err.Error())
 	}
 	if results.Results == nil {

@@ -91,7 +91,7 @@ func TestClient_GetBlockByHash(t *testing.T) {
 	t.Parallel()
 
 	// New mock client
-	client := newMockClient(t, &mockHTTPBlocks{})
+	client := newMockClient(&mockHTTPBlocks{})
 
 	// Create the list of tests
 	var tests = []struct {
@@ -123,7 +123,7 @@ func TestClient_GetBlockByHeight(t *testing.T) {
 	t.Parallel()
 
 	// New mock client
-	client := newMockClient(t, &mockHTTPBlocks{})
+	client := newMockClient(&mockHTTPBlocks{})
 
 	// Create the list of tests
 	var tests = []struct {
@@ -156,7 +156,7 @@ func TestClient_GetBlockPages(t *testing.T) {
 	t.Parallel()
 
 	// New mock client
-	client := newMockClient(t, &mockHTTPBlocks{})
+	client := newMockClient(&mockHTTPBlocks{})
 
 	// Create the list of tests
 	var tests = []struct {
