@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 	"testing"
@@ -95,15 +94,6 @@ func TestClient_GetChainInfo(t *testing.T) {
 	}
 }
 
-// ExampleClient_GetChainInfo example using GetChainInfo()
-func ExampleClient_GetChainInfo() {
-	client := NewClient(NetworkMain, nil)
-	resp, _ := client.GetChainInfo()
-	log.Println(resp.BestBlockHash)
-	fmt.Println("0000000000000000057d09c9d9928c53aaff1f6b019ead3ceed52aca8abbc1c9")
-	// Output:0000000000000000057d09c9d9928c53aaff1f6b019ead3ceed52aca8abbc1c9
-}
-
 // TestClient_GetCirculatingSupply tests the GetCirculatingSupply()
 func TestClient_GetCirculatingSupply(t *testing.T) {
 	t.Parallel()
@@ -127,13 +117,4 @@ func TestClient_GetCirculatingSupply(t *testing.T) {
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}
-}
-
-// ExampleClient_GetCirculatingSupply example using GetCirculatingSupply()
-func ExampleClient_GetCirculatingSupply() {
-	client := NewClient(NetworkMain, nil)
-	supply, _ := client.GetCirculatingSupply()
-	log.Printf("%f", supply)
-	fmt.Println("18225787.5")
-	// Output:18225787.5
 }

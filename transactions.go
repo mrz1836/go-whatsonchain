@@ -72,23 +72,19 @@ func (c *Client) GetMerkleProof(hash string) (merkleResults MerkleResults, err e
 // GetRawTransactionData this endpoint returns raw hex for the transaction with given hash
 //
 // For more information: https://developers.whatsonchain.com/#get-raw-transaction-data
-func (c *Client) GetRawTransactionData(hash string) (hex string, err error) {
+func (c *Client) GetRawTransactionData(hash string) (string, error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/hex
-	hex, err = c.Request(fmt.Sprintf("%s%s/tx/%s/hex", apiEndpoint, c.Network, hash), http.MethodGet, nil)
-
-	return
+	return c.Request(fmt.Sprintf("%s%s/tx/%s/hex", apiEndpoint, c.Network, hash), http.MethodGet, nil)
 }
 
 // GetRawTransactionOutputData this endpoint returns raw hex for the transaction output with given hash and index
 //
 // For more information: https://developers.whatsonchain.com/#get-raw-transaction-output-data
-func (c *Client) GetRawTransactionOutputData(hash string, vOutIndex int) (hex string, err error) {
+func (c *Client) GetRawTransactionOutputData(hash string, vOutIndex int) (string, error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/out/<index>/hex
-	hex, err = c.Request(fmt.Sprintf("%s%s/tx/%s/out/%d/hex", apiEndpoint, c.Network, hash, vOutIndex), http.MethodGet, nil)
-
-	return
+	return c.Request(fmt.Sprintf("%s%s/tx/%s/out/%d/hex", apiEndpoint, c.Network, hash, vOutIndex), http.MethodGet, nil)
 }
 
 // BroadcastTx will broadcast transaction using this endpoint.
@@ -98,8 +94,7 @@ func (c *Client) GetRawTransactionOutputData(hash string, vOutIndex int) (hex st
 func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 
 	// Start the post data
-	stringVal := fmt.Sprintf(`{"txhex":"%s"}`, txHex)
-	postData := []byte(stringVal)
+	postData := []byte(fmt.Sprintf(`{"txhex":"%s"}`, txHex))
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
 	if txID, err = c.Request(fmt.Sprintf("%s%s/tx/raw", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
@@ -188,8 +183,7 @@ func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *Bulk
 func (c *Client) DecodeTransaction(txHex string) (txInfo *TxInfo, err error) {
 
 	// Start the post data
-	stringVal := fmt.Sprintf(`{"txhex":"%s"}`, txHex)
-	postData := []byte(stringVal)
+	postData := []byte(fmt.Sprintf(`{"txhex":"%s"}`, txHex))
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/decode
@@ -205,11 +199,9 @@ func (c *Client) DecodeTransaction(txHex string) (txInfo *TxInfo, err error) {
 // The contents will be returned in plain-text and need to be converted to a file.pdf
 //
 // For more information: https://developers.whatsonchain.com/#download-receipt
-func (c *Client) DownloadReceipt(hash string) (pdfRawContent string, err error) {
+func (c *Client) DownloadReceipt(hash string) (string, error) {
 
 	// https://<network>.whatsonchain.com/receipt/<hash>
 	// todo: this endpoint does not follow the convention of the WOC API v1
-	pdfRawContent, err = c.Request(fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network, hash), http.MethodGet, nil)
-
-	return
+	return c.Request(fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network, hash), http.MethodGet, nil)
 }

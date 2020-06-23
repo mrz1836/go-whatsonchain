@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-// mockHTTP for mocking requests
+// mockHTTPAddresses for mocking requests
 type mockHTTPAddresses struct{}
 
 // Do is a mock http request
