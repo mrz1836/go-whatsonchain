@@ -22,7 +22,7 @@ func (m *mockHTTPHealthValid) Do(req *http.Request) (*http.Response, error) {
 		return resp, fmt.Errorf("missing request")
 	}
 
-	// Valid (exchange rate)
+	// Valid
 	if strings.Contains(req.URL.String(), "/woc") {
 		resp.StatusCode = http.StatusOK
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`Whats On Chain`)))
@@ -45,7 +45,7 @@ func (m *mockHTTPHealthInvalid) Do(req *http.Request) (*http.Response, error) {
 		return resp, fmt.Errorf("missing request")
 	}
 
-	// Invalid (exchange rate)
+	// Invalid
 	if strings.Contains(req.URL.String(), "/woc") {
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
 		return resp, fmt.Errorf("bad request")
