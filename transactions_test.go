@@ -140,6 +140,7 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 		if strings.Contains(data.TxIDs[0], "error") {
 			resp.StatusCode = http.StatusBadRequest
 			resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+			return resp, fmt.Errorf("unknown error")
 		}
 	}
 
@@ -437,6 +438,7 @@ func TestClient_BulkTransactionDetails(t *testing.T) {
 		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258"}}, "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258", false, http.StatusOK},
 		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1ZZ", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258"}}, "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258", "", false, http.StatusOK},
 		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV"}}, "", "", false, http.StatusOK},
+		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV"}}, "", "", true, http.StatusOK},
 		{&TxHashes{TxIDs: []string{"error"}}, "", "", true, http.StatusBadRequest},
 	}
 

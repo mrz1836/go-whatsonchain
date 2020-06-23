@@ -30,10 +30,7 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 func (c *Client) BulkTransactionDetails(hashes *TxHashes) (txList TxList, err error) {
 
 	// Max limit by WOC
-	if len(hashes.TxIDs) == 0 {
-		err = fmt.Errorf("missing hashes")
-		return
-	} else if len(hashes.TxIDs) > MaxTransactionsUTXO {
+	if len(hashes.TxIDs) > MaxTransactionsUTXO {
 		err = fmt.Errorf("max limit of utxos is %d and you sent %d", MaxTransactionsUTXO, len(hashes.TxIDs))
 		return
 	}
@@ -50,7 +47,9 @@ func (c *Client) BulkTransactionDetails(hashes *TxHashes) (txList TxList, err er
 		return
 	}
 
-	err = json.Unmarshal([]byte(resp), &txList)
+	if len(resp) > 0 {
+		err = json.Unmarshal([]byte(resp), &txList)
+	}
 	return
 }
 
