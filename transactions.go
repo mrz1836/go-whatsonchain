@@ -100,7 +100,7 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 	}
 
 	// Got an error
-	if c.LastRequest.StatusCode > 200 {
+	if c.LastRequest.StatusCode > http.StatusOK {
 		err = fmt.Errorf("error broadcasting: %s", txID)
 		txID = "" // remove the error message
 	} else {
@@ -168,7 +168,7 @@ func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *Bulk
 	}
 
 	// Got an error
-	if c.LastRequest.StatusCode > 200 {
+	if c.LastRequest.StatusCode > http.StatusOK {
 		err = fmt.Errorf("error broadcasting: %s", resp)
 	}
 

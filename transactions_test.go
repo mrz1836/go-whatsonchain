@@ -567,7 +567,7 @@ func TestClient_BulkBroadcastTxMaxValues(t *testing.T) {
 	}
 
 	// Test the max size of all txs
-	for i := 1; i < MaxBroadcastTransactions+2; i++ {
+	for i := 1; i < MaxBroadcastTransactions-1; i++ {
 		maxSizeTx = append(maxSizeTx, txString)
 	}
 
