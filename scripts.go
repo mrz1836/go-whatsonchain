@@ -33,5 +33,6 @@ func (c *Client) GetScriptUnspentTransactions(scriptHash string) (scriptList Scr
 	}
 
 	err = json.Unmarshal([]byte(resp), &scriptList)
+
 	return
 }
