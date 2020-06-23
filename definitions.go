@@ -17,6 +17,15 @@ const (
 
 	// MaxTransactionsUTXO is the max allowed in the request
 	MaxTransactionsUTXO int = 20
+
+	// MaxBroadcastTransactions is the max transactions for Bulk Broadcast
+	MaxBroadcastTransactions = 100
+
+	// MaxSingleTransactionSize is the max single TX size for Bulk Broadcast
+	MaxSingleTransactionSize = 102400
+
+	// MaxCombinedTransactionSize is the max of all transactions combined
+	MaxCombinedTransactionSize = 1e+7
 )
 
 // ChainInfo is the structure response from getting info about the chain

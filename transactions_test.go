@@ -220,6 +220,13 @@ func (m *mockHTTPBroadcast) Do(req *http.Request) (*http.Response, error) {
 		return resp, fmt.Errorf("257: txn-already-known")
 	}
 
+	// Invalid - bad status code, no error
+	if strings.Contains(data.TxHex, "bad-status-code") {
+		resp.StatusCode = http.StatusExpectationFailed
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
 	//
 	// Decode Tx
 	//
@@ -475,6 +482,7 @@ func TestClient_BroadcastTx(t *testing.T) {
 		{"0100000001ace8d1d1d885039e2d58074188e1355f03ea782b382a2890ee4ed2fc76e51daf000000006a47304402206c408d858d8678666f112d07c6a6152121e9672ee6af45ea386592166efd0852022012a94bdba5d3efc66c695dad0fb5a3267a599f5ef4f144d10663aba34ac3f8234121036e4a5eff4cb231e0a3d34932d950a2a9f6476a01b41f38e8ddf036eae2cc9fcfffffffff0280d03b00000000001976a9146680fd90c9d68cb9cf5314c4e30fb5a3879440c988acbb360100000000001976a914847e32a2b2e0289912c3d2d0eed20feb0a8bf4c688ac00000000", "45ed612b6a2e819af164eb55e8273b61f3bfbbf08b991db1bd1d9b48565a3297", false, http.StatusOK},
 		{"0100000001d1bda0bde67183817b21af863adaa31fda8cafcf2083ca1eaba3054496cbde10010000006a47304402205fddd6abab6b8e94f36bfec51ba2e1f3a91b5327efa88264b5530d0c86538723022010e51693e3d52347d4d2ff142b85b460d3953e625d1e062a5fa2569623fb0ea94121029df3723daceb1fef64fa0558371bc48cc3a7a8e35d8e05b87137dc129a9d4598ffffffff0115d40000000000001976a91459cc95a8cde59ceda718dbf70e612dba4034552688ac00000000", "", true, http.StatusBadRequest},
 		{"010000000220f177bc9f9d6311bf5a3ab3f95f1fb73904e91faec69e11f1a5780d717fb9da0e0400006b483045022100944ff1436e24ed37a0d644d6637ef36e1f79f217aefef2ab5c1fccbc474ccd2002200b0fb32081b31a27359f7e10760fe0c303a5877f49b323bd81629555f62b3987412103390e121888d94987dd77d74a40e643eaa24ae61410533046b363d602096312ceffffffff938d7f6d2600707128aedfe761b5895fa87aa72838f50efe9d8771ace92fbc6b020000006b483045022100ddecfb3b1caf072c2ed60cb3d032266f39e8858b03b3e3cd4b59ea881b20736b022052410db489955bd829878eae7d71489b30336acc3b716029046c1659615f8a76412103a38ede6ca418dce302f5241aa8a0b274046807f5527d2b4bf67d93cbf0c7fabaffffffff02d0b5b384000000001976a914501a793f77e008bdff95797738bed6c848e2bc3588ac68f032550d0000001976a91423cb7559a575b8f6d049372cba0f7cb4cfcdac3988ac00000000", "", true, http.StatusBadRequest},
+		{"bad-status-code", "", true, http.StatusExpectationFailed},
 	}
 
 	// Test all
@@ -522,6 +530,51 @@ func TestClient_BulkBroadcastTx(t *testing.T) {
 		} else if client.LastRequest.StatusCode != test.statusCode {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
 		}
+	}
+}
+
+// TestClient_BulkBroadcastTxMaxValues tests the BulkBroadcastTx()
+func TestClient_BulkBroadcastTxMaxValues(t *testing.T) {
+	t.Parallel()
+
+	// New mock client
+	client := newMockClient(&mockHTTPBroadcastBulk{})
+
+	// Create an input with more than the max txs
+	var bulkTransactions []string
+	for i := 1; i < MaxBroadcastTransactions+2; i++ {
+		bulkTransactions = append(bulkTransactions, "0100000001d1bda0bde67183817b21af863adaa31fda8cafcf2083ca1eaba3054496cbde10010000006a47304402205fddd6abab6b8e94f36bfec51ba2e1f3a91b5327efa88264b5530d0c86538723022010e51693e3d52347d4d2ff142b85b460d3953e625d1e062a5fa2569623fb0ea94121029df3723daceb1fef64fa0558371bc48cc3a7a8e35d8e05b87137dc129a9d4598ffffffff0115d40000000000001976a91459cc95a8cde59ceda718dbf70e612dba4034552688ac00000000")
+	}
+
+	// Test the max
+	_, err := client.BulkBroadcastTx(bulkTransactions, true)
+	if err == nil {
+		t.Errorf("%s Failed: expected to throw an error, no error, total txs %d", t.Name(), len(bulkTransactions))
+	}
+
+	// Test the max size of an allowed tx
+	maxSizeTx := []string{""}
+	txString := ""
+	for i := 1; i < MaxSingleTransactionSize+2; i++ {
+		txString = txString + "AA"
+	}
+	maxSizeTx = append(maxSizeTx, txString)
+
+	// Test the max
+	_, err = client.BulkBroadcastTx(maxSizeTx, true)
+	if err == nil {
+		t.Errorf("%s Failed: expected to throw an error, no error, total txs %d", t.Name(), len(bulkTransactions))
+	}
+
+	// Test the max size of all txs
+	for i := 1; i < MaxBroadcastTransactions+2; i++ {
+		maxSizeTx = append(maxSizeTx, txString)
+	}
+
+	// Test the max
+	_, err = client.BulkBroadcastTx(maxSizeTx, true)
+	if err == nil {
+		t.Errorf("%s Failed: expected to throw an error, no error, total txs %d", t.Name(), len(bulkTransactions))
 	}
 }
 

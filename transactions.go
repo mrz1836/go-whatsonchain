@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"unsafe"
 )
 
 // GetTxByHash this endpoint retrieves transaction details with given transaction hash
@@ -131,21 +130,21 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *BulkBroadcastResponse, err error) {
 
 	// Set a max (from Whats on Chain)
-	if len(rawTxs) > 100 {
-		err = fmt.Errorf("max transactions are 100")
+	if len(rawTxs) > MaxBroadcastTransactions {
+		err = fmt.Errorf("max transactions are %d", MaxBroadcastTransactions)
 		return
 	}
 
 	// Set a total max
-	if size := unsafe.Sizeof(rawTxs); size > 1e+7 {
-		err = fmt.Errorf("max overall payload of 10MB (1e+7 bytes)")
+	if len(strings.Join(rawTxs[:], ",")) > MaxCombinedTransactionSize {
+		err = fmt.Errorf("max overall payload of 10MB (%f bytes)", MaxCombinedTransactionSize)
 		return
 	}
 
 	// Check size of each tx
 	for _, tx := range rawTxs {
-		if size := unsafe.Sizeof(tx); size > 102400 {
-			err = fmt.Errorf("max tx size of 100kb (102400 bytes)")
+		if len(tx) > MaxSingleTransactionSize {
+			err = fmt.Errorf("max tx size of 100kb (%d bytes)", MaxSingleTransactionSize)
 			return
 		}
 	}
