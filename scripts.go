@@ -13,7 +13,7 @@ func (c *Client) GetScriptHistory(scriptHash string) (history ScriptList, err er
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/script/<scriptHash>/history
-	if resp, err = c.Request(fmt.Sprintf("%s%s/script/%s/history", apiEndpoint, c.Network, scriptHash), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/script/%s/history", apiEndpoint, c.Network, scriptHash), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -28,7 +28,7 @@ func (c *Client) GetScriptUnspentTransactions(scriptHash string) (scriptList Scr
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/script/<scriptHash>/unspent
-	if resp, err = c.Request(fmt.Sprintf("%s%s/script/%s/unspent", apiEndpoint, c.Network, scriptHash), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/script/%s/unspent", apiEndpoint, c.Network, scriptHash), http.MethodGet, nil); err != nil {
 		return
 	}
 

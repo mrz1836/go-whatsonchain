@@ -11,5 +11,5 @@ import (
 func (c *Client) GetHealth() (status string, err error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/woc
-	return c.Request(fmt.Sprintf("%s%s/woc", apiEndpoint, c.Network), http.MethodGet, nil)
+	return c.request(fmt.Sprintf("%s%s/woc", apiEndpoint, c.Network), http.MethodGet, nil)
 }

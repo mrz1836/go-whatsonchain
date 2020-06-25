@@ -13,7 +13,7 @@ func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>
-	if resp, err = c.Request(fmt.Sprintf("%s%s/block/hash/%s", apiEndpoint, c.Network, hash), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/block/hash/%s", apiEndpoint, c.Network, hash), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -28,7 +28,7 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/height/<height>
-	if resp, err = c.Request(fmt.Sprintf("%s%s/block/height/%d", apiEndpoint, c.Network, height), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/block/height/%d", apiEndpoint, c.Network, height), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -47,7 +47,7 @@ func (c *Client) GetBlockPages(hash string, page int) (txList BlockPagesInfo, er
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>/page/1
-	if resp, err = c.Request(fmt.Sprintf("%s%s/block/hash/%s/page/%d", apiEndpoint, c.Network, hash, page), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/block/hash/%s/page/%d", apiEndpoint, c.Network, hash, page), http.MethodGet, nil); err != nil {
 		return
 	}
 

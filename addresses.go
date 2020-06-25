@@ -13,7 +13,7 @@ func (c *Client) AddressInfo(address string) (addressInfo *AddressInfo, err erro
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/info
-	if resp, err = c.Request(fmt.Sprintf("%s%s/address/%s/info", apiEndpoint, c.Network, address), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/address/%s/info", apiEndpoint, c.Network, address), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -28,7 +28,7 @@ func (c *Client) AddressBalance(address string) (balance *AddressBalance, err er
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/balance
-	if resp, err = c.Request(fmt.Sprintf("%s%s/address/%s/balance", apiEndpoint, c.Network, address), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/address/%s/balance", apiEndpoint, c.Network, address), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -43,7 +43,7 @@ func (c *Client) AddressHistory(address string) (history AddressHistory, err err
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/history
-	if resp, err = c.Request(fmt.Sprintf("%s%s/address/%s/history", apiEndpoint, c.Network, address), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/address/%s/history", apiEndpoint, c.Network, address), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -58,7 +58,7 @@ func (c *Client) AddressUnspentTransactions(address string) (history AddressHist
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/unspent
-	if resp, err = c.Request(fmt.Sprintf("%s%s/address/%s/unspent", apiEndpoint, c.Network, address), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/address/%s/unspent", apiEndpoint, c.Network, address), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -142,5 +142,5 @@ func (c *Client) DownloadStatement(address string) (string, error) {
 
 	// https://<network>.whatsonchain.com/statement/<hash>
 	// todo: this endpoint does not follow the convention of the WOC API v1
-	return c.Request(fmt.Sprintf("https://%s.whatsonchain.com/statement/%s", c.Network, address), http.MethodGet, nil)
+	return c.request(fmt.Sprintf("https://%s.whatsonchain.com/statement/%s", c.Network, address), http.MethodGet, nil)
 }

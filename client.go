@@ -12,7 +12,7 @@ import (
 const (
 
 	// version is the current version
-	version = "v0.5.0"
+	version = "v0.5.1"
 
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-whatsonchain: " + version
@@ -51,7 +51,7 @@ type Options struct {
 	UserAgent                      string        `json:"user_agent"`
 }
 
-// LastRequest is used to track what was submitted via the Request()
+// LastRequest is used to track what was submitted via the request()
 type LastRequest struct {
 	Method     string `json:"method"`      // method is the HTTP method used
 	PostData   string `json:"post_data"`   // postData is the post data submitted if POST/PUT request
@@ -80,15 +80,25 @@ func ClientDefaultOptions() (clientOptions *Options) {
 }
 
 // createClient will make a new http client based on the options provided
-func createClient(options *Options) (c *Client) {
+func createClient(network NetworkType, options *Options, customHTTPClient *http.Client) (c *Client) {
 
 	// Create a client
 	c = new(Client)
+	c.LastRequest = new(LastRequest)
+	c.Network = network
+
+	// Is there a custom HTTP client to use?
+	if customHTTPClient != nil {
+		c.httpClient = customHTTPClient
+		return
+	}
 
 	// Set options (either default or user modified)
 	if options == nil {
 		options = ClientDefaultOptions()
 	}
+
+	c.UserAgent = options.UserAgent
 
 	// dial is the net dialer for clientDefaultTransport
 	dial := &net.Dialer{KeepAlive: options.DialerKeepAlive, Timeout: options.DialerTimeout}
@@ -132,8 +142,5 @@ func createClient(options *Options) (c *Client) {
 		)
 	}
 
-	// Create a last request
-	c.LastRequest = new(LastRequest)
-	c.UserAgent = options.UserAgent
 	return
 }

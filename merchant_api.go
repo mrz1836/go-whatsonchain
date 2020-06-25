@@ -16,7 +16,7 @@ func (c *Client) GetFeeQuotes() (quotes *FeeQuotes, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/mapi/feeQuotes
-	if resp, err = c.Request(fmt.Sprintf("%s%s/mapi/feeQuotes", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/mapi/feeQuotes", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -35,7 +35,7 @@ func (c *Client) SubmitTransaction(provider string, txHex string) (response *Sub
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/mapi/<providerId>/tx
-	if resp, err = c.Request(fmt.Sprintf("%s%s/mapi/%s/tx", apiEndpoint, c.Network, provider), http.MethodPost, postData); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/mapi/%s/tx", apiEndpoint, c.Network, provider), http.MethodPost, postData); err != nil {
 		return
 	}
 
@@ -51,7 +51,7 @@ func (c *Client) TransactionStatus(provider string, txID string) (status *Status
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/mapi/<providerId>/tx/<hash>
-	if resp, err = c.Request(fmt.Sprintf("%s%s/mapi/%s/tx/%s", apiEndpoint, c.Network, provider, txID), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/mapi/%s/tx/%s", apiEndpoint, c.Network, provider, txID), http.MethodGet, nil); err != nil {
 		return
 	}
 

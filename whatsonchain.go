@@ -5,7 +5,7 @@ Example:
 
 ```
 // Create a client
-client, _ := whatsonchain.NewClient(whatsonchain.NetworkMain, nil)
+client := whatsonchain.NewClient(whatsonchain.NetworkMain, nil, nil)
 
 // Get a balance for an address
 balance, _ := client.AddressBalance("16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
@@ -22,17 +22,14 @@ import (
 )
 
 // NewClient creates a new client for WOC requests
-func NewClient(network NetworkType, clientOptions *Options) (c *Client) {
+func NewClient(network NetworkType, clientOptions *Options, customHTTPClient *http.Client) *Client {
 
-	// Create a client using the given options & set network
-	c = createClient(clientOptions)
-	c.Network = network
-
-	return
+	// Sets the network, options and custom HTTP client
+	return createClient(network, clientOptions, customHTTPClient)
 }
 
-// Request is a generic request wrapper that can be used without constraints
-func (c *Client) Request(url string, method string, payload []byte) (response string, err error) {
+// request is a generic request wrapper that can be used without constraints
+func (c *Client) request(url string, method string, payload []byte) (response string, err error) {
 
 	// Set reader
 	var bodyReader io.Reader

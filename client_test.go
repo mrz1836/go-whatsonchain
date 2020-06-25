@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 )
@@ -10,24 +11,35 @@ import (
 func TestNewClient(t *testing.T) {
 	t.Parallel()
 
-	client := NewClient(NetworkTest, nil)
+	client := NewClient(NetworkTest, nil, nil)
 
 	if len(client.UserAgent) == 0 {
 		t.Fatal("missing user agent")
 	}
 }
 
+// TestNewClient_CustomHTTPClient test new client
+func TestNewClient_CustomHTTPClient(t *testing.T) {
+	t.Parallel()
+
+	client := NewClient(NetworkTest, nil, http.DefaultClient)
+
+	if len(client.UserAgent) != 0 {
+		t.Fatal("user agent should be empty if using custom HTTP client")
+	}
+}
+
 // ExampleNewClient example using NewClient()
 func ExampleNewClient() {
-	client := NewClient(NetworkTest, nil)
+	client := NewClient(NetworkTest, nil, nil)
 	fmt.Println(client.UserAgent)
-	// Output:go-whatsonchain: v0.5.0
+	// Output:go-whatsonchain: v0.5.1
 }
 
 // BenchmarkNewClient benchmarks the NewClient method
 func BenchmarkNewClient(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_ = NewClient(NetworkTest, nil)
+		_ = NewClient(NetworkTest, nil, nil)
 	}
 }
 
@@ -94,7 +106,7 @@ func TestClientDefaultOptions(t *testing.T) {
 func TestClientDefaultOptions_NoRetry(t *testing.T) {
 	options := ClientDefaultOptions()
 	options.RequestRetryCount = 0
-	client := NewClient(NetworkTest, options)
+	client := NewClient(NetworkTest, options, nil)
 
 	if client.UserAgent != defaultUserAgent {
 		t.Errorf("user agent mismatch")

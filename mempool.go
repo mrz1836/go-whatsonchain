@@ -13,7 +13,7 @@ func (c *Client) GetMempoolInfo() (info *MempoolInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/mempool/info
-	if resp, err = c.Request(fmt.Sprintf("%s%s/mempool/info", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/mempool/info", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -29,7 +29,7 @@ func (c *Client) GetMempoolTransactions() (transactions []string, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/mempool/raw
-	if resp, err = c.Request(fmt.Sprintf("%s%s/mempool/raw", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/mempool/raw", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
 		return
 	}
 

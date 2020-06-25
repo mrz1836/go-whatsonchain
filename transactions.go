@@ -14,7 +14,7 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>
-	if resp, err = c.Request(fmt.Sprintf("%s%s/tx/hash/%s", apiEndpoint, c.Network, hash), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/tx/hash/%s", apiEndpoint, c.Network, hash), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -42,7 +42,7 @@ func (c *Client) BulkTransactionDetails(hashes *TxHashes) (txList TxList, err er
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/txs
-	if resp, err = c.Request(fmt.Sprintf("%s%s/txs", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/txs", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
 		return
 	}
 
@@ -59,7 +59,7 @@ func (c *Client) GetMerkleProof(hash string) (merkleResults MerkleResults, err e
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/proof
-	if resp, err = c.Request(fmt.Sprintf("%s%s/tx/%s/proof", apiEndpoint, c.Network, hash), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/tx/%s/proof", apiEndpoint, c.Network, hash), http.MethodGet, nil); err != nil {
 		return
 	}
 
@@ -73,7 +73,7 @@ func (c *Client) GetMerkleProof(hash string) (merkleResults MerkleResults, err e
 func (c *Client) GetRawTransactionData(hash string) (string, error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/hex
-	return c.Request(fmt.Sprintf("%s%s/tx/%s/hex", apiEndpoint, c.Network, hash), http.MethodGet, nil)
+	return c.request(fmt.Sprintf("%s%s/tx/%s/hex", apiEndpoint, c.Network, hash), http.MethodGet, nil)
 }
 
 // GetRawTransactionOutputData this endpoint returns raw hex for the transaction output with given hash and index
@@ -82,7 +82,7 @@ func (c *Client) GetRawTransactionData(hash string) (string, error) {
 func (c *Client) GetRawTransactionOutputData(hash string, vOutIndex int) (string, error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/out/<index>/hex
-	return c.Request(fmt.Sprintf("%s%s/tx/%s/out/%d/hex", apiEndpoint, c.Network, hash, vOutIndex), http.MethodGet, nil)
+	return c.request(fmt.Sprintf("%s%s/tx/%s/out/%d/hex", apiEndpoint, c.Network, hash, vOutIndex), http.MethodGet, nil)
 }
 
 // BroadcastTx will broadcast transaction using this endpoint.
@@ -95,7 +95,7 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 	postData := []byte(fmt.Sprintf(`{"txhex":"%s"}`, txHex))
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
-	if txID, err = c.Request(fmt.Sprintf("%s%s/tx/raw", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
+	if txID, err = c.request(fmt.Sprintf("%s%s/tx/raw", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
 		return
 	}
 
@@ -155,7 +155,7 @@ func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *Bulk
 	var resp string
 
 	// https://api.whatsonchain.com/v1/bsv/tx/broadcast?feedback=<feedback>
-	if resp, err = c.Request(fmt.Sprintf("%stx/broadcast?feedback=%t", apiEndpoint, feedback), http.MethodPost, postData); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%stx/broadcast?feedback=%t", apiEndpoint, feedback), http.MethodPost, postData); err != nil {
 		return
 	}
 
@@ -185,7 +185,7 @@ func (c *Client) DecodeTransaction(txHex string) (txInfo *TxInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/decode
-	if resp, err = c.Request(fmt.Sprintf("%s%s/tx/decode", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
+	if resp, err = c.request(fmt.Sprintf("%s%s/tx/decode", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
 		return
 	}
 
@@ -201,5 +201,5 @@ func (c *Client) DownloadReceipt(hash string) (string, error) {
 
 	// https://<network>.whatsonchain.com/receipt/<hash>
 	// todo: this endpoint does not follow the convention of the WOC API v1
-	return c.Request(fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network, hash), http.MethodGet, nil)
+	return c.request(fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network, hash), http.MethodGet, nil)
 }
