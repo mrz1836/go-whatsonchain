@@ -88,33 +88,36 @@ func (c *Client) AddressUnspentTransactionDetails(address string, maxTransaction
 		}
 	}
 
-	// Loop as long as we still have utxos to get
-	for len(utxos) > 0 {
+	// Break up the UTXOs into batches
+	var batches []AddressHistory
+	chunkSize := MaxTransactionsUTXO
 
-		// Get the hashes
-		txHashes := new(TxHashes)
-		foundTxs := 0
-		for index, tx := range utxos {
+	for i := 0; i < len(utxos); i += chunkSize {
+		end := i + chunkSize
 
-			// Only grab the max that can be sent
-			if foundTxs >= MaxTransactionsUTXO {
-				break
-			}
-
-			// Append to the list to send and return
-			txHashes.TxIDs = append(txHashes.TxIDs, tx.TxHash)
-			history = append(history, tx)
-
-			// Removing from our list to fetch (reducing the list each pass)
-			if len(utxos) >= MaxTransactionsUTXO {
-				utxos = append(utxos[:index], utxos[index+1:]...)
-			} else {
-				utxos = AddressHistory{}
-			}
-			foundTxs = foundTxs + 1
+		if end > len(utxos) {
+			end = len(utxos)
 		}
 
-		// Get the tx details
+		batches = append(batches, utxos[i:end])
+	}
+
+	// todo: use channels/wait group to fire all requests at the same time
+
+	// Loop Batches - and get each batch (multiple batches of MaxTransactionsUTXO)
+	for _, batch := range batches {
+
+		txHashes := new(TxHashes)
+
+		// Loop the batch (max MaxTransactionsUTXO)
+		for _, utxo := range batch {
+
+			// Append to the list to send and return
+			txHashes.TxIDs = append(txHashes.TxIDs, utxo.TxHash)
+			history = append(history, utxo)
+		}
+
+		// Get the tx details (max of MaxTransactionsUTXO)
 		var txList TxList
 		if txList, err = c.BulkTransactionDetails(txHashes); err != nil {
 			return
@@ -129,6 +132,7 @@ func (c *Client) AddressUnspentTransactionDetails(address string, maxTransaction
 				}
 			}
 		}
+
 	}
 
 	return
