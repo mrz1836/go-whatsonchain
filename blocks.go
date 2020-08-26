@@ -54,3 +54,33 @@ func (c *Client) GetBlockPages(hash string, page int) (txList BlockPagesInfo, er
 	err = json.Unmarshal([]byte(resp), &txList)
 	return
 }
+
+// GetHeaderByHash this endpoint retrieves block header details with given hash.
+//
+// For more information: https://developers.whatsonchain.com/#get-header-by-hash
+func (c *Client) GetHeaderByHash(hash string) (headerInfo *BlockInfo, err error) {
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/block/<hash>/header
+	if resp, err = c.request(fmt.Sprintf("%s%s/block/%s/header", apiEndpoint, c.Network, hash), http.MethodGet, nil); err != nil {
+		return
+	}
+
+	err = json.Unmarshal([]byte(resp), &headerInfo)
+	return
+}
+
+// GetHeaders this endpoint retrieves last 10 block headers.
+//
+// For more information: https://developers.whatsonchain.com/#get-headers
+func (c *Client) GetHeaders() (blockHeaders []*BlockInfo, err error) {
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/block/headers
+	if resp, err = c.request(fmt.Sprintf("%s%s/block/headers", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
+		return
+	}
+
+	err = json.Unmarshal([]byte(resp), &blockHeaders)
+	return
+}

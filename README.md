@@ -53,6 +53,8 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-what
         - [x] Get by Hash
         - [x] Get by Height
         - [x] Get Block Pages
+        - [x] Get Header by Hash
+        - [x] Get Headers
     - [x] Transaction
         - [x] Get by TX Hash
         - [x] Broadcast Transaction
