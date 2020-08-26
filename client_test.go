@@ -33,7 +33,7 @@ func TestNewClient_CustomHTTPClient(t *testing.T) {
 func ExampleNewClient() {
 	client := NewClient(NetworkTest, nil, nil)
 	fmt.Println(client.UserAgent)
-	// Output:go-whatsonchain: v0.5.1
+	// Output:go-whatsonchain: v0.6.1
 }
 
 // BenchmarkNewClient benchmarks the NewClient method
