@@ -16,7 +16,7 @@ endif
 
 .PHONY: clean
 
-all:  ## Runs lint, test-short and vet
+all: ## Runs lint, test-short and vet
 	@$(MAKE) test-short
 
 clean: ## Remove previous builds and any test cache data
