@@ -97,9 +97,9 @@ func TestClient_GetExplorerLinks(t *testing.T) {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
-		} else if &output != nil && output.Results != nil && output.Results[0].Type != test.typeName && !test.expectedError {
+		} else if err == nil && output.Results != nil && output.Results[0].Type != test.typeName && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] type expected, received: [%s]", t.Name(), test.input, test.typeName, output.Results[0].Type)
-		} else if &output != nil && output.Results != nil && output.Results[0].URL != test.url && !test.expectedError {
+		} else if err == nil && output.Results != nil && output.Results[0].URL != test.url && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] url expected, received: [%s]", t.Name(), test.input, test.url, output.Results[0].URL)
 		} else if client.LastRequest.StatusCode != test.statusCode {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)

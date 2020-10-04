@@ -16,6 +16,7 @@ package whatsonchain
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -46,7 +47,7 @@ func (c *Client) request(url string, method string, payload []byte) (response st
 
 	// Start the request
 	var request *http.Request
-	if request, err = http.NewRequest(method, url, bodyReader); err != nil {
+	if request, err = http.NewRequestWithContext(context.Background(), method, url, bodyReader); err != nil {
 		return
 	}
 
