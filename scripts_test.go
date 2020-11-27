@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // mockHTTPScript for mocking requests
@@ -52,8 +54,37 @@ func (m *mockHTTPScript) Do(req *http.Request) (*http.Response, error) {
 		return resp, fmt.Errorf("bad request")
 	}
 
+	// Valid (unspent)
+	if strings.Contains(req.URL.String(), "/scripts/unspent") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`[{"script":"f814a7c3a40164aacc440871e8b7b14eb6a45f0ca7dcbeaea709edc83274c5e7","unspent":[{"height":620539,"tx_pos":0,"tx_hash":"4ec3b63d764558303eda720e8e51f69bbcfe81376075657313fb587306f8a9b0","value":450000}],"error":""},{"script":"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3","unspent":[],"error":""}]`)))
+	}
+
 	// Default is valid
 	return resp, nil
+}
+
+// mockHTTPScriptErrors for mocking requests
+type mockHTTPScriptErrors struct{}
+
+// Do is a mock http request
+func (m *mockHTTPScriptErrors) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusBadRequest
+
+	// No req found
+	if req == nil {
+		return resp, fmt.Errorf("missing request")
+	}
+
+	// Invalid (info) return an error
+	if strings.Contains(req.URL.String(), "/scripts/unspent") {
+		resp.StatusCode = http.StatusInternalServerError
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, fmt.Errorf("missing request")
+	}
+
+	return nil, fmt.Errorf("no valid response found")
 }
 
 // TestClient_GetScriptHistory tests the GetScriptHistory()
@@ -125,4 +156,61 @@ func TestClient_GetScriptUnspentTransactions(t *testing.T) {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
 		}
 	}
+}
+
+// TestClient_BulkScriptUnspentTransactions tests the BulkScriptUnspentTransactions()
+func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPScript{})
+
+		balances, err := client.BulkScriptUnspentTransactions(&ScriptsList{Scripts: []string{
+			"f814a7c3a40164aacc440871e8b7b14eb6a45f0ca7dcbeaea709edc83274c5e7",
+			"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3",
+		}})
+		assert.NoError(t, err)
+		assert.NotNil(t, balances)
+		assert.Equal(t, 2, len(balances))
+	})
+
+	t.Run("max scripts (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPScript{})
+
+		balances, err := client.BulkScriptUnspentTransactions(&ScriptsList{Scripts: []string{
+			"1",
+			"2",
+			"3",
+			"4",
+			"5",
+			"6",
+			"7",
+			"8",
+			"9",
+			"10",
+			"11",
+			"12",
+			"13",
+			"14",
+			"15",
+			"16",
+			"17",
+			"18",
+			"19",
+			"20",
+			"21",
+		}})
+		assert.Error(t, err)
+		assert.Nil(t, balances)
+	})
+
+	t.Run("bad response (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPScriptErrors{})
+
+		balances, err := client.BulkScriptUnspentTransactions(&ScriptsList{Scripts: []string{
+			"f814a7c3a40164aacc440871e8b7b14eb6a45f0ca7dcbeaea709edc83274c5e7",
+		}})
+		assert.Error(t, err)
+		assert.Nil(t, balances)
+	})
 }

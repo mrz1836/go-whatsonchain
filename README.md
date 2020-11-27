@@ -80,6 +80,7 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-what
     - [x] Script
         - [x] Get Script History
         - [x] Get Script Unspent Transactions
+        - [x] Bulk UTXOs
     - [x] Exchange Rate
         - [x] Get Exchange Rate
     - [x] Search
@@ -176,7 +177,6 @@ Basic implementation:
 package main
 
 import (
-
     "fmt"
     
     "github.com/mrz1836/go-whatsonchain"

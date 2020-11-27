@@ -481,7 +481,7 @@ func TestClient_BulkBalance(t *testing.T) {
 		client := newMockClient(&mockHTTPAddressesErrors{})
 
 		balances, err := client.BulkBalance(&AddressList{Addresses: []string{
-			"1",
+			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
 		}})
 		assert.Error(t, err)
 		assert.Nil(t, balances)
@@ -535,7 +535,7 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 		client := newMockClient(&mockHTTPAddressesErrors{})
 
 		balances, err := client.BulkUnspentTransactions(&AddressList{Addresses: []string{
-			"1",
+			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
 		}})
 		assert.Error(t, err)
 		assert.Nil(t, balances)

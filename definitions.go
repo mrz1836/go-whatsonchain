@@ -29,6 +29,9 @@ const (
 
 	// MaxAddressesForLookup is the max allowed in the request for Bulk requests
 	MaxAddressesForLookup int = 20
+
+	// MaxScriptsForLookup is the max allowed in the request for Bulk requests
+	MaxScriptsForLookup int = 20
 )
 
 // AddressInfo is the address info for a returned address request
@@ -107,6 +110,16 @@ type BulkResponseRecord struct {
 	Address string           `json:"address"`
 	Error   string           `json:"error"`
 	Utxos   []*HistoryRecord `json:"unspent"`
+}
+
+// BulkScriptUnspentResponse is the response from Bulk Unspent transactions
+type BulkScriptUnspentResponse []*BulkScriptResponseRecord
+
+// BulkScriptResponseRecord is the record in the results for Bulk Unspent transactions
+type BulkScriptResponseRecord struct {
+	Script string           `json:"script"`
+	Error  string           `json:"error"`
+	Utxos  []*HistoryRecord `json:"unspent"`
 }
 
 // ChainInfo is the structure response from getting info about the chain
@@ -237,6 +250,11 @@ type MerchantStatus struct {
 type Page struct {
 	Size int64    `json:"size"`
 	URI  []string `json:"uri"`
+}
+
+// ScriptsList is used to create a Bulk UTXO request
+type ScriptsList struct {
+	Scripts []string `json:"scripts"`
 }
 
 // ScriptList is the list of script history records
