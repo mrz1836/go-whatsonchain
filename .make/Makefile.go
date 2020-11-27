@@ -42,9 +42,9 @@ install-go: ## Install the application (Using Native Go)
 
 lint: ## Run the golangci-lint application (install if not found)
 	@#Travis (has sudo)
-	@if [ "$(shell command -v golangci-lint)" = "" ] && [ $(TRAVIS) ]; then curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.32.2 && sudo cp ./bin/golangci-lint $(go env GOPATH)/bin/; fi;
+	@if [ "$(shell command -v golangci-lint)" = "" ] && [ $(TRAVIS) ]; then curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.33.0 && sudo cp ./bin/golangci-lint $(go env GOPATH)/bin/; fi;
 	@#AWS CodePipeline
-	@if [ "$(shell command -v golangci-lint)" = "" ] && [ "$(CODEBUILD_BUILD_ID)" != "" ]; then curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.32.2; fi;
+	@if [ "$(shell command -v golangci-lint)" = "" ] && [ "$(CODEBUILD_BUILD_ID)" != "" ]; then curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.33.0; fi;
 	@#Brew - MacOS
 	@if [ "$(shell command -v golangci-lint)" = "" ] && [ "$(shell command -v brew)" != "" ]; then brew install golangci-lint; fi;
 	@echo "running golangci-lint..."
@@ -62,12 +62,17 @@ test-short: ## Runs vet, lint and tests (excludes integration tests)
 
 test-travis: ## Runs all tests via Travis (also exports coverage)
 	@$(MAKE) lint
-	@echo "running tests..."
+	@echo "running tests (travis)..."
 	@go test ./... -race -coverprofile=coverage.txt -covermode=atomic
+
+test-travis-no-race: ## Runs all tests (no race) (also exports coverage)
+	@$(MAKE) lint
+	@echo "running tests (no race)..."
+	@go test ./... -coverprofile=coverage.txt -covermode=atomic
 
 test-travis-short: ## Runs unit tests via Travis (also exports coverage)
 	@$(MAKE) lint
-	@echo "running tests (short)..."
+	@echo "running tests (short & travis)..."
 	@go test ./... -test.short -race -coverprofile=coverage.txt -covermode=atomic
 
 uninstall: ## Uninstall the application (and remove files)
