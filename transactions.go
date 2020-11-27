@@ -34,7 +34,7 @@ func (c *Client) BulkTransactionDetails(hashes *TxHashes) (txList TxList, err er
 		return
 	}
 
-	// Hashes into json
+	// Convert to JSON
 	var postData []byte
 	if postData, err = json.Marshal(hashes); err != nil {
 		return

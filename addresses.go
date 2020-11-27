@@ -149,21 +149,27 @@ func (c *Client) DownloadStatement(address string) (string, error) {
 	return c.request(fmt.Sprintf("https://%s.whatsonchain.com/statement/%s", c.Network, address), http.MethodGet, nil)
 }
 
+// bulkRequest is the common parts of the bulk requests
+func bulkRequest(list *AddressList) ([]byte, error) {
+
+	// Max limit by WOC
+	if len(list.Addresses) > MaxAddressesForLookup {
+		return nil, fmt.Errorf("max limit of addresses is %d and you sent %d", MaxAddressesForLookup, len(list.Addresses))
+	}
+
+	// Convert to JSON
+	return json.Marshal(list)
+}
+
 // BulkBalance this endpoint retrieves confirmed and unconfirmed address balances
 // Max of 20 addresses at a time
 //
 // For more information: https://developers.whatsonchain.com/#bulk-balance
 func (c *Client) BulkBalance(list *AddressList) (balances AddressBalances, err error) {
 
-	// Max limit by WOC
-	if len(list.Addresses) > MaxAddressesForBalance {
-		err = fmt.Errorf("max limit of addresses is %d and you sent %d", MaxAddressesForBalance, len(list.Addresses))
-		return
-	}
-
-	// Hashes into json
+	// Get the JSON
 	var postData []byte
-	if postData, err = json.Marshal(list); err != nil {
+	if postData, err = bulkRequest(list); err != nil {
 		return
 	}
 
@@ -174,5 +180,27 @@ func (c *Client) BulkBalance(list *AddressList) (balances AddressBalances, err e
 	}
 
 	err = json.Unmarshal([]byte(resp), &balances)
+	return
+}
+
+// BulkUnspentTransactions will fetch UTXOs for multiple addresses in a single request
+// Max of 20 addresses at a time
+//
+// For more information: https://developers.whatsonchain.com/#bulk-unspent-transactions
+func (c *Client) BulkUnspentTransactions(list *AddressList) (response BulkUnspentResponse, err error) {
+
+	// Get the JSON
+	var postData []byte
+	if postData, err = bulkRequest(list); err != nil {
+		return
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/addresses/unspent
+	if resp, err = c.request(fmt.Sprintf("%s%s/addresses/unspent", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
+		return
+	}
+
+	err = json.Unmarshal([]byte(resp), &response)
 	return
 }
