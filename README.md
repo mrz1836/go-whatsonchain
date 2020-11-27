@@ -74,6 +74,7 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-what
         - [x] Get History
         - [x] Get Unspent Transactions
         - [x] Get Unspent Transaction Details (Custom)
+        - [x] Bulk Balance
         - [x] Download Statement
     - [x] Script
         - [x] Get Script History

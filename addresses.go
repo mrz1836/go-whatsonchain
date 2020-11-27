@@ -148,3 +148,31 @@ func (c *Client) DownloadStatement(address string) (string, error) {
 	// todo: this endpoint does not follow the convention of the WOC API v1
 	return c.request(fmt.Sprintf("https://%s.whatsonchain.com/statement/%s", c.Network, address), http.MethodGet, nil)
 }
+
+// BulkBalance this endpoint retrieves confirmed and unconfirmed address balances
+// Max of 20 addresses at a time
+//
+// For more information: https://developers.whatsonchain.com/#bulk-balance
+func (c *Client) BulkBalance(list *AddressList) (balances AddressBalances, err error) {
+
+	// Max limit by WOC
+	if len(list.Addresses) > MaxAddressesForBalance {
+		err = fmt.Errorf("max limit of addresses is %d and you sent %d", MaxAddressesForBalance, len(list.Addresses))
+		return
+	}
+
+	// Hashes into json
+	var postData []byte
+	if postData, err = json.Marshal(list); err != nil {
+		return
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/addresses/balance
+	if resp, err = c.request(fmt.Sprintf("%s%s/addresses/balance", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
+		return
+	}
+
+	err = json.Unmarshal([]byte(resp), &balances)
+	return
+}

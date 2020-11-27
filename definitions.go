@@ -26,6 +26,9 @@ const (
 
 	// MaxCombinedTransactionSize is the max of all transactions combined
 	MaxCombinedTransactionSize = 1e+7
+
+	// MaxAddressesForBalance is the max allowed in the request for Bulk Balance
+	MaxAddressesForBalance int = 20
 )
 
 // ChainInfo is the structure response from getting info about the chain
@@ -125,6 +128,21 @@ type AddressBalance struct {
 	Confirmed   int64 `json:"confirmed"`
 	Unconfirmed int64 `json:"unconfirmed"`
 }
+
+// AddressBalanceRecord is the result from Bulk Balance request
+type AddressBalanceRecord struct {
+	Address string          `json:"address"`
+	Error   string          `json:"error"`
+	Balance *AddressBalance `json:"balance"`
+}
+
+// AddressList is used to create a Bulk Balance request
+type AddressList struct {
+	Addresses []string `json:"addresses"`
+}
+
+// AddressBalances is the response from Bulk Balance request
+type AddressBalances []*AddressBalanceRecord
 
 // AddressHistory is the history of transactions for an address
 type AddressHistory []*HistoryRecord

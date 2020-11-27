@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // mockHTTPAddresses for mocking requests
@@ -107,6 +109,16 @@ func (m *mockHTTPAddresses) Do(req *http.Request) (*http.Response, error) {
 	}
 
 	//
+	// Address bulk balance
+	//
+
+	// Valid (unspent)
+	if strings.Contains(req.URL.String(), "/addresses/balance") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`[{"address":"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP","balance":{"confirmed":0,"unconfirmed":0},"error":""},{"address":"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob","balance":{"confirmed":301995631,"unconfirmed":0},"error":""}]`)))
+	}
+
+	//
 	// Address download statement
 	//
 
@@ -169,6 +181,29 @@ invalid
 
 	// Default is valid
 	return resp, nil
+}
+
+// mockHTTPAddressesErrors for mocking requests
+type mockHTTPAddressesErrors struct{}
+
+// Do is a mock http request
+func (m *mockHTTPAddressesErrors) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusBadRequest
+
+	// No req found
+	if req == nil {
+		return resp, fmt.Errorf("missing request")
+	}
+
+	// Invalid (info) return an error
+	if strings.Contains(req.URL.String(), "/addresses/balance") {
+		resp.StatusCode = http.StatusInternalServerError
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, fmt.Errorf("missing request")
+	}
+
+	return nil, fmt.Errorf("no valid response found")
 }
 
 // TestClient_AddressInfo tests the AddressInfo()
@@ -380,4 +415,58 @@ func TestClient_DownloadStatement(t *testing.T) {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
 		}
 	}
+}
+
+// TestClient_BulkBalance tests the BulkBalance()
+func TestClient_BulkBalance(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+
+		balances, err := client.BulkBalance(&AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		assert.NoError(t, err)
+		assert.NotNil(t, balances)
+		assert.Equal(t, 2, len(balances))
+	})
+
+	t.Run("max addresses (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+
+		balances, err := client.BulkBalance(&AddressList{Addresses: []string{
+			"1",
+			"2",
+			"3",
+			"4",
+			"5",
+			"6",
+			"7",
+			"8",
+			"9",
+			"10",
+			"11",
+			"12",
+			"13",
+			"14",
+			"15",
+			"16",
+			"17",
+			"18",
+			"19",
+			"20",
+			"21",
+		}})
+		assert.Error(t, err)
+		assert.Nil(t, balances)
+	})
+
+	t.Run("bad response (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddressesErrors{})
+
+		balances, err := client.BulkBalance(&AddressList{Addresses: []string{
+			"1",
+		}})
+		assert.Error(t, err)
+		assert.Nil(t, balances)
+	})
 }
