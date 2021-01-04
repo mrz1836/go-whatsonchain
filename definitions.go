@@ -32,6 +32,9 @@ const (
 
 	// MaxScriptsForLookup is the max allowed in the request for Bulk requests
 	MaxScriptsForLookup int = 20
+
+	// MaxRequestsPerSecond is the max requests allowed per second
+	MaxRequestsPerSecond int = 3
 )
 
 // AddressInfo is the address info for a returned address request

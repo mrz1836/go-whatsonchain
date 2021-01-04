@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // GetTxByHash this endpoint retrieves transaction details with given transaction hash
@@ -49,6 +50,55 @@ func (c *Client) BulkTransactionDetails(hashes *TxHashes) (txList TxList, err er
 	if len(resp) > 0 {
 		err = json.Unmarshal([]byte(resp), &txList)
 	}
+	return
+}
+
+// BulkTransactionDetailsProcessor will get the details for ALL transactions in batches
+// Processes 20 transactions per request
+// See: BulkTransactionDetails()
+func (c *Client) BulkTransactionDetailsProcessor(hashes *TxHashes) (txList TxList, err error) {
+
+	// Break up the transactions into batches
+	var batches [][]string
+	chunkSize := MaxTransactionsUTXO
+
+	for i := 0; i < len(hashes.TxIDs); i += chunkSize {
+		end := i + chunkSize
+
+		if end > len(hashes.TxIDs) {
+			end = len(hashes.TxIDs)
+		}
+
+		batches = append(batches, hashes.TxIDs[i:end])
+	}
+
+	var currentRateLimit int
+
+	// Loop Batches - and get each batch (multiple batches of MaxTransactionsUTXO)
+	for _, batch := range batches {
+
+		txHashes := new(TxHashes)
+
+		// Loop the batch (max MaxTransactionsUTXO)
+		txHashes.TxIDs = append(txHashes.TxIDs, batch...)
+
+		// Get the tx details (max of MaxTransactionsUTXO)
+		var returnedList TxList
+		if returnedList, err = c.BulkTransactionDetails(txHashes); err != nil {
+			return
+		}
+
+		// Add to the list
+		txList = append(txList, returnedList...)
+
+		// Accumulate / sleep to prevent rate limiting
+		currentRateLimit++
+		if currentRateLimit >= MaxRequestsPerSecond {
+			time.Sleep(1 * time.Second)
+			currentRateLimit = 0
+		}
+	}
+
 	return
 }
 

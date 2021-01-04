@@ -65,6 +65,7 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-what
         - [x] Get Raw Transaction Data
         - [x] Get Raw Transaction Output
         - [x] Get Merkle Proof
+        - [x] Get Bulk Transaction Details (Custom)
     - [x] Mempool
         - [x] Get Mempool Info
         - [x] Get Mempool Transactions

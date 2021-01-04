@@ -102,7 +102,7 @@ func (c *Client) AddressUnspentTransactionDetails(address string, maxTransaction
 		batches = append(batches, utxos[i:end])
 	}
 
-	// todo: use channels/wait group to fire all requests at the same time
+	// todo: use channels/wait group to fire all requests at the same time (rate limiting)
 
 	// Loop Batches - and get each batch (multiple batches of MaxTransactionsUTXO)
 	for _, batch := range batches {
@@ -132,7 +132,6 @@ func (c *Client) AddressUnspentTransactionDetails(address string, maxTransaction
 				}
 			}
 		}
-
 	}
 
 	return
