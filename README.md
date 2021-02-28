@@ -173,7 +173,7 @@ Read more about this Go project's [code standards](CODE_STANDARDS.md).
 <br/>
 
 ## Usage
-View the [whatsonchain examples](whatsonchain_test.go)
+View the [whatsonchain examples](examples)
 
 Basic implementation:
 ```go
