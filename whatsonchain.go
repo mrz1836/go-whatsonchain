@@ -4,10 +4,10 @@ Package whatsonchain is the unofficial golang implementation for the whatsonchai
 Example:
 
 ```
-// Create a client
+// Create a new client:
 client := whatsonchain.NewClient(whatsonchain.NetworkMain, nil, nil)
 
-// Get a balance for an address
+// Get a balance for an address:
 balance, _ := client.AddressBalance("16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
 fmt.Println("confirmed balance", balance.Confirmed)
 ```

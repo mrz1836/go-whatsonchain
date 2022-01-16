@@ -151,7 +151,7 @@ func (c *Client) DownloadStatement(address string) (string, error) {
 // bulkRequest is the common parts of the bulk requests
 func bulkRequest(list *AddressList) ([]byte, error) {
 
-	// Max limit by WOC
+	// The max limit by WOC
 	if len(list.Addresses) > MaxAddressesForLookup {
 		return nil, fmt.Errorf("max limit of addresses is %d and you sent %d", MaxAddressesForLookup, len(list.Addresses))
 	}

@@ -21,7 +21,7 @@ func (c *Client) GetMempoolInfo() (info *MempoolInfo, err error) {
 	return
 }
 
-// GetMempoolTransactions this endpoint endpoint retrieve list of transaction ids from the node's mempool
+// GetMempoolTransactions this endpoint will retrieve a list of transaction ids from the node's mempool
 // for the selected network
 //
 // For more information: https://developers.whatsonchain.com/#get-mempool-transactions

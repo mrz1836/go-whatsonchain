@@ -39,8 +39,8 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 	return
 }
 
-// GetBlockPages If the block has more that 1000 transactions the page URIs will
-// be provided in the pages element when getting a block by hash or height.
+// GetBlockPages if the block has more than 1000 transactions the page URIs will
+// be provided in the "pages element" when getting a block by hash or height.
 //
 // For more information: https://developers.whatsonchain.com/#get-block-pages
 func (c *Client) GetBlockPages(hash string, page int) (txList BlockPagesInfo, err error) {

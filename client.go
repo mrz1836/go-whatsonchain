@@ -59,7 +59,7 @@ type LastRequest struct {
 	URL        string `json:"url"`         // url is the url used for the request
 }
 
-// ClientDefaultOptions will return an Options struct with the default settings
+// ClientDefaultOptions will return an "Options" struct with the default settings
 // Useful for starting with the default and then modifying as needed
 func ClientDefaultOptions() (clientOptions *Options) {
 	return &Options{

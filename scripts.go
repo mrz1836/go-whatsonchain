@@ -43,7 +43,7 @@ func (c *Client) GetScriptUnspentTransactions(scriptHash string) (scriptList Scr
 // For more information: https://developers.whatsonchain.com/#bulk-script-unspent-transactions
 func (c *Client) BulkScriptUnspentTransactions(list *ScriptsList) (response BulkScriptUnspentResponse, err error) {
 
-	// Max limit by WOC
+	// The max limit by WOC
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("max limit of scripts is %d and you sent %d", MaxScriptsForLookup, len(list.Scripts))
 	}

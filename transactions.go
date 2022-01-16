@@ -29,7 +29,7 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 // For more information: https://developers.whatsonchain.com/#bulk-transaction-details
 func (c *Client) BulkTransactionDetails(hashes *TxHashes) (txList TxList, err error) {
 
-	// Max limit by WOC
+	// The max limit by WOC
 	if len(hashes.TxIDs) > MaxTransactionsUTXO {
 		err = fmt.Errorf("max limit of utxos is %d and you sent %d", MaxTransactionsUTXO, len(hashes.TxIDs))
 		return
@@ -179,7 +179,7 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 // For more information: https://developers.whatsonchain.com/#bulk-broadcast
 func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *BulkBroadcastResponse, err error) {
 
-	// Set a max (from Whats on Chain)
+	// Set a max (from WOC)
 	if len(rawTxs) > MaxBroadcastTransactions {
 		err = fmt.Errorf("max transactions are %d", MaxBroadcastTransactions)
 		return
