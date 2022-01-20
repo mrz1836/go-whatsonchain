@@ -347,6 +347,7 @@ type SubmissionResponse struct {
 // TxInfo is the response info about a returned tx
 type TxInfo struct {
 	BlockHash     string     `json:"blockhash"`
+	BlockHeight   int64      `json:"blockheight"`
 	BlockTime     int64      `json:"blocktime"`
 	Confirmations int64      `json:"confirmations"`
 	Hash          string     `json:"hash"`
