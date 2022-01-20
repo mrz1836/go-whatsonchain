@@ -86,10 +86,6 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-what
         - [x] Get Exchange Rate
     - [x] Search
         - [x] Get Explorer Links
-    - [x] Merchant API
-        - [x] Fee Quotes
-        - [x] Submit Transaction
-        - [x] Transaction Status
 
 <details>
 <summary><strong><code>Library Deployment</code></strong></summary>
