@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -61,9 +62,10 @@ func TestClient_GetHealth(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPHealthValid{})
+	ctx := context.Background()
 
 	// Test the valid response
-	info, err := client.GetHealth()
+	info, err := client.GetHealth(ctx)
 	if err != nil {
 		t.Errorf("%s Failed: error [%s]", t.Name(), err.Error())
 	} else if info != "Whats On Chain" {
@@ -74,7 +76,7 @@ func TestClient_GetHealth(t *testing.T) {
 	client = newMockClient(&mockHTTPHealthInvalid{})
 
 	// Test invalid response
-	_, err = client.GetHealth()
+	_, err = client.GetHealth(ctx)
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}

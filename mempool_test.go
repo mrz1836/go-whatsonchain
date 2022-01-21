@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -73,9 +74,10 @@ func TestClient_GetMempoolInfo(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPMempoolValid{})
+	ctx := context.Background()
 
 	// Test the valid response
-	info, err := client.GetMempoolInfo()
+	info, err := client.GetMempoolInfo(ctx)
 	if err != nil {
 		t.Errorf("%s Failed: error [%s]", t.Name(), err.Error())
 	} else if info == nil {
@@ -92,7 +94,7 @@ func TestClient_GetMempoolInfo(t *testing.T) {
 	client = newMockClient(&mockHTTPMempoolInvalid{})
 
 	// Test invalid response
-	_, err = client.GetMempoolInfo()
+	_, err = client.GetMempoolInfo(ctx)
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}
@@ -104,9 +106,10 @@ func TestClient_GetMempoolTransactions(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPMempoolValid{})
+	ctx := context.Background()
 
 	// Test the valid response
-	info, err := client.GetMempoolTransactions()
+	info, err := client.GetMempoolTransactions(ctx)
 	if err != nil {
 		t.Errorf("%s Failed: error [%s]", t.Name(), err.Error())
 	} else if info == nil {
@@ -121,7 +124,7 @@ func TestClient_GetMempoolTransactions(t *testing.T) {
 	client = newMockClient(&mockHTTPMempoolInvalid{})
 
 	// Test invalid response
-	_, err = client.GetMempoolTransactions()
+	_, err = client.GetMempoolTransactions(ctx)
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}

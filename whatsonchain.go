@@ -30,7 +30,7 @@ func NewClient(network NetworkType, clientOptions *Options, customHTTPClient *ht
 }
 
 // request is a generic request wrapper that can be used without constraints
-func (c *Client) request(url string, method string, payload []byte) (response string, err error) {
+func (c *Client) request(ctx context.Context, url string, method string, payload []byte) (response string, err error) {
 
 	// Set reader
 	var bodyReader io.Reader
@@ -47,7 +47,9 @@ func (c *Client) request(url string, method string, payload []byte) (response st
 
 	// Start the request
 	var request *http.Request
-	if request, err = http.NewRequestWithContext(context.Background(), method, url, bodyReader); err != nil {
+	if request, err = http.NewRequestWithContext(
+		ctx, method, url, bodyReader,
+	); err != nil {
 		return
 	}
 

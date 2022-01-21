@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -73,9 +74,10 @@ func TestClient_GetChainInfo(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPChainValid{})
+	ctx := context.Background()
 
 	// Test the valid response
-	info, err := client.GetChainInfo()
+	info, err := client.GetChainInfo(ctx)
 	if err != nil {
 		t.Errorf("%s Failed: error [%s]", t.Name(), err.Error())
 	} else if info == nil {
@@ -88,7 +90,7 @@ func TestClient_GetChainInfo(t *testing.T) {
 	client = newMockClient(&mockHTTPChainInvalid{})
 
 	// Test invalid response
-	_, err = client.GetChainInfo()
+	_, err = client.GetChainInfo(ctx)
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}
@@ -100,9 +102,10 @@ func TestClient_GetCirculatingSupply(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPChainValid{})
+	ctx := context.Background()
 
 	// Test the valid response
-	supply, err := client.GetCirculatingSupply()
+	supply, err := client.GetCirculatingSupply(ctx)
 	if err != nil {
 		t.Errorf("%s Failed: error [%s]", t.Name(), err.Error())
 	} else if supply != 18440650 {
@@ -113,7 +116,7 @@ func TestClient_GetCirculatingSupply(t *testing.T) {
 	client = newMockClient(&mockHTTPChainInvalid{})
 
 	// Test invalid response
-	_, err = client.GetCirculatingSupply()
+	_, err = client.GetCirculatingSupply(ctx)
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}

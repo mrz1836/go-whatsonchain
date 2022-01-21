@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -61,9 +62,10 @@ func TestClient_GetExchangeRate(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPExchangeValid{})
+	ctx := context.Background()
 
 	// Test the valid response
-	info, err := client.GetExchangeRate()
+	info, err := client.GetExchangeRate(ctx)
 	if err != nil {
 		t.Errorf("%s Failed: error [%s]", t.Name(), err.Error())
 	} else if info == nil {
@@ -78,7 +80,7 @@ func TestClient_GetExchangeRate(t *testing.T) {
 	client = newMockClient(&mockHTTPExchangeInvalid{})
 
 	// Test invalid response
-	_, err = client.GetExchangeRate()
+	_, err = client.GetExchangeRate(ctx)
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}

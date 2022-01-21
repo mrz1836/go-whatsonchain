@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -118,6 +119,7 @@ func TestClient_GetBlockByHash(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPBlocks{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -132,7 +134,7 @@ func TestClient_GetBlockByHash(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetBlockByHash(test.input); err == nil && test.expectedError {
+		if output, err := client.GetBlockByHash(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -150,6 +152,7 @@ func TestClient_GetBlockByHeight(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPBlocks{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -165,7 +168,7 @@ func TestClient_GetBlockByHeight(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetBlockByHeight(test.input); err == nil && test.expectedError {
+		if output, err := client.GetBlockByHeight(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%d] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%d] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -183,6 +186,7 @@ func TestClient_GetBlockPages(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPBlocks{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -198,7 +202,7 @@ func TestClient_GetBlockPages(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetBlockPages(test.input, 1); err == nil && test.expectedError {
+		if output, err := client.GetBlockPages(ctx, test.input, 1); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -217,6 +221,7 @@ func TestClient_GetHeaderByHash(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPBlocks{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -231,7 +236,7 @@ func TestClient_GetHeaderByHash(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetHeaderByHash(test.input); err == nil && test.expectedError {
+		if output, err := client.GetHeaderByHash(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -249,6 +254,7 @@ func TestClient_GetHeaders(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPBlocks{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -263,7 +269,7 @@ func TestClient_GetHeaders(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetHeaders(); err == nil && test.expectedError {
+		if output, err := client.GetHeaders(ctx); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error", t.Name())
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: received: [%v] error [%s]", t.Name(), output, err.Error())

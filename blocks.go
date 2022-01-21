@@ -1,6 +1,7 @@
 package whatsonchain
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,11 +10,15 @@ import (
 // GetBlockByHash this endpoint retrieves block details with given hash.
 //
 // For more information: https://developers.whatsonchain.com/#get-by-hash
-func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
+func (c *Client) GetBlockByHash(ctx context.Context, hash string) (blockInfo *BlockInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>
-	if resp, err = c.request(fmt.Sprintf("%s%s/block/hash/%s", apiEndpoint, c.Network, hash), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/block/hash/%s", apiEndpoint, c.Network, hash),
+		http.MethodGet, nil,
+	); err != nil {
 		return
 	}
 
@@ -24,11 +29,15 @@ func (c *Client) GetBlockByHash(hash string) (blockInfo *BlockInfo, err error) {
 // GetBlockByHeight this endpoint retrieves block details with given block height.
 //
 // For more information: https://developers.whatsonchain.com/#get-by-height
-func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error) {
+func (c *Client) GetBlockByHeight(ctx context.Context, height int64) (blockInfo *BlockInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/height/<height>
-	if resp, err = c.request(fmt.Sprintf("%s%s/block/height/%d", apiEndpoint, c.Network, height), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/block/height/%d", apiEndpoint, c.Network, height),
+		http.MethodGet, nil,
+	); err != nil {
 		return
 	}
 
@@ -43,11 +52,15 @@ func (c *Client) GetBlockByHeight(height int64) (blockInfo *BlockInfo, err error
 // be provided in the "pages element" when getting a block by hash or height.
 //
 // For more information: https://developers.whatsonchain.com/#get-block-pages
-func (c *Client) GetBlockPages(hash string, page int) (txList BlockPagesInfo, err error) {
+func (c *Client) GetBlockPages(ctx context.Context, hash string, page int) (txList BlockPagesInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>/page/1
-	if resp, err = c.request(fmt.Sprintf("%s%s/block/hash/%s/page/%d", apiEndpoint, c.Network, hash, page), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/block/hash/%s/page/%d", apiEndpoint, c.Network, hash, page),
+		http.MethodGet, nil,
+	); err != nil {
 		return
 	}
 
@@ -58,11 +71,15 @@ func (c *Client) GetBlockPages(hash string, page int) (txList BlockPagesInfo, er
 // GetHeaderByHash this endpoint retrieves block header details with given hash.
 //
 // For more information: https://developers.whatsonchain.com/#get-header-by-hash
-func (c *Client) GetHeaderByHash(hash string) (headerInfo *BlockInfo, err error) {
+func (c *Client) GetHeaderByHash(ctx context.Context, hash string) (headerInfo *BlockInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/<hash>/header
-	if resp, err = c.request(fmt.Sprintf("%s%s/block/%s/header", apiEndpoint, c.Network, hash), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/block/%s/header", apiEndpoint, c.Network, hash),
+		http.MethodGet, nil,
+	); err != nil {
 		return
 	}
 
@@ -73,11 +90,15 @@ func (c *Client) GetHeaderByHash(hash string) (headerInfo *BlockInfo, err error)
 // GetHeaders this endpoint retrieves last 10 block headers.
 //
 // For more information: https://developers.whatsonchain.com/#get-headers
-func (c *Client) GetHeaders() (blockHeaders []*BlockInfo, err error) {
+func (c *Client) GetHeaders(ctx context.Context) (blockHeaders []*BlockInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/headers
-	if resp, err = c.request(fmt.Sprintf("%s%s/block/headers", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/block/headers", apiEndpoint, c.Network),
+		http.MethodGet, nil,
+	); err != nil {
 		return
 	}
 

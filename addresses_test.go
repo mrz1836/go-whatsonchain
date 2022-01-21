@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -229,6 +230,7 @@ func TestClient_AddressInfo(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPAddresses{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -244,7 +246,7 @@ func TestClient_AddressInfo(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.AddressInfo(test.input); err == nil && test.expectedError {
+		if output, err := client.AddressInfo(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted and [%s] expected", t.Name(), test.input, test.expected)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%v] error [%s]", t.Name(), test.input, test.expected, output, err.Error())
@@ -262,6 +264,7 @@ func TestClient_AddressBalance(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPAddresses{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -277,7 +280,7 @@ func TestClient_AddressBalance(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.AddressBalance(test.input); err == nil && test.expectedError {
+		if output, err := client.AddressBalance(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -297,6 +300,7 @@ func TestClient_AddressHistory(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPAddresses{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -313,7 +317,7 @@ func TestClient_AddressHistory(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.AddressHistory(test.input); err == nil && test.expectedError {
+		if output, err := client.AddressHistory(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -333,6 +337,7 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPAddresses{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -350,7 +355,7 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.AddressUnspentTransactions(test.input); err == nil && test.expectedError {
+		if output, err := client.AddressUnspentTransactions(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -374,6 +379,7 @@ func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPAddresses{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -388,7 +394,7 @@ func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.AddressUnspentTransactionDetails(test.input, 5); err == nil && test.expectedError {
+		if output, err := client.AddressUnspentTransactionDetails(ctx, test.input, 5); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -408,6 +414,7 @@ func TestClient_DownloadStatement(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPAddresses{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -422,7 +429,7 @@ func TestClient_DownloadStatement(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.DownloadStatement(test.input); err == nil && test.expectedError {
+		if output, err := client.DownloadStatement(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -440,8 +447,8 @@ func TestClient_BulkBalance(t *testing.T) {
 
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
-
-		balances, err := client.BulkBalance(&AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		ctx := context.Background()
+		balances, err := client.BulkBalance(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
 		assert.NoError(t, err)
 		assert.NotNil(t, balances)
 		assert.Equal(t, 2, len(balances))
@@ -449,8 +456,8 @@ func TestClient_BulkBalance(t *testing.T) {
 
 	t.Run("max addresses (error)", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
-
-		balances, err := client.BulkBalance(&AddressList{Addresses: []string{
+		ctx := context.Background()
+		balances, err := client.BulkBalance(ctx, &AddressList{Addresses: []string{
 			"1",
 			"2",
 			"3",
@@ -479,8 +486,8 @@ func TestClient_BulkBalance(t *testing.T) {
 
 	t.Run("bad response (error)", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddressesErrors{})
-
-		balances, err := client.BulkBalance(&AddressList{Addresses: []string{
+		ctx := context.Background()
+		balances, err := client.BulkBalance(ctx, &AddressList{Addresses: []string{
 			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
 		}})
 		assert.Error(t, err)
@@ -494,8 +501,8 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
-
-		balances, err := client.BulkUnspentTransactions(&AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		ctx := context.Background()
+		balances, err := client.BulkUnspentTransactions(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
 		assert.NoError(t, err)
 		assert.NotNil(t, balances)
 		assert.Equal(t, 2, len(balances))
@@ -503,8 +510,8 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 
 	t.Run("max addresses (error)", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
-
-		balances, err := client.BulkUnspentTransactions(&AddressList{Addresses: []string{
+		ctx := context.Background()
+		balances, err := client.BulkUnspentTransactions(ctx, &AddressList{Addresses: []string{
 			"1",
 			"2",
 			"3",
@@ -533,8 +540,8 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 
 	t.Run("bad response (error)", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddressesErrors{})
-
-		balances, err := client.BulkUnspentTransactions(&AddressList{Addresses: []string{
+		ctx := context.Background()
+		balances, err := client.BulkUnspentTransactions(ctx, &AddressList{Addresses: []string{
 			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
 		}})
 		assert.Error(t, err)

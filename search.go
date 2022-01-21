@@ -1,6 +1,7 @@
 package whatsonchain
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,15 +11,15 @@ import (
 // responds with WoC links. Ideal for extending customized search in apps.
 //
 // For more information: https://developers.whatsonchain.com/#get-history
-func (c *Client) GetExplorerLinks(query string) (results SearchResults, err error) {
-
-	// Start the post data
-	stringVal := fmt.Sprintf(`{"query":"%s"}`, query)
-	postData := []byte(stringVal)
+func (c *Client) GetExplorerLinks(ctx context.Context, query string) (results SearchResults, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/search/links
-	if resp, err = c.request(fmt.Sprintf("%s%s/search/links", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/search/links", apiEndpoint, c.Network),
+		http.MethodPost, []byte(fmt.Sprintf(`{"query":"%s"}`, query)),
+	); err != nil {
 		return
 	}
 

@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -75,6 +76,7 @@ func TestClient_GetExplorerLinks(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPSearchValid{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -93,7 +95,7 @@ func TestClient_GetExplorerLinks(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetExplorerLinks(test.input); err == nil && test.expectedError {
+		if output, err := client.GetExplorerLinks(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())

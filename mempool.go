@@ -1,6 +1,7 @@
 package whatsonchain
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,11 +10,15 @@ import (
 // GetMempoolInfo this endpoint retrieves various info about the node's mempool for the selected network
 //
 // For more information: https://developers.whatsonchain.com/#get-mempool-info
-func (c *Client) GetMempoolInfo() (info *MempoolInfo, err error) {
+func (c *Client) GetMempoolInfo(ctx context.Context) (info *MempoolInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/mempool/info
-	if resp, err = c.request(fmt.Sprintf("%s%s/mempool/info", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/mempool/info", apiEndpoint, c.Network),
+		http.MethodGet, nil,
+	); err != nil {
 		return
 	}
 
@@ -25,11 +30,15 @@ func (c *Client) GetMempoolInfo() (info *MempoolInfo, err error) {
 // for the selected network
 //
 // For more information: https://developers.whatsonchain.com/#get-mempool-transactions
-func (c *Client) GetMempoolTransactions() (transactions []string, err error) {
+func (c *Client) GetMempoolTransactions(ctx context.Context) (transactions []string, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/mempool/raw
-	if resp, err = c.request(fmt.Sprintf("%s%s/mempool/raw", apiEndpoint, c.Network), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/mempool/raw", apiEndpoint, c.Network),
+		http.MethodGet, nil,
+	); err != nil {
 		return
 	}
 

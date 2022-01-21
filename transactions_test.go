@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -306,6 +307,7 @@ func TestClient_GetTxByHash(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -320,7 +322,7 @@ func TestClient_GetTxByHash(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetTxByHash(test.input); err == nil && test.expectedError {
+		if output, err := client.GetTxByHash(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted and [%s] expected", t.Name(), test.input, test.expected)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%v] error [%s]", t.Name(), test.input, test.expected, output, err.Error())
@@ -338,6 +340,7 @@ func TestClient_GetMerkleProof(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -354,7 +357,7 @@ func TestClient_GetMerkleProof(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetMerkleProof(test.input); err == nil && test.expectedError {
+		if output, err := client.GetMerkleProof(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -374,6 +377,7 @@ func TestClient_GetRawTransactionData(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -389,7 +393,7 @@ func TestClient_GetRawTransactionData(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetRawTransactionData(test.input); err == nil && test.expectedError {
+		if output, err := client.GetRawTransactionData(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted and [%s] expected", t.Name(), test.input, test.expected)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%v] error [%s]", t.Name(), test.input, test.expected, output, err.Error())
@@ -407,6 +411,7 @@ func TestClient_GetRawTransactionOutputData(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -422,7 +427,7 @@ func TestClient_GetRawTransactionOutputData(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetRawTransactionOutputData(test.input, 0); err == nil && test.expectedError {
+		if output, err := client.GetRawTransactionOutputData(ctx, test.input, 0); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted and [%s] expected", t.Name(), test.input, test.expected)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%v] error [%s]", t.Name(), test.input, test.expected, output, err.Error())
@@ -440,6 +445,7 @@ func TestClient_BulkTransactionDetails(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -458,7 +464,7 @@ func TestClient_BulkTransactionDetails(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.BulkTransactionDetails(test.input); err == nil && test.expectedError {
+		if output, err := client.BulkTransactionDetails(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -478,6 +484,7 @@ func TestClient_BroadcastTx(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPBroadcast{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -494,7 +501,7 @@ func TestClient_BroadcastTx(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.BroadcastTx(test.input); err == nil && test.expectedError {
+		if output, err := client.BroadcastTx(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted and [%s] expected", t.Name(), test.input, test.expected)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%v] error [%s]", t.Name(), test.input, test.expected, output, err.Error())
@@ -512,6 +519,7 @@ func TestClient_BulkBroadcastTx(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPBroadcastBulk{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -528,7 +536,7 @@ func TestClient_BulkBroadcastTx(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.BulkBroadcastTx(test.input, test.feedback); err == nil && test.expectedError {
+		if output, err := client.BulkBroadcastTx(ctx, test.input, test.feedback); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted and [%s] expected", t.Name(), test.input, test.expected)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%v] error [%s]", t.Name(), test.input, test.expected, output, err.Error())
@@ -546,6 +554,7 @@ func TestClient_BulkBroadcastTxMaxValues(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPBroadcastBulk{})
+	ctx := context.Background()
 
 	// Create an input with more than the max txs
 	var bulkTransactions []string
@@ -554,7 +563,7 @@ func TestClient_BulkBroadcastTxMaxValues(t *testing.T) {
 	}
 
 	// Test the max
-	_, err := client.BulkBroadcastTx(bulkTransactions, true)
+	_, err := client.BulkBroadcastTx(ctx, bulkTransactions, true)
 	if err == nil {
 		t.Errorf("%s Failed: expected to throw an error, no error, total txs %d", t.Name(), len(bulkTransactions))
 	}
@@ -568,7 +577,7 @@ func TestClient_BulkBroadcastTxMaxValues(t *testing.T) {
 	maxSizeTx = append(maxSizeTx, txString)
 
 	// Test the max
-	_, err = client.BulkBroadcastTx(maxSizeTx, true)
+	_, err = client.BulkBroadcastTx(ctx, maxSizeTx, true)
 	if err == nil {
 		t.Errorf("%s Failed: expected to throw an error, no error, total txs %d", t.Name(), len(bulkTransactions))
 	}
@@ -579,7 +588,7 @@ func TestClient_BulkBroadcastTxMaxValues(t *testing.T) {
 	}
 
 	// Test the max
-	_, err = client.BulkBroadcastTx(maxSizeTx, true)
+	_, err = client.BulkBroadcastTx(ctx, maxSizeTx, true)
 	if err == nil {
 		t.Errorf("%s Failed: expected to throw an error, no error, total txs %d", t.Name(), len(bulkTransactions))
 	}
@@ -591,6 +600,7 @@ func TestClient_DecodeTransaction(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPBroadcast{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -605,7 +615,7 @@ func TestClient_DecodeTransaction(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.DecodeTransaction(test.input); err == nil && test.expectedError {
+		if output, err := client.DecodeTransaction(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted and [%s] expected", t.Name(), test.input, test.expected)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%v] error [%s]", t.Name(), test.input, test.expected, output, err.Error())
@@ -623,6 +633,7 @@ func TestClient_DownloadReceipt(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -637,7 +648,7 @@ func TestClient_DownloadReceipt(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.DownloadReceipt(test.input); err == nil && test.expectedError {
+		if output, err := client.DownloadReceipt(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -655,6 +666,7 @@ func TestClient_BulkTransactionDetailsProcessor(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
 
 	var tests = []struct {
 		name          string
@@ -736,7 +748,7 @@ func TestClient_BulkTransactionDetailsProcessor(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if output, err := client.BulkTransactionDetailsProcessor(test.input); err == nil && test.expectedError {
+			if output, err := client.BulkTransactionDetailsProcessor(ctx, test.input); err == nil && test.expectedError {
 				t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 			} else if err != nil && !test.expectedError {
 				t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())

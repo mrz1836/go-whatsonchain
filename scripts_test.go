@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -93,6 +94,7 @@ func TestClient_GetScriptHistory(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPScript{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -108,7 +110,7 @@ func TestClient_GetScriptHistory(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetScriptHistory(test.input); err == nil && test.expectedError {
+		if output, err := client.GetScriptHistory(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -128,6 +130,7 @@ func TestClient_GetScriptUnspentTransactions(t *testing.T) {
 
 	// New mock client
 	client := newMockClient(&mockHTTPScript{})
+	ctx := context.Background()
 
 	// Create the list of tests
 	var tests = []struct {
@@ -144,7 +147,7 @@ func TestClient_GetScriptUnspentTransactions(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetScriptUnspentTransactions(test.input); err == nil && test.expectedError {
+		if output, err := client.GetScriptUnspentTransactions(ctx, test.input); err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
@@ -164,8 +167,8 @@ func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
 
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPScript{})
-
-		balances, err := client.BulkScriptUnspentTransactions(&ScriptsList{Scripts: []string{
+		ctx := context.Background()
+		balances, err := client.BulkScriptUnspentTransactions(ctx, &ScriptsList{Scripts: []string{
 			"f814a7c3a40164aacc440871e8b7b14eb6a45f0ca7dcbeaea709edc83274c5e7",
 			"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3",
 		}})
@@ -176,8 +179,8 @@ func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
 
 	t.Run("max scripts (error)", func(t *testing.T) {
 		client := newMockClient(&mockHTTPScript{})
-
-		balances, err := client.BulkScriptUnspentTransactions(&ScriptsList{Scripts: []string{
+		ctx := context.Background()
+		balances, err := client.BulkScriptUnspentTransactions(ctx, &ScriptsList{Scripts: []string{
 			"1",
 			"2",
 			"3",
@@ -206,8 +209,8 @@ func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
 
 	t.Run("bad response (error)", func(t *testing.T) {
 		client := newMockClient(&mockHTTPScriptErrors{})
-
-		balances, err := client.BulkScriptUnspentTransactions(&ScriptsList{Scripts: []string{
+		ctx := context.Background()
+		balances, err := client.BulkScriptUnspentTransactions(ctx, &ScriptsList{Scripts: []string{
 			"f814a7c3a40164aacc440871e8b7b14eb6a45f0ca7dcbeaea709edc83274c5e7",
 		}})
 		assert.Error(t, err)

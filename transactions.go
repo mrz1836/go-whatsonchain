@@ -1,6 +1,7 @@
 package whatsonchain
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,11 +12,15 @@ import (
 // GetTxByHash this endpoint retrieves transaction details with given transaction hash
 //
 // For more information: https://developers.whatsonchain.com/#get-by-tx-hash
-func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
+func (c *Client) GetTxByHash(ctx context.Context, hash string) (txInfo *TxInfo, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>
-	if resp, err = c.request(fmt.Sprintf("%s%s/tx/hash/%s", apiEndpoint, c.Network, hash), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/tx/hash/%s", apiEndpoint, c.Network, hash),
+		http.MethodGet, nil,
+	); err != nil {
 		return
 	}
 
@@ -27,11 +32,14 @@ func (c *Client) GetTxByHash(hash string) (txInfo *TxInfo, err error) {
 // Max 20 transactions per request
 //
 // For more information: https://developers.whatsonchain.com/#bulk-transaction-details
-func (c *Client) BulkTransactionDetails(hashes *TxHashes) (txList TxList, err error) {
+func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
 
 	// The max limit by WOC
 	if len(hashes.TxIDs) > MaxTransactionsUTXO {
-		err = fmt.Errorf("max limit of utxos is %d and you sent %d", MaxTransactionsUTXO, len(hashes.TxIDs))
+		err = fmt.Errorf(
+			"max limit of utxos is %d and you sent %d",
+			MaxTransactionsUTXO, len(hashes.TxIDs),
+		)
 		return
 	}
 
@@ -43,7 +51,11 @@ func (c *Client) BulkTransactionDetails(hashes *TxHashes) (txList TxList, err er
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/txs
-	if resp, err = c.request(fmt.Sprintf("%s%s/txs", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/txs", apiEndpoint, c.Network),
+		http.MethodPost, postData,
+	); err != nil {
 		return
 	}
 
@@ -56,7 +68,7 @@ func (c *Client) BulkTransactionDetails(hashes *TxHashes) (txList TxList, err er
 // BulkTransactionDetailsProcessor will get the details for ALL transactions in batches
 // Processes 20 transactions per request
 // See: BulkTransactionDetails()
-func (c *Client) BulkTransactionDetailsProcessor(hashes *TxHashes) (txList TxList, err error) {
+func (c *Client) BulkTransactionDetailsProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
 
 	// Break up the transactions into batches
 	var batches [][]string
@@ -84,7 +96,9 @@ func (c *Client) BulkTransactionDetailsProcessor(hashes *TxHashes) (txList TxLis
 
 		// Get the tx details (max of MaxTransactionsUTXO)
 		var returnedList TxList
-		if returnedList, err = c.BulkTransactionDetails(txHashes); err != nil {
+		if returnedList, err = c.BulkTransactionDetails(
+			ctx, txHashes,
+		); err != nil {
 			return
 		}
 
@@ -105,11 +119,15 @@ func (c *Client) BulkTransactionDetailsProcessor(hashes *TxHashes) (txList TxLis
 // GetMerkleProof this endpoint returns merkle branch to a confirmed transaction
 //
 // For more information: https://developers.whatsonchain.com/#get-merkle-proof
-func (c *Client) GetMerkleProof(hash string) (merkleResults MerkleResults, err error) {
+func (c *Client) GetMerkleProof(ctx context.Context, hash string) (merkleResults MerkleResults, err error) {
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/proof
-	if resp, err = c.request(fmt.Sprintf("%s%s/tx/%s/proof", apiEndpoint, c.Network, hash), http.MethodGet, nil); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/tx/%s/proof", apiEndpoint, c.Network, hash),
+		http.MethodGet, nil,
+	); err != nil {
 		return
 	}
 
@@ -120,32 +138,44 @@ func (c *Client) GetMerkleProof(hash string) (merkleResults MerkleResults, err e
 // GetRawTransactionData this endpoint returns raw hex for the transaction with given hash
 //
 // For more information: https://developers.whatsonchain.com/#get-raw-transaction-data
-func (c *Client) GetRawTransactionData(hash string) (string, error) {
+func (c *Client) GetRawTransactionData(ctx context.Context, hash string) (string, error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/hex
-	return c.request(fmt.Sprintf("%s%s/tx/%s/hex", apiEndpoint, c.Network, hash), http.MethodGet, nil)
+	return c.request(
+		ctx,
+		fmt.Sprintf("%s%s/tx/%s/hex", apiEndpoint, c.Network, hash),
+		http.MethodGet, nil,
+	)
 }
 
 // GetRawTransactionOutputData this endpoint returns raw hex for the transaction output with given hash and index
 //
 // For more information: https://developers.whatsonchain.com/#get-raw-transaction-output-data
-func (c *Client) GetRawTransactionOutputData(hash string, vOutIndex int) (string, error) {
+func (c *Client) GetRawTransactionOutputData(ctx context.Context, hash string, vOutIndex int) (string, error) {
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/out/<index>/hex
-	return c.request(fmt.Sprintf("%s%s/tx/%s/out/%d/hex", apiEndpoint, c.Network, hash, vOutIndex), http.MethodGet, nil)
+	return c.request(
+		ctx,
+		fmt.Sprintf("%s%s/tx/%s/out/%d/hex", apiEndpoint, c.Network, hash, vOutIndex),
+		http.MethodGet, nil,
+	)
 }
 
 // BroadcastTx will broadcast transaction using this endpoint.
 // Get tx_id in response or error msg from node.
 //
 // For more information: https://developers.whatsonchain.com/#broadcast-transaction
-func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
+func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, err error) {
 
 	// Start the post data
 	postData := []byte(fmt.Sprintf(`{"txhex":"%s"}`, txHex))
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
-	if txID, err = c.request(fmt.Sprintf("%s%s/tx/raw", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
+	if txID, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/tx/raw", apiEndpoint, c.Network),
+		http.MethodPost, postData,
+	); err != nil {
 		return
 	}
 
@@ -177,7 +207,8 @@ func (c *Client) BroadcastTx(txHex string) (txID string, err error) {
 // for up to 5 hours.
 //
 // For more information: https://developers.whatsonchain.com/#bulk-broadcast
-func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *BulkBroadcastResponse, err error) {
+func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
+	feedback bool) (response *BulkBroadcastResponse, err error) {
 
 	// Set a max (from WOC)
 	if len(rawTxs) > MaxBroadcastTransactions {
@@ -205,12 +236,15 @@ func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *Bulk
 	var resp string
 
 	// https://api.whatsonchain.com/v1/bsv/tx/broadcast?feedback=<feedback>
-	if resp, err = c.request(fmt.Sprintf("%stx/broadcast?feedback=%t", apiEndpoint, feedback), http.MethodPost, postData); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%stx/broadcast?feedback=%t", apiEndpoint, feedback),
+		http.MethodPost, postData,
+	); err != nil {
 		return
 	}
 
-	response = new(BulkBroadcastResponse)
-	response.Feedback = feedback
+	response = &BulkBroadcastResponse{Feedback: feedback}
 	if feedback {
 		if err = json.Unmarshal([]byte(resp), response); err != nil {
 			return
@@ -228,14 +262,18 @@ func (c *Client) BulkBroadcastTx(rawTxs []string, feedback bool) (response *Bulk
 // DecodeTransaction this endpoint decodes raw transaction
 //
 // For more information: https://developers.whatsonchain.com/#decode-transaction
-func (c *Client) DecodeTransaction(txHex string) (txInfo *TxInfo, err error) {
+func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (txInfo *TxInfo, err error) {
 
 	// Start the post data
 	postData := []byte(fmt.Sprintf(`{"txhex":"%s"}`, txHex))
 
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/decode
-	if resp, err = c.request(fmt.Sprintf("%s%s/tx/decode", apiEndpoint, c.Network), http.MethodPost, postData); err != nil {
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/tx/decode", apiEndpoint, c.Network),
+		http.MethodPost, postData,
+	); err != nil {
 		return
 	}
 
@@ -247,9 +285,13 @@ func (c *Client) DecodeTransaction(txHex string) (txInfo *TxInfo, err error) {
 // The contents will be returned in plain-text and need to be converted to a file.pdf
 //
 // For more information: https://developers.whatsonchain.com/#download-receipt
-func (c *Client) DownloadReceipt(hash string) (string, error) {
+func (c *Client) DownloadReceipt(ctx context.Context, hash string) (string, error) {
 
 	// https://<network>.whatsonchain.com/receipt/<hash>
 	// todo: this endpoint does not follow the convention of the WOC API v1
-	return c.request(fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network, hash), http.MethodGet, nil)
+	return c.request(
+		ctx,
+		fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network, hash),
+		http.MethodGet, nil,
+	)
 }

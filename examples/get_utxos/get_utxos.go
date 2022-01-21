@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/mrz1836/go-whatsonchain"
@@ -12,7 +13,7 @@ func main() {
 	client := whatsonchain.NewClient(whatsonchain.NetworkMain, nil, nil)
 
 	// Get UTXOs for an address
-	history, err := client.AddressUnspentTransactions("16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+	history, err := client.AddressUnspentTransactions(context.Background(), "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
 	if err != nil {
 		fmt.Printf("error getting utxos: %s", err.Error())
 	} else if len(history) == 0 {

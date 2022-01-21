@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/mrz1836/go-whatsonchain"
@@ -13,7 +14,13 @@ func main() {
 
 	// Get the balance for multiple addresses
 	balances, _ := client.BulkUnspentTransactions(
-		&whatsonchain.AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}},
+		context.Background(),
+		&whatsonchain.AddressList{
+			Addresses: []string{
+				"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+				"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob",
+			},
+		},
 	)
 
 	for _, record := range balances {
