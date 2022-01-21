@@ -7,7 +7,7 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      # Check for npm updates at 9am UTC (5am EST)
+      # Check for updates at 9am UTC (5am EST)
       time: "10:00"
     reviewers:
       - "mrz1836"
