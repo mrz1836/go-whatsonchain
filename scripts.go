@@ -16,7 +16,7 @@ func (c *Client) GetScriptHistory(ctx context.Context, scriptHash string) (histo
 	// https://api.whatsonchain.com/v1/bsv/<network>/script/<scriptHash>/history
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/script/%s/history", apiEndpoint, c.Network, scriptHash),
+		fmt.Sprintf("%s%s/script/%s/history", apiEndpoint, c.Network(), scriptHash),
 		http.MethodGet, nil,
 	); err != nil {
 		return
@@ -36,7 +36,7 @@ func (c *Client) GetScriptUnspentTransactions(ctx context.Context,
 	// https://api.whatsonchain.com/v1/bsv/<network>/script/<scriptHash>/unspent
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/script/%s/unspent", apiEndpoint, c.Network, scriptHash),
+		fmt.Sprintf("%s%s/script/%s/unspent", apiEndpoint, c.Network(), scriptHash),
 		http.MethodGet, nil,
 	); err != nil {
 		return
@@ -72,7 +72,7 @@ func (c *Client) BulkScriptUnspentTransactions(ctx context.Context,
 	// https://api.whatsonchain.com/v1/bsv/<network>/scripts/unspent
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/scripts/unspent", apiEndpoint, c.Network),
+		fmt.Sprintf("%s%s/scripts/unspent", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
 		return

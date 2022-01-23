@@ -252,8 +252,8 @@ func TestClient_AddressInfo(t *testing.T) {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%v] error [%s]", t.Name(), test.input, test.expected, output, err.Error())
 		} else if output != nil && output.Address != test.expected && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.expected, output.Address)
-		} else if client.LastRequest.StatusCode != test.statusCode {
-			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
 	}
 }
@@ -288,8 +288,8 @@ func TestClient_AddressBalance(t *testing.T) {
 			t.Errorf("%s Failed: [%s] inputted and [%d] confirm expected, received: [%d]", t.Name(), test.input, test.confirmed, output.Confirmed)
 		} else if output != nil && output.Unconfirmed != test.unconfirmed && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%d] unconfirmed expected, received: [%d]", t.Name(), test.input, test.unconfirmed, output.Unconfirmed)
-		} else if client.LastRequest.StatusCode != test.statusCode {
-			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
 	}
 }
@@ -325,8 +325,8 @@ func TestClient_AddressHistory(t *testing.T) {
 			t.Errorf("%s Failed: [%s] inputted and [%s] hash expected, received: [%s]", t.Name(), test.input, test.txHash, output[0].TxHash)
 		} else if output != nil && len(output) > 0 && output[0].Height != test.height && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%d] height expected, received: [%d]", t.Name(), test.input, test.height, output[0].Height)
-		} else if client.LastRequest.StatusCode != test.statusCode {
-			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
 	}
 }
@@ -367,8 +367,8 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 			} else if output[0].Value != test.value {
 				t.Errorf("%s Failed: [%s] inputted and [%d] value expected, received: [%d]", t.Name(), test.input, test.value, output[0].Value)
 			}
-		} else if client.LastRequest.StatusCode != test.statusCode {
-			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
 	}
 }
@@ -402,8 +402,8 @@ func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
 			t.Errorf("%s Failed: [%s] inputted and [%s] hash expected, received: [%s]", t.Name(), test.input, test.txHash, output[0].TxHash)
 		} else if output != nil && len(output) > 0 && output[0].Height != test.height && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%d] height expected, received: [%d]", t.Name(), test.input, test.height, output[0].Height)
-		} else if client.LastRequest.StatusCode != test.statusCode {
-			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
 	}
 }
@@ -435,8 +435,8 @@ func TestClient_DownloadStatement(t *testing.T) {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
 		} else if !strings.Contains(output, test.expected) && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.expected, output)
-		} else if client.LastRequest.StatusCode != test.statusCode {
-			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
 	}
 }

@@ -140,8 +140,8 @@ func TestClient_GetBlockByHash(t *testing.T) {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
 		} else if output != nil && output.Hash != test.expected && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.expected, output.Hash)
-		} else if client.LastRequest.StatusCode != test.statusCode {
-			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
 	}
 }
@@ -174,8 +174,8 @@ func TestClient_GetBlockByHeight(t *testing.T) {
 			t.Errorf("%s Failed: [%d] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
 		} else if output != nil && output.Height != test.expected && !test.expectedError {
 			t.Errorf("%s Failed: [%d] inputted and [%d] expected, received: [%s]", t.Name(), test.input, test.expected, output.Hash)
-		} else if client.LastRequest.StatusCode != test.statusCode {
-			t.Errorf("%s Expected status code to be %d, got %d, [%d] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%d] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
 	}
 }
@@ -208,8 +208,8 @@ func TestClient_GetBlockPages(t *testing.T) {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
 		} else if output != nil && output[0] != test.expected && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.expected, output[0])
-		} else if client.LastRequest.StatusCode != test.statusCode {
-			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
 	}
 
@@ -242,8 +242,8 @@ func TestClient_GetHeaderByHash(t *testing.T) {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
 		} else if output != nil && output.Hash != test.expected && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.expected, output.Hash)
-		} else if client.LastRequest.StatusCode != test.statusCode {
-			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest.StatusCode, test.input)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
 	}
 }
@@ -275,8 +275,8 @@ func TestClient_GetHeaders(t *testing.T) {
 			t.Errorf("%s Failed: received: [%v] error [%s]", t.Name(), output, err.Error())
 		} else if output != nil && output[0].Hash != test.expected && !test.expectedError {
 			t.Errorf("%s Failed: [%s] expected, received: [%s]", t.Name(), test.expected, output[0].Hash)
-		} else if client.LastRequest.StatusCode != test.statusCode {
-			t.Errorf("%s Expected status code to be %d, got %d", t.Name(), test.statusCode, client.LastRequest.StatusCode)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d", t.Name(), test.statusCode, client.LastRequest().StatusCode)
 		}
 	}
 }

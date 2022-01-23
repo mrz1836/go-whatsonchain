@@ -16,7 +16,7 @@ func (c *Client) GetExchangeRate(ctx context.Context) (rate *ExchangeRate, err e
 	// https://api.whatsonchain.com/v1/bsv/<network>/exchangerate
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/exchangerate", apiEndpoint, c.Network),
+		fmt.Sprintf("%s%s/exchangerate", apiEndpoint, c.Network()),
 		http.MethodGet, nil,
 	); err != nil {
 		return

@@ -249,7 +249,7 @@ type MerchantStatus struct {
 	TxSecondMempoolExpiry int    `json:"txSecondMempoolExpiry"`
 }
 
-// Page is used as a sub-type for BlockInfo
+// Page is used as a subtype for BlockInfo
 type Page struct {
 	Size int64    `json:"size"`
 	URI  []string `json:"uri"`

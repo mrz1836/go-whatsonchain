@@ -18,7 +18,7 @@ func (c *Client) GetTxByHash(ctx context.Context, hash string) (txInfo *TxInfo, 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/hash/%s", apiEndpoint, c.Network, hash),
+		fmt.Sprintf("%s%s/tx/hash/%s", apiEndpoint, c.Network(), hash),
 		http.MethodGet, nil,
 	); err != nil {
 		return
@@ -53,7 +53,7 @@ func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (
 	// https://api.whatsonchain.com/v1/bsv/<network>/txs
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/txs", apiEndpoint, c.Network),
+		fmt.Sprintf("%s%s/txs", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
 		return
@@ -125,7 +125,7 @@ func (c *Client) GetMerkleProof(ctx context.Context, hash string) (merkleResults
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/proof
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/%s/proof", apiEndpoint, c.Network, hash),
+		fmt.Sprintf("%s%s/tx/%s/proof", apiEndpoint, c.Network(), hash),
 		http.MethodGet, nil,
 	); err != nil {
 		return
@@ -143,7 +143,7 @@ func (c *Client) GetRawTransactionData(ctx context.Context, hash string) (string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/hex
 	return c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/%s/hex", apiEndpoint, c.Network, hash),
+		fmt.Sprintf("%s%s/tx/%s/hex", apiEndpoint, c.Network(), hash),
 		http.MethodGet, nil,
 	)
 }
@@ -156,7 +156,7 @@ func (c *Client) GetRawTransactionOutputData(ctx context.Context, hash string, v
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/out/<index>/hex
 	return c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/%s/out/%d/hex", apiEndpoint, c.Network, hash, vOutIndex),
+		fmt.Sprintf("%s%s/tx/%s/out/%d/hex", apiEndpoint, c.Network(), hash, vOutIndex),
 		http.MethodGet, nil,
 	)
 }
@@ -173,14 +173,14 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
 	if txID, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/raw", apiEndpoint, c.Network),
+		fmt.Sprintf("%s%s/tx/raw", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
 		return
 	}
 
 	// Got an error
-	if c.LastRequest.StatusCode > http.StatusOK {
+	if c.lastRequest.StatusCode > http.StatusOK {
 		err = fmt.Errorf("error broadcasting: %s", txID)
 		txID = "" // remove the error message
 	} else {
@@ -252,7 +252,7 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 	}
 
 	// Got an error
-	if c.LastRequest.StatusCode > http.StatusOK {
+	if c.lastRequest.StatusCode > http.StatusOK {
 		err = fmt.Errorf("error broadcasting: %s", resp)
 	}
 
@@ -271,7 +271,7 @@ func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (txInfo *T
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/decode
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/decode", apiEndpoint, c.Network),
+		fmt.Sprintf("%s%s/tx/decode", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
 		return
@@ -291,7 +291,7 @@ func (c *Client) DownloadReceipt(ctx context.Context, hash string) (string, erro
 	// todo: this endpoint does not follow the convention of the WOC API v1
 	return c.request(
 		ctx,
-		fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network, hash),
+		fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network(), hash),
 		http.MethodGet, nil,
 	)
 }

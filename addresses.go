@@ -16,7 +16,7 @@ func (c *Client) AddressInfo(ctx context.Context, address string) (addressInfo *
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/info
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/address/%s/info", apiEndpoint, c.Network, address),
+		fmt.Sprintf("%s%s/address/%s/info", apiEndpoint, c.Network(), address),
 		http.MethodGet, nil,
 	); err != nil {
 		return
@@ -35,7 +35,7 @@ func (c *Client) AddressBalance(ctx context.Context, address string) (balance *A
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/balance
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/address/%s/balance", apiEndpoint, c.Network, address),
+		fmt.Sprintf("%s%s/address/%s/balance", apiEndpoint, c.Network(), address),
 		http.MethodGet, nil,
 	); err != nil {
 		return
@@ -54,7 +54,7 @@ func (c *Client) AddressHistory(ctx context.Context, address string) (history Ad
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/history
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/address/%s/history", apiEndpoint, c.Network, address),
+		fmt.Sprintf("%s%s/address/%s/history", apiEndpoint, c.Network(), address),
 		http.MethodGet, nil,
 	); err != nil {
 		return
@@ -73,7 +73,7 @@ func (c *Client) AddressUnspentTransactions(ctx context.Context, address string)
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/unspent
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/address/%s/unspent", apiEndpoint, c.Network, address),
+		fmt.Sprintf("%s%s/address/%s/unspent", apiEndpoint, c.Network(), address),
 		http.MethodGet, nil,
 	); err != nil {
 		return
@@ -164,7 +164,7 @@ func (c *Client) DownloadStatement(ctx context.Context, address string) (string,
 	// todo: this endpoint does not follow the convention of the WOC API v1
 	return c.request(
 		ctx,
-		fmt.Sprintf("https://%s.whatsonchain.com/statement/%s", c.Network, address),
+		fmt.Sprintf("https://%s.whatsonchain.com/statement/%s", c.Network(), address),
 		http.MethodGet, nil,
 	)
 }
@@ -200,7 +200,7 @@ func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (balances A
 	// https://api.whatsonchain.com/v1/bsv/<network>/addresses/balance
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/addresses/balance", apiEndpoint, c.Network),
+		fmt.Sprintf("%s%s/addresses/balance", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
 		return
@@ -226,7 +226,7 @@ func (c *Client) BulkUnspentTransactions(ctx context.Context, list *AddressList)
 	// https://api.whatsonchain.com/v1/bsv/<network>/addresses/unspent
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/addresses/unspent", apiEndpoint, c.Network),
+		fmt.Sprintf("%s%s/addresses/unspent", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
 		return

@@ -16,7 +16,7 @@ func (c *Client) GetMempoolInfo(ctx context.Context) (info *MempoolInfo, err err
 	// https://api.whatsonchain.com/v1/bsv/<network>/mempool/info
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/mempool/info", apiEndpoint, c.Network),
+		fmt.Sprintf("%s%s/mempool/info", apiEndpoint, c.Network()),
 		http.MethodGet, nil,
 	); err != nil {
 		return
@@ -36,7 +36,7 @@ func (c *Client) GetMempoolTransactions(ctx context.Context) (transactions []str
 	// https://api.whatsonchain.com/v1/bsv/<network>/mempool/raw
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/mempool/raw", apiEndpoint, c.Network),
+		fmt.Sprintf("%s%s/mempool/raw", apiEndpoint, c.Network()),
 		http.MethodGet, nil,
 	); err != nil {
 		return

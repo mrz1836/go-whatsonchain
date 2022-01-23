@@ -23,7 +23,7 @@ import (
 )
 
 // NewClient creates a new client for WOC requests
-func NewClient(network NetworkType, clientOptions *Options, customHTTPClient HTTPInterface) *Client {
+func NewClient(network NetworkType, clientOptions *Options, customHTTPClient HTTPInterface) ClientInterface {
 
 	// Sets the network, options and custom HTTP client
 	return createClient(network, clientOptions, customHTTPClient)
@@ -38,12 +38,12 @@ func (c *Client) request(ctx context.Context, url string, method string, payload
 	// Add post data if applicable
 	if method == http.MethodPost || method == http.MethodPut {
 		bodyReader = bytes.NewBuffer(payload)
-		c.LastRequest.PostData = string(payload)
+		c.LastRequest().PostData = string(payload)
 	}
 
 	// Store for debugging purposes
-	c.LastRequest.Method = method
-	c.LastRequest.URL = url
+	c.LastRequest().Method = method
+	c.LastRequest().URL = url
 
 	// Start the request
 	var request *http.Request
@@ -54,7 +54,7 @@ func (c *Client) request(ctx context.Context, url string, method string, payload
 	}
 
 	// Change the header (user agent is in case they block default Go user agents)
-	request.Header.Set("User-Agent", c.UserAgent)
+	request.Header.Set("User-Agent", c.UserAgent())
 
 	// Set the content type on Method
 	if method == http.MethodPost || method == http.MethodPut {
@@ -65,7 +65,7 @@ func (c *Client) request(ctx context.Context, url string, method string, payload
 	var resp *http.Response
 	if resp, err = c.httpClient.Do(request); err != nil {
 		if resp != nil {
-			c.LastRequest.StatusCode = resp.StatusCode
+			c.LastRequest().StatusCode = resp.StatusCode
 		}
 		return
 	}
@@ -76,7 +76,7 @@ func (c *Client) request(ctx context.Context, url string, method string, payload
 	}()
 
 	// Set the status
-	c.LastRequest.StatusCode = resp.StatusCode
+	c.LastRequest().StatusCode = resp.StatusCode
 
 	// Read the body
 	var body []byte
@@ -87,4 +87,24 @@ func (c *Client) request(ctx context.Context, url string, method string, payload
 	// Return the raw JSON response
 	response = string(body)
 	return
+}
+
+// UserAgent will return the current user agent
+func (c *Client) UserAgent() string {
+	return c.userAgent
+}
+
+// Network will return the network
+func (c *Client) Network() NetworkType {
+	return c.network
+}
+
+// LastRequest will return the last request information
+func (c *Client) LastRequest() *LastRequest {
+	return c.lastRequest
+}
+
+// HTTPClient will return the current HTTP client
+func (c *Client) HTTPClient() HTTPInterface {
+	return c.httpClient
 }

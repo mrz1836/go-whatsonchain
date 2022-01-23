@@ -12,7 +12,7 @@ import (
 const (
 
 	// version is the current version
-	version = "v0.8.0"
+	version = "v0.9.0"
 
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-whatsonchain: " + version
@@ -29,9 +29,9 @@ type HTTPInterface interface {
 // Client is the parent struct that wraps the heimdall client
 type Client struct {
 	httpClient  HTTPInterface // carries out the http operations (heimdall client)
-	LastRequest *LastRequest  // is the raw information from the last request
-	Network     NetworkType   // is the BitcoinSV network to use
-	UserAgent   string        // optional for changing user agents
+	lastRequest *LastRequest  // is the raw information from the last request
+	network     NetworkType   // is the BitcoinSV network to use
+	userAgent   string        // optional for changing user agents
 }
 
 // Options holds all the configuration for connection, dialer and transport
@@ -83,14 +83,9 @@ func ClientDefaultOptions() (clientOptions *Options) {
 func createClient(network NetworkType, options *Options, customHTTPClient HTTPInterface) (c *Client) {
 
 	// Create a client
-	c = new(Client)
-	c.LastRequest = new(LastRequest)
-	c.Network = network
-
-	// Is there a custom HTTP client to use?
-	if customHTTPClient != nil {
-		c.httpClient = customHTTPClient
-		return
+	c = &Client{
+		lastRequest: &LastRequest{},
+		network:     network,
 	}
 
 	// Set options (either default or user modified)
@@ -98,7 +93,13 @@ func createClient(network NetworkType, options *Options, customHTTPClient HTTPIn
 		options = ClientDefaultOptions()
 	}
 
-	c.UserAgent = options.UserAgent
+	c.userAgent = options.UserAgent
+
+	// Is there a custom HTTP client to use?
+	if customHTTPClient != nil {
+		c.httpClient = customHTTPClient
+		return
+	}
 
 	// dial is the net dialer for clientDefaultTransport
 	dial := &net.Dialer{KeepAlive: options.DialerKeepAlive, Timeout: options.DialerTimeout}

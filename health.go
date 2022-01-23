@@ -14,7 +14,7 @@ func (c *Client) GetHealth(ctx context.Context) (string, error) {
 	// https://api.whatsonchain.com/v1/bsv/<network>/woc
 	return c.request(
 		ctx,
-		fmt.Sprintf("%s%s/woc", apiEndpoint, c.Network),
+		fmt.Sprintf("%s%s/woc", apiEndpoint, c.Network()),
 		http.MethodGet, nil,
 	)
 }
