@@ -23,7 +23,7 @@ import (
 )
 
 // NewClient creates a new client for WOC requests
-func NewClient(network NetworkType, clientOptions *Options, customHTTPClient *http.Client) *Client {
+func NewClient(network NetworkType, clientOptions *Options, customHTTPClient HTTPInterface) *Client {
 
 	// Sets the network, options and custom HTTP client
 	return createClient(network, clientOptions, customHTTPClient)
