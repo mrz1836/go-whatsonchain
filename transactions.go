@@ -139,6 +139,27 @@ func (c *Client) GetMerkleProof(ctx context.Context, hash string) (merkleResults
 	return
 }
 
+// GetMerkleProofTSC this endpoint returns TSC compliant proof to a confirmed transaction
+//
+// For more information: TODO! No link today
+func (c *Client) GetMerkleProofTSC(ctx context.Context, hash string) (merkleResults MerkleTSCResults, err error) {
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/proof/tsc
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/tx/%s/proof/tsc", apiEndpoint, c.Network(), hash),
+		http.MethodGet, nil,
+	); err != nil {
+		return
+	}
+	if len(resp) == 0 {
+		return nil, ErrTransactionNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &merkleResults)
+	return
+}
+
 // GetRawTransactionData this endpoint returns raw hex for the transaction with given hash
 //
 // For more information: https://developers.whatsonchain.com/#get-raw-transaction-data

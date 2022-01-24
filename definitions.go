@@ -216,6 +216,17 @@ type MerkleBranch struct {
 	Pos  string `json:"pos"`
 }
 
+// MerkleTSCResults is the results from the tsc proof request
+type MerkleTSCResults []*MerkleTSCInfo
+
+// MerkleTSCInfo is the response for the get TSC merkle request
+type MerkleTSCInfo struct {
+	Index  int      `json:"index"`
+	TxOrID string   `json:"txOrId"`
+	Target string   `json:"target"`
+	Nodes  []string `json:"nodes"`
+}
+
 // MerchantResponse is the response from a tx submission
 type MerchantResponse struct {
 	APIVersion                string `json:"apiVersion"`
