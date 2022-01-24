@@ -78,6 +78,28 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 	}
 
 	//
+	// Get Merkle Proof TSC
+	//
+
+	// Valid
+	if strings.Contains(req.URL.String(), "/tx/c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96/proof/tsc") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`[{"index":0,"txOrId":"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96","target":"0000000000000000091216c46973d82db057a6f9911352892b7769ed517681c3","nodes":["7e0ba1980522125f1f40d19a249ab3ae036001b991776813d25aebe08e8b8a50","1e3a5a8946e0caf07006f6c4f76773d7e474d4f240a276844f866bd09820adb3"]}]`)))
+	}
+
+	// Invalid - invalid length
+	if strings.Contains(req.URL.String(), "/tx/error/proof/tsc") {
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`txid must be 64 hex characters in length`)))
+		return resp, fmt.Errorf("txid must be 64 hex characters in length")
+	}
+
+	// Invalid - tx is not valid
+	if strings.Contains(req.URL.String(), "/tx/c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz/proof") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`null`)))
+	}
+
+	//
 	// Get Raw Tx Data
 	//
 
