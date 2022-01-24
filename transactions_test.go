@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -91,6 +92,13 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 	if strings.Contains(req.URL.String(), "/tx/error/proof/tsc") {
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`txid must be 64 hex characters in length`)))
 		return resp, fmt.Errorf("txid must be 64 hex characters in length")
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/tx/notFound/proof/tsc") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
 	}
 
 	// Invalid - tx is not valid
@@ -424,6 +432,47 @@ func TestClient_GetMerkleProof(t *testing.T) {
 			t.Errorf("%s Failed: [%s] inputted and [%s] blockhash expected, received: [%s]", t.Name(), test.input, test.blockHash, output[0].BlockHash)
 		} else if output != nil && output[0].MerkleRoot != test.merkleRoot && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] merkle root expected, received: [%s]", t.Name(), test.input, test.merkleRoot, output[0].MerkleRoot)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
+		}
+	}
+}
+
+// TestClient_GetMerkleProofTSC tests the GetMerkleProofTSC()
+func TestClient_GetMerkleProofTSC(t *testing.T) {
+	t.Parallel()
+
+	// New mock client
+	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
+
+	// Create the list of tests
+	var tests = []struct {
+		index         int
+		input         string
+		target        string
+		nodes         []string
+		expectedError bool
+		statusCode    int
+	}{
+		{0, "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "0000000000000000091216c46973d82db057a6f9911352892b7769ed517681c3", []string{"7e0ba1980522125f1f40d19a249ab3ae036001b991776813d25aebe08e8b8a50", "1e3a5a8946e0caf07006f6c4f76773d7e474d4f240a276844f866bd09820adb3"}, false, http.StatusOK},
+		{0, "error", "", []string{}, true, http.StatusBadRequest},
+		{0, "notFound", "", []string{}, true, http.StatusNotFound},
+		{0, "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz", "", []string{}, false, http.StatusOK},
+	}
+
+	// Test all
+	for _, test := range tests {
+		if output, err := client.GetMerkleProofTSC(ctx, test.input); err == nil && test.expectedError {
+			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
+		} else if err != nil && !test.expectedError {
+			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
+		} else if output != nil && output[0].Index != test.index && !test.expectedError {
+			t.Errorf("%s Failed: [%s] inputted and [%d] index expected, received: [%d]", t.Name(), test.input, test.index, output[0].Index)
+		} else if output != nil && output[0].Target != test.target && !test.expectedError {
+			t.Errorf("%s Failed: [%s] inputted and [%s] target (merkle root) expected, received: [%s]", t.Name(), test.input, test.target, output[0].Target)
+		} else if output != nil && !reflect.DeepEqual(output[0].Nodes, test.nodes) && !test.expectedError {
+			t.Errorf("%s Failed: [%s] inputted and [%v] nodes expected, received: [%v]", t.Name(), test.input, test.nodes, output[0].Nodes)
 		} else if client.LastRequest().StatusCode != test.statusCode {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
