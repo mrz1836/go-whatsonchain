@@ -160,10 +160,10 @@ pull_request_rules:
         - author!=dependabot[bot]
         - author!=mergify[bot]
         - author!=mrz1836
+        - author!=galt-tr
     actions:
       comment:
-        message: |
-          Welcome to our open-source project! 💘
+        message: "Welcome to our open-source project @{{author}}! 💘"
 
   # ===============================================================================
   # STALE BRANCHES
