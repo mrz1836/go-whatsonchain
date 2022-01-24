@@ -49,6 +49,13 @@ func (m *mockHTTPAddresses) Do(req *http.Request) (*http.Response, error) {
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`{"isvalid": false,"address": "","scriptPubKey": "","ismine": false,"iswatchonly": false,"isscript": false}`)))
 	}
 
+	// Not found
+	if strings.Contains(req.URL.String(), "/notFound/info") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
 	//
 	// Address Balance
 	//
@@ -63,6 +70,13 @@ func (m *mockHTTPAddresses) Do(req *http.Request) (*http.Response, error) {
 	if strings.Contains(req.URL.String(), "/16ZqP5invalid/balance") {
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
 		return resp, fmt.Errorf("bad request")
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/balance") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
 	}
 
 	//
@@ -87,6 +101,13 @@ func (m *mockHTTPAddresses) Do(req *http.Request) (*http.Response, error) {
 		return resp, fmt.Errorf("bad request")
 	}
 
+	// Not found
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/history") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
 	//
 	// Address unspent
 	//
@@ -107,6 +128,13 @@ func (m *mockHTTPAddresses) Do(req *http.Request) (*http.Response, error) {
 	if strings.Contains(req.URL.String(), "/16ZqP5invalid/unspent") {
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
 		return resp, fmt.Errorf("bad request")
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/unspent") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
 	}
 
 	//
@@ -224,6 +252,34 @@ func (m *mockHTTPAddressesErrors) Do(req *http.Request) (*http.Response, error) 
 	return nil, fmt.Errorf("no valid response found")
 }
 
+// mockHTTPAddressesNotFound for mocking requests
+type mockHTTPAddressesNotFound struct{}
+
+// Do is a mock http request
+func (m *mockHTTPAddressesNotFound) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusNotFound
+
+	// No req found
+	if req == nil {
+		return resp, fmt.Errorf("missing request")
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/addresses/balance") {
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/addresses/unspent") {
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
+	return resp, nil
+}
+
 // TestClient_AddressInfo tests the AddressInfo()
 func TestClient_AddressInfo(t *testing.T) {
 	t.Parallel()
@@ -242,6 +298,7 @@ func TestClient_AddressInfo(t *testing.T) {
 		{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", false, http.StatusOK},
 		{"16ZqP5invalid", "", false, http.StatusOK},
 		{"error", "", true, http.StatusInternalServerError},
+		{"notFound", "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -276,6 +333,7 @@ func TestClient_AddressBalance(t *testing.T) {
 	}{
 		{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", 10102050381, 123, false, http.StatusOK},
 		{"16ZqP5invalid", 0, 0, true, http.StatusBadRequest},
+		{"16ZqP5notFound", 0, 0, true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -313,6 +371,7 @@ func TestClient_AddressHistory(t *testing.T) {
 		{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", "6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1", 563052, false, http.StatusOK},
 		{"1NfHy82RqJVGEau9u5DwFRyGc6QKwDuQeT", "", 0, false, http.StatusOK},
 		{"16ZqP5invalid", "", 0, true, http.StatusBadRequest},
+		{"16ZqP5notFound", "", 0, true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -351,6 +410,7 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 		{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", "33b9432a0ea203bbb6ec00592622cf6e90223849e4c9a76447a19a3ed43907d3", 639302, 2451680, false, http.StatusOK},
 		{"1NfHy82RqJVGEau9u5DwFRyGc6QKwDuQeT", "", 0, 0, false, http.StatusOK},
 		{"16ZqP5invalid", "", 0, 0, true, http.StatusBadRequest},
+		{"16ZqP5notFound", "", 0, 0, true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -384,12 +444,14 @@ func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
 	// Create the list of tests
 	var tests = []struct {
 		input         string
-		txHash        string
+		txHash        string ``
 		height        int64
 		expectedError bool
 		statusCode    int
 	}{
 		{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", "33b9432a0ea203bbb6ec00592622cf6e90223849e4c9a76447a19a3ed43907d3", 639302, false, http.StatusOK},
+		{"16ZqP5notFound", "", 0, true, http.StatusNotFound},
+		{"16ZqP5invalid", "", 0, true, http.StatusBadRequest},
 	}
 
 	// Test all
@@ -493,6 +555,16 @@ func TestClient_BulkBalance(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, balances)
 	})
+
+	t.Run("not found", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddressesNotFound{})
+		ctx := context.Background()
+		balances, err := client.BulkBalance(ctx, &AddressList{Addresses: []string{
+			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+		}})
+		assert.Error(t, err)
+		assert.Nil(t, balances)
+	})
 }
 
 // TestClient_BulkUnspentTransactions tests the BulkUnspentTransactions()
@@ -548,4 +620,13 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 		assert.Nil(t, balances)
 	})
 
+	t.Run("not found", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddressesNotFound{})
+		ctx := context.Background()
+		balances, err := client.BulkUnspentTransactions(ctx, &AddressList{Addresses: []string{
+			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+		}})
+		assert.Error(t, err)
+		assert.Nil(t, balances)
+	})
 }

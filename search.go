@@ -22,7 +22,9 @@ func (c *Client) GetExplorerLinks(ctx context.Context, query string) (results Se
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return results, ErrChainInfoNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &results)
 	return
 }

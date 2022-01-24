@@ -68,6 +68,35 @@ func (m *mockHTTPMempoolInvalid) Do(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
+// mockHTTPMempoolNotFound for mocking requests
+type mockHTTPMempoolNotFound struct{}
+
+// Do is a mock http request
+func (m *mockHTTPMempoolNotFound) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusNotFound
+
+	// No req found
+	if req == nil {
+		return resp, fmt.Errorf("missing request")
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/mempool/info") {
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/mempool/raw") {
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
+	// Default is valid
+	return resp, nil
+}
+
 // TestClient_GetMempoolInfo tests the GetMempoolInfo()
 func TestClient_GetMempoolInfo(t *testing.T) {
 	t.Parallel()
@@ -98,6 +127,15 @@ func TestClient_GetMempoolInfo(t *testing.T) {
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}
+
+	// New not found mock client
+	client = newMockClient(&mockHTTPMempoolNotFound{})
+
+	// Test invalid response
+	_, err = client.GetMempoolInfo(ctx)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
 }
 
 // TestClient_GetMempoolTransactions tests the GetMempoolTransactions()
@@ -122,6 +160,15 @@ func TestClient_GetMempoolTransactions(t *testing.T) {
 
 	// New invalid mock client
 	client = newMockClient(&mockHTTPMempoolInvalid{})
+
+	// Test invalid response
+	_, err = client.GetMempoolTransactions(ctx)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
+
+	// New not found mock client
+	client = newMockClient(&mockHTTPMempoolNotFound{})
 
 	// Test invalid response
 	_, err = client.GetMempoolTransactions(ctx)

@@ -23,7 +23,9 @@ func (c *Client) GetTxByHash(ctx context.Context, hash string) (txInfo *TxInfo, 
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrTransactionNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &txInfo)
 	return
 }
@@ -130,7 +132,9 @@ func (c *Client) GetMerkleProof(ctx context.Context, hash string) (merkleResults
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrTransactionNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &merkleResults)
 	return
 }
@@ -276,7 +280,9 @@ func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (txInfo *T
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrTransactionNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &txInfo)
 	return
 }

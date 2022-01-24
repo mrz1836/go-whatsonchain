@@ -21,7 +21,9 @@ func (c *Client) GetMempoolInfo(ctx context.Context) (info *MempoolInfo, err err
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrMempoolInfoNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &info)
 	return
 }
@@ -41,7 +43,9 @@ func (c *Client) GetMempoolTransactions(ctx context.Context) (transactions []str
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrMempoolInfoNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &transactions)
 	return
 }

@@ -23,7 +23,9 @@ func (c *Client) GetChainInfo(ctx context.Context) (chainInfo *ChainInfo, err er
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrChainInfoNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &chainInfo)
 	return
 }

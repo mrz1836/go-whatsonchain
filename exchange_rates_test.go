@@ -56,6 +56,29 @@ func (m *mockHTTPExchangeInvalid) Do(req *http.Request) (*http.Response, error) 
 	return resp, nil
 }
 
+// mockHTTPExchangeNotFound for mocking requests
+type mockHTTPExchangeNotFound struct{}
+
+// Do is a mock http request
+func (m *mockHTTPExchangeNotFound) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusNotFound
+
+	// No req found
+	if req == nil {
+		return resp, fmt.Errorf("missing request")
+	}
+
+	// Invalid (exchange rate)
+	if strings.Contains(req.URL.String(), "/exchangerate") {
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
+	// Default is valid
+	return resp, nil
+}
+
 // TestClient_GetExchangeRate tests the GetExchangeRate()
 func TestClient_GetExchangeRate(t *testing.T) {
 	t.Parallel()
@@ -78,6 +101,15 @@ func TestClient_GetExchangeRate(t *testing.T) {
 
 	// New invalid mock client
 	client = newMockClient(&mockHTTPExchangeInvalid{})
+
+	// Test invalid response
+	_, err = client.GetExchangeRate(ctx)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
+
+	// New not found mock client
+	client = newMockClient(&mockHTTPExchangeNotFound{})
 
 	// Test invalid response
 	_, err = client.GetExchangeRate(ctx)

@@ -21,7 +21,9 @@ func (c *Client) GetExchangeRate(ctx context.Context) (rate *ExchangeRate, err e
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrExchangeRateNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &rate)
 	return
 }

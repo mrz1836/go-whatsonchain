@@ -68,6 +68,35 @@ func (m *mockHTTPChainInvalid) Do(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
+// mockHTTPChainNotFound for mocking requests
+type mockHTTPChainNotFound struct{}
+
+// Do is a mock http request
+func (m *mockHTTPChainNotFound) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusNotFound
+
+	// No req found
+	if req == nil {
+		return resp, fmt.Errorf("missing request")
+	}
+
+	// Not found (chain info)
+	if strings.Contains(req.URL.String(), "/chain/info") {
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
+	// Not found (circulating supply)
+	if strings.Contains(req.URL.String(), "/circulatingsupply") {
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
+	// Default is valid
+	return resp, nil
+}
+
 // TestClient_GetChainInfo tests the GetChainInfo()
 func TestClient_GetChainInfo(t *testing.T) {
 	t.Parallel()
@@ -89,7 +118,16 @@ func TestClient_GetChainInfo(t *testing.T) {
 	// New invalid mock client
 	client = newMockClient(&mockHTTPChainInvalid{})
 
-	// Test invalid response
+	// Test response
+	_, err = client.GetChainInfo(ctx)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
+
+	// New not found mock client
+	client = newMockClient(&mockHTTPChainNotFound{})
+
+	// Test response
 	_, err = client.GetChainInfo(ctx)
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
@@ -115,7 +153,16 @@ func TestClient_GetCirculatingSupply(t *testing.T) {
 	// New invalid mock client
 	client = newMockClient(&mockHTTPChainInvalid{})
 
-	// Test invalid response
+	// Test response
+	_, err = client.GetCirculatingSupply(ctx)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
+
+	// New not found mock client
+	client = newMockClient(&mockHTTPChainNotFound{})
+
+	// Test response
 	_, err = client.GetCirculatingSupply(ctx)
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())

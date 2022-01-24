@@ -21,7 +21,9 @@ func (c *Client) AddressInfo(ctx context.Context, address string) (addressInfo *
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &addressInfo)
 	return
 }
@@ -40,7 +42,9 @@ func (c *Client) AddressBalance(ctx context.Context, address string) (balance *A
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &balance)
 	return
 }
@@ -59,7 +63,9 @@ func (c *Client) AddressHistory(ctx context.Context, address string) (history Ad
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &history)
 	return
 }
@@ -78,7 +84,9 @@ func (c *Client) AddressUnspentTransactions(ctx context.Context, address string)
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &history)
 	return
 }
@@ -205,7 +213,9 @@ func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (balances A
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &balances)
 	return
 }
@@ -231,7 +241,9 @@ func (c *Client) BulkUnspentTransactions(ctx context.Context, list *AddressList)
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &response)
 	return
 }

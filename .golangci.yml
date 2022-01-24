@@ -335,7 +335,6 @@ linters:
     - bodyclose
     - revive
     - unconvert
-    - dupl
     - misspell
     - dogsled
     - prealloc
@@ -350,6 +349,7 @@ linters:
     - gochecknoglobals
     - whitespace
     - wsl
+    - dupl
     - goerr113
     - godot
     - testpackage

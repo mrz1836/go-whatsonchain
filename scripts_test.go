@@ -37,6 +37,13 @@ func (m *mockHTTPScript) Do(req *http.Request) (*http.Response, error) {
 		return resp, fmt.Errorf("bad request")
 	}
 
+	// Not found
+	if strings.Contains(req.URL.String(), "script/notFound/history") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
 	// Valid (has utxo)
 	if strings.Contains(req.URL.String(), "script/92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb/unspent") {
 		resp.StatusCode = http.StatusOK
@@ -53,6 +60,13 @@ func (m *mockHTTPScript) Do(req *http.Request) (*http.Response, error) {
 	if strings.Contains(req.URL.String(), "script/invalidTx/unspent") {
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
 		return resp, fmt.Errorf("bad request")
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "script/notFound/unspent") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
 	}
 
 	// Valid (unspent)
@@ -88,6 +102,28 @@ func (m *mockHTTPScriptErrors) Do(req *http.Request) (*http.Response, error) {
 	return nil, fmt.Errorf("no valid response found")
 }
 
+// mockHTTPScriptNotFound for mocking requests
+type mockHTTPScriptNotFound struct{}
+
+// Do is a mock http request
+func (m *mockHTTPScriptNotFound) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusNotFound
+
+	// No req found
+	if req == nil {
+		return resp, fmt.Errorf("missing request")
+	}
+
+	// Invalid (info) return an error
+	if strings.Contains(req.URL.String(), "/scripts/unspent") {
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
+	return resp, nil
+}
+
 // TestClient_GetScriptHistory tests the GetScriptHistory()
 func TestClient_GetScriptHistory(t *testing.T) {
 	t.Parallel()
@@ -106,6 +142,7 @@ func TestClient_GetScriptHistory(t *testing.T) {
 	}{
 		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 620539, "52dfceb815ad129a0fd946e3d665f44fa61f068135b9f38b05d3c697e11bad48", false, http.StatusOK},
 		{"invalidTx", 0, "", true, http.StatusBadRequest},
+		{"notFound", 0, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -143,6 +180,7 @@ func TestClient_GetScriptUnspentTransactions(t *testing.T) {
 		{"92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb", 640558, "5c6ac3a685be0791aa6e6eedb03d48cbf76046ea499e0a9cefbdc0fb3969ad13", false, http.StatusOK},
 		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 0, "", false, http.StatusOK},
 		{"invalidTx", 0, "", true, http.StatusBadRequest},
+		{"notFound", 0, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -212,6 +250,16 @@ func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
 		ctx := context.Background()
 		balances, err := client.BulkScriptUnspentTransactions(ctx, &ScriptsList{Scripts: []string{
 			"f814a7c3a40164aacc440871e8b7b14eb6a45f0ca7dcbeaea709edc83274c5e7",
+		}})
+		assert.Error(t, err)
+		assert.Nil(t, balances)
+	})
+
+	t.Run("not found (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPScriptNotFound{})
+		ctx := context.Background()
+		balances, err := client.BulkScriptUnspentTransactions(ctx, &ScriptsList{Scripts: []string{
+			"notFound",
 		}})
 		assert.Error(t, err)
 		assert.Nil(t, balances)

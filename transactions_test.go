@@ -41,6 +41,13 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 		return resp, fmt.Errorf("missing request")
 	}
 
+	// Not found
+	if strings.Contains(req.URL.String(), "/tx/hash/notFound") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
 	//
 	// Get Merkle Proof
 	//
@@ -55,6 +62,13 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 	if strings.Contains(req.URL.String(), "/tx/error/proof") {
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`txid must be 64 hex characters in length`)))
 		return resp, fmt.Errorf("txid must be 64 hex characters in length")
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/tx/notFound/proof") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
 	}
 
 	// Invalid - tx is not valid
@@ -83,6 +97,13 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 	if strings.Contains(req.URL.String(), "/tx/c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz/hex") {
 		resp.StatusCode = http.StatusNotFound
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/tx/notFound/hex") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
 	}
 
 	//
@@ -149,6 +170,13 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 			resp.StatusCode = http.StatusBadRequest
 			resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
 			return resp, fmt.Errorf("unknown error")
+		}
+
+		// Not found
+		if strings.Contains(data.TxIDs[0], "notFound") {
+			resp.StatusCode = http.StatusNotFound
+			resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+			return resp, nil
 		}
 	}
 
@@ -251,6 +279,13 @@ func (m *mockHTTPBroadcast) Do(req *http.Request) (*http.Response, error) {
 		return resp, fmt.Errorf("TX decode failed")
 	}
 
+	// Not found
+	if strings.Contains(data.TxHex, "notFound") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
 	// Default is valid
 	return resp, nil
 }
@@ -318,6 +353,7 @@ func TestClient_GetTxByHash(t *testing.T) {
 	}{
 		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", false, http.StatusOK},
 		{"error", "", true, http.StatusInternalServerError},
+		{"notFound", "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -352,6 +388,7 @@ func TestClient_GetMerkleProof(t *testing.T) {
 	}{
 		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "0000000000000000091216c46973d82db057a6f9911352892b7769ed517681c3", "95a920b1002bed05379a0d2650bb13eb216138f28ee80172f4cf21048528dc60", false, http.StatusOK},
 		{"error", "", "", true, http.StatusBadRequest},
+		{"notFound", "", "", true, http.StatusNotFound},
 		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz", "", "", false, http.StatusOK},
 	}
 
@@ -389,6 +426,7 @@ func TestClient_GetRawTransactionData(t *testing.T) {
 		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c03d7c6082f7376706f6f6c2e636f6d2f3edff034600055b8467f0040ffffffff01247e814a000000001976a914492558fb8ca71a3591316d095afc0f20ef7d42f788ac00000000", false, http.StatusOK},
 		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz", "", false, http.StatusNotFound},
 		{"error", "", true, http.StatusBadRequest},
+		{"notFound", "", false, http.StatusNotFound},
 	}
 
 	// Test all
@@ -460,6 +498,7 @@ func TestClient_BulkTransactionDetails(t *testing.T) {
 		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV"}}, "", "", false, http.StatusOK},
 		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV"}}, "", "", true, http.StatusOK},
 		{&TxHashes{TxIDs: []string{"error"}}, "", "", true, http.StatusBadRequest},
+		{&TxHashes{TxIDs: []string{"notFound"}}, "", "", false, http.StatusNotFound},
 	}
 
 	// Test all
@@ -611,6 +650,7 @@ func TestClient_DecodeTransaction(t *testing.T) {
 	}{
 		{"010000000110784fd521b55a303da0f8b4ea113a2a3b5fa71565bab86c4257cff83ab4a1b9010000006a4730440220113a56d87122f28d6b60931498951f9709527a5c095ae852dc7b17d3d7915ef802206fd0b026d2e8dd30a39daaef17f503d985e2306c8244bb0e09a957bf1c9b530441210269a7785783c12405a1eaecb3088a3d830ed7e2de6ac527f42374a55a8cc5aeadffffffff0266ba0200000000001976a914021e4ac858f0ee6e0dfdf4438857f602a900698988acde905606000000001976a914022a8c1a18378885db9054676f17a27f4219045e88ac00000000", "cfcd9c342411592319442f705f9083938847e88f709096aa2cec15e6350b947e", false, http.StatusOK},
 		{"zzzz0784fd521b55a303da0f8b4ea113a2a3b5fa71565bab86c4257cff83ab4a1b9010000006a4730440220113a56d87122f28d6b60931498951f9709527a5c095ae852dc7b17d3d7915ef802206fd0b026d2e8dd30a39daaef17f503d985e2306c8244bb0e09a957bf1c9b530441210269a7785783c12405a1eaecb3088a3d830ed7e2de6ac527f42374a55a8cc5aeadffffffff0266ba0200000000001976a914021e4ac858f0ee6e0dfdf4438857f602a900698988acde905606000000001976a914022a8c1a18378885db9054676f17a27f4219045e88ac00000000", "", true, http.StatusBadRequest},
+		{"notFound", "", true, http.StatusNotFound},
 	}
 
 	// Test all

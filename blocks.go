@@ -21,7 +21,9 @@ func (c *Client) GetBlockByHash(ctx context.Context, hash string) (blockInfo *Bl
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrBlockNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &blockInfo)
 	return
 }
@@ -40,11 +42,10 @@ func (c *Client) GetBlockByHeight(ctx context.Context, height int64) (blockInfo 
 	); err != nil {
 		return
 	}
-
-	// Added this condition (for bad block heights, 200 success but empty result - no JSON response)
-	if len(resp) > 0 {
-		err = json.Unmarshal([]byte(resp), &blockInfo)
+	if len(resp) == 0 {
+		return nil, ErrBlockNotFound
 	}
+	err = json.Unmarshal([]byte(resp), &blockInfo)
 	return
 }
 
@@ -63,7 +64,9 @@ func (c *Client) GetBlockPages(ctx context.Context, hash string, page int) (txLi
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrBlockNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &txList)
 	return
 }
@@ -82,7 +85,9 @@ func (c *Client) GetHeaderByHash(ctx context.Context, hash string) (headerInfo *
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrBlockNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &headerInfo)
 	return
 }
@@ -101,7 +106,9 @@ func (c *Client) GetHeaders(ctx context.Context) (blockHeaders []*BlockInfo, err
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrHeadersNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &blockHeaders)
 	return
 }

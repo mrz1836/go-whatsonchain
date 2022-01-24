@@ -21,7 +21,9 @@ func (c *Client) GetScriptHistory(ctx context.Context, scriptHash string) (histo
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrScriptNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &history)
 	return
 }
@@ -41,7 +43,9 @@ func (c *Client) GetScriptUnspentTransactions(ctx context.Context,
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrScriptNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &scriptList)
 
 	return
@@ -77,7 +81,9 @@ func (c *Client) BulkScriptUnspentTransactions(ctx context.Context,
 	); err != nil {
 		return
 	}
-
+	if len(resp) == 0 {
+		return nil, ErrScriptNotFound
+	}
 	err = json.Unmarshal([]byte(resp), &response)
 	return
 }

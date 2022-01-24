@@ -39,6 +39,13 @@ func (m *mockHTTPBlocks) Do(req *http.Request) (*http.Response, error) {
 		return resp, fmt.Errorf("bad request")
 	}
 
+	// Not found
+	if strings.Contains(req.URL.String(), "hash/notFound") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
 	//
 	// Get header by hash
 	//
@@ -53,6 +60,13 @@ func (m *mockHTTPBlocks) Do(req *http.Request) (*http.Response, error) {
 	if strings.Contains(req.URL.String(), "invalidBlockHeaderHash/header") {
 		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
 		return resp, fmt.Errorf("bad request")
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "notFound/header") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
 	}
 
 	//
@@ -77,6 +91,13 @@ func (m *mockHTTPBlocks) Do(req *http.Request) (*http.Response, error) {
 		return resp, fmt.Errorf("bad request")
 	}
 
+	// Not found
+	if strings.Contains(req.URL.String(), "height/5555") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
 	//
 	// Block by Hash/Pages
 	//
@@ -99,6 +120,13 @@ func (m *mockHTTPBlocks) Do(req *http.Request) (*http.Response, error) {
 		return resp, fmt.Errorf("bad request")
 	}
 
+	// Not found (by page) return an error
+	if strings.Contains(req.URL.String(), "hash/notFound/page") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, nil
+	}
+
 	//
 	// Block headers
 	//
@@ -111,6 +139,49 @@ func (m *mockHTTPBlocks) Do(req *http.Request) (*http.Response, error) {
 
 	// Default is valid
 	return resp, nil
+}
+
+// mockHTTPHeadersNotFound for mocking requests
+type mockHTTPHeadersNotFound struct{}
+
+// Do is a mock http request
+func (m *mockHTTPHeadersNotFound) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusNotFound
+
+	// No req found
+	if req == nil {
+		return resp, fmt.Errorf("missing request")
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "block/headers") {
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+	}
+
+	// Default is valid
+	return resp, nil
+}
+
+// mockHTTPHeadersError for mocking requests
+type mockHTTPHeadersError struct{}
+
+// Do is a mock http request
+func (m *mockHTTPHeadersError) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusBadRequest
+
+	// No req found
+	if req == nil {
+		return resp, fmt.Errorf("bad request")
+	}
+
+	// Invalid
+	if strings.Contains(req.URL.String(), "block/headers") {
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+	}
+
+	return resp, fmt.Errorf("bad request")
 }
 
 // TestClient_GetBlockByHash tests the GetBlockByHash()
@@ -130,6 +201,7 @@ func TestClient_GetBlockByHash(t *testing.T) {
 	}{
 		{"0000000000000000025b8506c83450afe84f0318775a52c7b91ee64aad0d5a23", "0000000000000000025b8506c83450afe84f0318775a52c7b91ee64aad0d5a23", false, http.StatusOK},
 		{"invalidBlockHash", "", true, http.StatusBadRequest},
+		{"notFound", "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -162,8 +234,9 @@ func TestClient_GetBlockByHeight(t *testing.T) {
 		statusCode    int
 	}{
 		{609930, 609930, false, http.StatusOK},
-		{99999999999, 0, false, http.StatusOK},
+		{99999999999, 0, true, http.StatusOK},
 		{1234567, 0, true, http.StatusBadRequest},
+		{5555, 0, true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -198,6 +271,7 @@ func TestClient_GetBlockPages(t *testing.T) {
 		{"000000000000000000885a4d8e9912f085b42288adc58b3ee5830a7da9f4fef4", "51c4933d986da4c0de51ea8446b7db4aa1753f205c594591a09998b1d05d7cfe", false, http.StatusOK},
 		{"invalidBlockPage", "null", false, http.StatusOK},
 		{"error", "", true, http.StatusBadRequest},
+		{"notFound", "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -232,6 +306,7 @@ func TestClient_GetHeaderByHash(t *testing.T) {
 	}{
 		{"000000000000000004a288072ebb35e37233f419918f9783d499979cb6ac33eb", "000000000000000004a288072ebb35e37233f419918f9783d499979cb6ac33eb", false, http.StatusOK},
 		{"invalidBlockHeaderHash", "", true, http.StatusBadRequest},
+		{"notFound", "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -278,5 +353,23 @@ func TestClient_GetHeaders(t *testing.T) {
 		} else if client.LastRequest().StatusCode != test.statusCode {
 			t.Errorf("%s Expected status code to be %d, got %d", t.Name(), test.statusCode, client.LastRequest().StatusCode)
 		}
+	}
+
+	// New not found mock client
+	client = newMockClient(&mockHTTPHeadersNotFound{})
+
+	// Test response
+	_, err := client.GetHeaders(ctx)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
+
+	// New invalid mock client
+	client = newMockClient(&mockHTTPHeadersError{})
+
+	// Test response
+	_, err = client.GetHeaders(ctx)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}
 }
