@@ -222,9 +222,9 @@ type MerkleTSCResults []*MerkleTSCInfo
 // MerkleTSCInfo is the response for the get TSC merkle request
 type MerkleTSCInfo struct {
 	Index  int      `json:"index"`
-	TxOrID string   `json:"txOrId"`
-	Target string   `json:"target"`
 	Nodes  []string `json:"nodes"`
+	Target string   `json:"target"`
+	TxOrID string   `json:"txOrId"`
 }
 
 // MerchantResponse is the response from a tx submission
