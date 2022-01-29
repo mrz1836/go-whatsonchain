@@ -82,8 +82,8 @@ func TestClientDefaultOptions(t *testing.T) {
 		t.Fatalf("expected value: %v got: %v", 2, options.RequestRetryCount)
 	}
 
-	if options.RequestTimeout != 10*time.Second {
-		t.Fatalf("expected value: %v got: %v", 10*time.Second, options.RequestTimeout)
+	if options.RequestTimeout != 30*time.Second {
+		t.Fatalf("expected value: %v got: %v", 30*time.Second, options.RequestTimeout)
 	}
 
 	if options.TransportExpectContinueTimeout != 3*time.Second {

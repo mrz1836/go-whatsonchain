@@ -70,7 +70,7 @@ func ClientDefaultOptions() (clientOptions *Options) {
 		DialerKeepAlive:                20 * time.Second,
 		DialerTimeout:                  5 * time.Second,
 		RequestRetryCount:              2,
-		RequestTimeout:                 10 * time.Second,
+		RequestTimeout:                 30 * time.Second,
 		TransportExpectContinueTimeout: 3 * time.Second,
 		TransportIdleTimeout:           20 * time.Second,
 		TransportMaxIdleConnections:    10,
