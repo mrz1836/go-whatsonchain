@@ -256,7 +256,10 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 	}
 
 	// Start the post data
-	postData, _ := json.Marshal(rawTxs)
+	var postData []byte
+	if postData, err = json.Marshal(rawTxs); err != nil {
+		return nil, err
+	}
 
 	var resp string
 
