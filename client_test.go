@@ -44,7 +44,7 @@ func BenchmarkNewClient(b *testing.B) {
 	}
 }
 
-// TestClientDefaultOptions tests setting ClientDefaultOptions()
+// TestClientDefaultOptions tests the method ClientDefaultOptions()
 func TestClientDefaultOptions(t *testing.T) {
 	t.Parallel()
 
