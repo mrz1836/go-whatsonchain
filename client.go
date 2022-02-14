@@ -12,7 +12,7 @@ import (
 const (
 
 	// version is the current version
-	version = "v0.9.3"
+	version = "v0.9.4"
 
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-whatsonchain: " + version
@@ -34,8 +34,8 @@ type Client struct {
 	httpClient  HTTPInterface // carries out the http operations (heimdall client)
 	lastRequest *LastRequest  // is the raw information from the last request
 	network     NetworkType   // is the BitcoinSV network to use
-	userAgent   string        // optional for changing user agents
 	rateLimit   int           // configured rate limit per second
+	userAgent   string        // optional for changing user agents
 }
 
 // Options holds all the configuration for connection, dialer and transport
@@ -46,6 +46,7 @@ type Options struct {
 	BackOffMaxTimeout              time.Duration `json:"back_off_max_timeout"`
 	DialerKeepAlive                time.Duration `json:"dialer_keep_alive"`
 	DialerTimeout                  time.Duration `json:"dialer_timeout"`
+	RateLimit                      int           `json:"rate_limit"`
 	RequestRetryCount              int           `json:"request_retry_count"`
 	RequestTimeout                 time.Duration `json:"request_timeout"`
 	TransportExpectContinueTimeout time.Duration `json:"transport_expect_continue_timeout"`
@@ -53,7 +54,6 @@ type Options struct {
 	TransportMaxIdleConnections    int           `json:"transport_max_idle_connections"`
 	TransportTLSHandshakeTimeout   time.Duration `json:"transport_tls_handshake_timeout"`
 	UserAgent                      string        `json:"user_agent"`
-	RateLimit                      int           `json:"rate_limit"`
 }
 
 // LastRequest is used to track what was submitted via the request()
