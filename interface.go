@@ -60,6 +60,7 @@ type TransactionService interface {
 	BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (txList TxList, err error)
 	BulkTransactionDetailsProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error)
 	BulkUnspentTransactions(ctx context.Context, list *AddressList) (response BulkUnspentResponse, err error)
+	BulkUnspentTransactionsProcessor(ctx context.Context, list *AddressList) (response BulkUnspentResponse, err error)
 	DecodeTransaction(ctx context.Context, txHex string) (txInfo *TxInfo, err error)
 	GetMerkleProof(ctx context.Context, hash string) (merkleResults MerkleResults, err error)
 	GetMerkleProofTSC(ctx context.Context, hash string) (merkleResults MerkleTSCResults, err error)

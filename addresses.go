@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 // AddressInfo this endpoint retrieves various address info.
@@ -220,12 +221,43 @@ func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (balances A
 	return
 }
 
+// BulkUnspentTransactionsProcessor will fetch UTXOs for multiple addresses in a single request while automatically batching
+// Max of 20 addresses at a time
+//
+// For more information: https://developers.whatsonchain.com/#bulk-unspent-transactions
+func (c *Client) BulkUnspentTransactionsProcessor(ctx context.Context, list *AddressList) (responseList BulkUnspentResponse, err error) {
+	var batches [][]string
+	chunkSize := MaxTransactionsUTXO
+	for i := 0; i < len(list.Addresses); i += chunkSize {
+		end := i + chunkSize
+		if end > len(list.Addresses) {
+			end = len(list.Addresses)
+		}
+		batches = append(batches, list.Addresses[i:end])
+	}
+	var currentRateLimit int
+	for _, batch := range batches {
+		addressList := new(AddressList)
+		addressList.Addresses = append(addressList.Addresses, batch...)
+		var returnedList BulkUnspentResponse
+		if returnedList, err = c.BulkUnspentTransactions(ctx, addressList); err != nil {
+			return
+		}
+		responseList = append(responseList, returnedList...)
+		currentRateLimit++
+		if currentRateLimit >= c.RateLimit() {
+			time.Sleep(1 * time.Second)
+			currentRateLimit = 0
+		}
+	}
+	return
+}
+
 // BulkUnspentTransactions will fetch UTXOs for multiple addresses in a single request
 // Max of 20 addresses at a time
 //
 // For more information: https://developers.whatsonchain.com/#bulk-unspent-transactions
 func (c *Client) BulkUnspentTransactions(ctx context.Context, list *AddressList) (response BulkUnspentResponse, err error) {
-
 	// Get the JSON
 	var postData []byte
 	if postData, err = bulkRequest(list); err != nil {
