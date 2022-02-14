@@ -94,6 +94,11 @@ func (c *Client) UserAgent() string {
 	return c.userAgent
 }
 
+// RateLimit will return the current configured rate limit
+func (c *Client) RateLimit() int {
+	return c.rateLimit
+}
+
 // Network will return the network
 func (c *Client) Network() NetworkType {
 	return c.network

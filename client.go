@@ -17,6 +17,9 @@ const (
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-whatsonchain: " + version
 
+	// defaultRateLimit is the default rate limit for API requests
+	defaultRateLimit int = 3
+
 	// apiEndpoint is where we fire requests
 	apiEndpoint string = "https://api.whatsonchain.com/v1/bsv/"
 )
@@ -32,6 +35,7 @@ type Client struct {
 	lastRequest *LastRequest  // is the raw information from the last request
 	network     NetworkType   // is the BitcoinSV network to use
 	userAgent   string        // optional for changing user agents
+	rateLimit   int           // configured rate limit per second
 }
 
 // Options holds all the configuration for connection, dialer and transport
@@ -49,6 +53,7 @@ type Options struct {
 	TransportMaxIdleConnections    int           `json:"transport_max_idle_connections"`
 	TransportTLSHandshakeTimeout   time.Duration `json:"transport_tls_handshake_timeout"`
 	UserAgent                      string        `json:"user_agent"`
+	RateLimit                      int           `json:"rate_limit"`
 }
 
 // LastRequest is used to track what was submitted via the request()
@@ -76,6 +81,7 @@ func ClientDefaultOptions() (clientOptions *Options) {
 		TransportMaxIdleConnections:    10,
 		TransportTLSHandshakeTimeout:   5 * time.Second,
 		UserAgent:                      defaultUserAgent,
+		RateLimit:                      defaultRateLimit,
 	}
 }
 
@@ -93,6 +99,7 @@ func createClient(network NetworkType, options *Options, customHTTPClient HTTPIn
 		options = ClientDefaultOptions()
 	}
 
+	c.rateLimit = options.RateLimit
 	c.userAgent = options.UserAgent
 
 	// Is there a custom HTTP client to use?
