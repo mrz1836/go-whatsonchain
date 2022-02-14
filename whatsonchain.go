@@ -61,6 +61,11 @@ func (c *Client) request(ctx context.Context, url string, method string, payload
 		request.Header.Set("Content-Type", "application/json")
 	}
 
+	// Set the API key if found
+	if len(c.apiKey) > 0 {
+		request.Header.Set(apiHeaderKey, c.apiKey)
+	}
+
 	// Fire the http request
 	var resp *http.Response
 	if resp, err = c.httpClient.Do(request); err != nil {

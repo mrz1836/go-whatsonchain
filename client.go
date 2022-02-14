@@ -22,6 +22,9 @@ const (
 
 	// apiEndpoint is where we fire requests
 	apiEndpoint string = "https://api.whatsonchain.com/v1/bsv/"
+
+	// apiHeaderKey is the header key for the API key
+	apiHeaderKey string = "woc-api-key"
 )
 
 // HTTPInterface is used for the http client (mocking heimdall)
@@ -31,6 +34,7 @@ type HTTPInterface interface {
 
 // Client is the parent struct that wraps the heimdall client
 type Client struct {
+	apiKey      string        // optional for requests that require an API Key
 	httpClient  HTTPInterface // carries out the http operations (heimdall client)
 	lastRequest *LastRequest  // is the raw information from the last request
 	network     NetworkType   // is the BitcoinSV network to use
@@ -40,6 +44,7 @@ type Client struct {
 
 // Options holds all the configuration for connection, dialer and transport
 type Options struct {
+	APIKey                         string        `json:"api_key"`
 	BackOffExponentFactor          float64       `json:"back_off_exponent_factor"`
 	BackOffInitialTimeout          time.Duration `json:"back_off_initial_timeout"`
 	BackOffMaximumJitterInterval   time.Duration `json:"back_off_maximum_jitter_interval"`
@@ -99,6 +104,8 @@ func createClient(network NetworkType, options *Options, customHTTPClient HTTPIn
 		options = ClientDefaultOptions()
 	}
 
+	// Set values on the client from the given options
+	c.apiKey = options.APIKey
 	c.rateLimit = options.RateLimit
 	c.userAgent = options.UserAgent
 
