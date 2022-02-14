@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestNewClient test new client
@@ -14,10 +15,8 @@ func TestNewClient(t *testing.T) {
 	t.Parallel()
 
 	client := NewClient(NetworkTest, nil, nil)
-
-	if len(client.UserAgent()) == 0 {
-		t.Fatal("missing user agent")
-	}
+	require.NotNil(t, client)
+	assert.NotEqual(t, 0, len(client.UserAgent()))
 }
 
 // TestNewClient_CustomHTTPClient test new client
@@ -26,7 +25,7 @@ func TestNewClient_CustomHTTPClient(t *testing.T) {
 
 	h := http.DefaultClient
 	client := NewClient(NetworkTest, nil, h)
-	assert.NotNil(t, client)
+	require.NotNil(t, client)
 	assert.Equal(t, h, client.HTTPClient())
 }
 
@@ -49,71 +48,31 @@ func TestClientDefaultOptions(t *testing.T) {
 	t.Parallel()
 
 	options := ClientDefaultOptions()
-
-	if options.UserAgent != defaultUserAgent {
-		t.Fatalf("expected value: %s got: %s", defaultUserAgent, options.UserAgent)
-	}
-
-	if options.RateLimit != defaultRateLimit {
-		t.Fatalf("expected value: %d got: %d", defaultRateLimit, options.RateLimit)
-	}
-
-	if options.BackOffExponentFactor != 2.0 {
-		t.Fatalf("expected value: %f got: %f", 2.0, options.BackOffExponentFactor)
-	}
-
-	if options.BackOffInitialTimeout != 2*time.Millisecond {
-		t.Fatalf("expected value: %v got: %v", 2*time.Millisecond, options.BackOffInitialTimeout)
-	}
-
-	if options.BackOffMaximumJitterInterval != 2*time.Millisecond {
-		t.Fatalf("expected value: %v got: %v", 2*time.Millisecond, options.BackOffMaximumJitterInterval)
-	}
-
-	if options.BackOffMaxTimeout != 10*time.Millisecond {
-		t.Fatalf("expected value: %v got: %v", 10*time.Millisecond, options.BackOffMaxTimeout)
-	}
-
-	if options.DialerKeepAlive != 20*time.Second {
-		t.Fatalf("expected value: %v got: %v", 20*time.Second, options.DialerKeepAlive)
-	}
-
-	if options.DialerTimeout != 5*time.Second {
-		t.Fatalf("expected value: %v got: %v", 5*time.Second, options.DialerTimeout)
-	}
-
-	if options.RequestRetryCount != 2 {
-		t.Fatalf("expected value: %v got: %v", 2, options.RequestRetryCount)
-	}
-
-	if options.RequestTimeout != 30*time.Second {
-		t.Fatalf("expected value: %v got: %v", 30*time.Second, options.RequestTimeout)
-	}
-
-	if options.TransportExpectContinueTimeout != 3*time.Second {
-		t.Fatalf("expected value: %v got: %v", 3*time.Second, options.TransportExpectContinueTimeout)
-	}
-
-	if options.TransportIdleTimeout != 20*time.Second {
-		t.Fatalf("expected value: %v got: %v", 20*time.Second, options.TransportIdleTimeout)
-	}
-
-	if options.TransportMaxIdleConnections != 10 {
-		t.Fatalf("expected value: %v got: %v", 10, options.TransportMaxIdleConnections)
-	}
-
-	if options.TransportTLSHandshakeTimeout != 5*time.Second {
-		t.Fatalf("expected value: %v got: %v", 5*time.Second, options.TransportTLSHandshakeTimeout)
-	}
+	require.NotNil(t, options)
+	assert.Equal(t, defaultUserAgent, options.UserAgent)
+	assert.Equal(t, defaultRateLimit, options.RateLimit)
+	assert.Equal(t, 2.0, options.BackOffExponentFactor)
+	assert.Equal(t, 2*time.Millisecond, options.BackOffInitialTimeout)
+	assert.Equal(t, 2*time.Millisecond, options.BackOffMaximumJitterInterval)
+	assert.Equal(t, 10*time.Millisecond, options.BackOffMaxTimeout)
+	assert.Equal(t, 20*time.Second, options.DialerKeepAlive)
+	assert.Equal(t, 5*time.Second, options.DialerTimeout)
+	assert.Equal(t, 2, options.RequestRetryCount)
+	assert.Equal(t, 30*time.Second, options.RequestTimeout)
+	assert.Equal(t, 3*time.Second, options.TransportExpectContinueTimeout)
+	assert.Equal(t, 20*time.Second, options.TransportIdleTimeout)
+	assert.Equal(t, 10, options.TransportMaxIdleConnections)
+	assert.Equal(t, 5*time.Second, options.TransportTLSHandshakeTimeout)
 }
 
 // TestClientDefaultOptions_NoRetry will set 0 retry counts
 func TestClientDefaultOptions_NoRetry(t *testing.T) {
 	options := ClientDefaultOptions()
-	options.RequestRetryCount = 0
-	client := NewClient(NetworkTest, options, nil)
+	require.NotNil(t, options)
 
-	if client.UserAgent() != defaultUserAgent {
-		t.Errorf("user agent mismatch")
-	}
+	options.RequestRetryCount = 0
+
+	client := NewClient(NetworkTest, options, nil)
+	require.NotNil(t, client)
+	assert.Equal(t, defaultUserAgent, client.UserAgent())
 }
