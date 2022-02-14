@@ -64,6 +64,7 @@ type TransactionService interface {
 	GetMerkleProof(ctx context.Context, hash string) (merkleResults MerkleResults, err error)
 	GetMerkleProofTSC(ctx context.Context, hash string) (merkleResults MerkleTSCResults, err error)
 	GetRawTransactionData(ctx context.Context, hash string) (string, error)
+	BulkRawTransactionDataProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error)
 	GetRawTransactionOutputData(ctx context.Context, hash string, vOutIndex int) (string, error)
 	GetTxByHash(ctx context.Context, hash string) (txInfo *TxInfo, err error)
 }
@@ -82,4 +83,5 @@ type ClientInterface interface {
 	LastRequest() *LastRequest
 	Network() NetworkType
 	UserAgent() string
+	RateLimit() int
 }

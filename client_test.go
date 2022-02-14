@@ -1,7 +1,6 @@
 package whatsonchain
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -33,7 +32,6 @@ func TestNewClient_CustomHTTPClient(t *testing.T) {
 // ExampleNewClient example using NewClient()
 func ExampleNewClient() {
 	client := NewClient(NetworkTest, nil, nil)
-	fmt.Println(client.UserAgent())
 	// Output:go-whatsonchain: v0.9.3
 }
 
@@ -52,6 +50,10 @@ func TestClientDefaultOptions(t *testing.T) {
 
 	if options.UserAgent != defaultUserAgent {
 		t.Fatalf("expected value: %s got: %s", defaultUserAgent, options.UserAgent)
+	}
+
+	if options.RateLimit != defaultRateLimit {
+		t.Fatalf("expected value: %s got: %s", defaultRateLimit, options.RateLimit)
 	}
 
 	if options.BackOffExponentFactor != 2.0 {
