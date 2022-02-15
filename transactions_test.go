@@ -873,3 +873,106 @@ func TestClient_BulkTransactionDetailsProcessor(t *testing.T) {
 		})
 	}
 }
+
+// TestClient_BulkRawTransactionDataProcessor tests the BulkRawTransactionDataProcessor()
+func TestClient_BulkRawTransactionDataProcessor(t *testing.T) {
+	t.Parallel()
+
+	// New mock client
+	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
+
+	var tests = []struct {
+		name          string
+		input         *TxHashes
+		tx1           string
+		tx2           string
+		expectedError bool
+		statusCode    int
+	}{
+		{"valid transactions",
+			&TxHashes{TxIDs: []string{
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+			}},
+			"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
+			"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+			false,
+			http.StatusOK,
+		},
+		{"one real tx, one wrong",
+			&TxHashes{TxIDs: []string{
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1ZZ",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+			}},
+			"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+			"",
+			false,
+			http.StatusOK,
+		},
+		{"both txs are not found",
+			&TxHashes{TxIDs: []string{
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+			}},
+			"",
+			"",
+			false,
+			http.StatusOK},
+		{"using 20 transactions",
+			&TxHashes{TxIDs: []string{
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
+				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+			}},
+			"",
+			"",
+			false,
+			http.StatusOK,
+		},
+		{"invalid tx",
+			&TxHashes{TxIDs: []string{
+				"error",
+			}},
+			"",
+			"",
+			true,
+			http.StatusBadRequest,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if output, err := client.BulkRawTransactionDataProcessor(ctx, test.input); err == nil && test.expectedError {
+				t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
+			} else if err != nil && !test.expectedError {
+				t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
+			} else if output != nil && len(output) >= 1 && output[0].TxID != test.tx1 && !test.expectedError {
+				t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.tx1, output[0].TxID)
+			} else if output != nil && len(output) >= 2 && output[1].TxID != test.tx2 && !test.expectedError {
+				t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.tx2, output[1].TxID)
+			} else if client.LastRequest().StatusCode != test.statusCode {
+				t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
+			}
+		})
+	}
+}
