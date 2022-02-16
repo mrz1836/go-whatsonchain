@@ -567,6 +567,81 @@ func TestClient_BulkBalance(t *testing.T) {
 	})
 }
 
+// TestClient_BulkUnspentTransactionsProcessor tests the BulkUnspentTransactionsProcessor()
+func TestClient_BulkUnspentTransactionsProcessor(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		assert.NoError(t, err)
+		assert.NotNil(t, balances)
+		assert.Equal(t, 2, len(balances))
+	})
+
+	t.Run("over max addresses (no error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{
+			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+			"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob",
+			"1Bo1qfAm93cgqrd4vjTN1CeNXwjByjfrDC",
+			"1AXQmPt6eyU1ZSt2bSvDiV1PJctpLbEZ3u",
+			"1GhWikHYDvYRiN37KjDfc6ba6CkaTAZmHG",
+			"1BzUYnHr6tY2uAkydt9M8ozctM4e8keW9G",
+			"1AU4yMBFnnB8SWjy7nofZcPDRd8x8pJdY5",
+			"18x1r2cL1CGjoMbKn5sq3BuDfYFdbjdK3U",
+			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+			"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob",
+			"1Bo1qfAm93cgqrd4vjTN1CeNXwjByjfrDC",
+			"1AXQmPt6eyU1ZSt2bSvDiV1PJctpLbEZ3u",
+			"1GhWikHYDvYRiN37KjDfc6ba6CkaTAZmHG",
+			"1BzUYnHr6tY2uAkydt9M8ozctM4e8keW9G",
+			"1AU4yMBFnnB8SWjy7nofZcPDRd8x8pJdY5",
+			"18x1r2cL1CGjoMbKn5sq3BuDfYFdbjdK3U",
+			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+			"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob",
+			"1Bo1qfAm93cgqrd4vjTN1CeNXwjByjfrDC",
+			"1AXQmPt6eyU1ZSt2bSvDiV1PJctpLbEZ3u",
+			"1GhWikHYDvYRiN37KjDfc6ba6CkaTAZmHG",
+			"1BzUYnHr6tY2uAkydt9M8ozctM4e8keW9G",
+			"1AU4yMBFnnB8SWjy7nofZcPDRd8x8pJdY5",
+			"18x1r2cL1CGjoMbKn5sq3BuDfYFdbjdK3U",
+			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+			"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob",
+			"1Bo1qfAm93cgqrd4vjTN1CeNXwjByjfrDC",
+			"1AXQmPt6eyU1ZSt2bSvDiV1PJctpLbEZ3u",
+			"1GhWikHYDvYRiN37KjDfc6ba6CkaTAZmHG",
+			"1BzUYnHr6tY2uAkydt9M8ozctM4e8keW9G",
+			"1AU4yMBFnnB8SWjy7nofZcPDRd8x8pJdY5",
+			"18x1r2cL1CGjoMbKn5sq3BuDfYFdbjdK3U",
+		}})
+		assert.NoError(t, err)
+		assert.NotNil(t, balances)
+	})
+
+	t.Run("bad response (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddressesErrors{})
+		ctx := context.Background()
+		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{
+			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+		}})
+		assert.Error(t, err)
+		assert.Nil(t, balances)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddressesNotFound{})
+		ctx := context.Background()
+		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{
+			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+		}})
+		assert.Error(t, err)
+		assert.Nil(t, balances)
+	})
+}
+
 // TestClient_BulkUnspentTransactions tests the BulkUnspentTransactions()
 func TestClient_BulkUnspentTransactions(t *testing.T) {
 	t.Parallel()
