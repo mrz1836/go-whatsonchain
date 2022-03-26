@@ -23,6 +23,9 @@ const (
 	// apiEndpoint is where we fire requests
 	apiEndpoint string = "https://api.whatsonchain.com/v1/bsv/"
 
+	// socketEndpoint is where we connect to websockets
+	socketEndpoint string = "wss://socket.whatsonchain.com/"
+
 	// apiHeaderKey is the header key for the API key
 	apiHeaderKey string = "woc-api-key"
 )

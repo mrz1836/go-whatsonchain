@@ -1,6 +1,10 @@
 package whatsonchain
 
-import "context"
+import (
+	"context"
+
+	"github.com/centrifugal/centrifuge-go"
+)
 
 // AddressService is the WhatsOnChain address related requests
 type AddressService interface {
@@ -70,6 +74,11 @@ type TransactionService interface {
 	GetTxByHash(ctx context.Context, hash string) (txInfo *TxInfo, err error)
 }
 
+// WebsocketService is the WhatsOnCHain websocket related clients
+type WebsocketService interface {
+	NewMempoolWebsocket(handler socketHandler) *centrifuge.Client
+}
+
 // ClientInterface is the WhatsOnChain client interface
 type ClientInterface interface {
 	AddressService
@@ -80,6 +89,7 @@ type ClientInterface interface {
 	MempoolService
 	ScriptService
 	TransactionService
+	WebsocketService
 	HTTPClient() HTTPInterface
 	LastRequest() *LastRequest
 	Network() NetworkType
