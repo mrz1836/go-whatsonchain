@@ -76,7 +76,7 @@ type TransactionService interface {
 
 // WebsocketService is the WhatsOnCHain websocket related clients
 type WebsocketService interface {
-	NewMempoolWebsocket(handler SocketHandler) *centrifuge.Client
+	NewMempoolWebsocket(handler socketHandler) *centrifuge.Client
 }
 
 // ClientInterface is the WhatsOnChain client interface

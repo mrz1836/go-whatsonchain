@@ -6,7 +6,8 @@ import (
 	"github.com/centrifugal/centrifuge-go"
 )
 
-type SocketHandler interface {
+// socketHandler describe the interface
+type socketHandler interface {
 	OnConnect(_ *centrifuge.Client, _ centrifuge.ConnectEvent)
 	OnError(_ *centrifuge.Client, e centrifuge.ErrorEvent)
 	OnDisconnect(_ *centrifuge.Client, e centrifuge.DisconnectEvent)
@@ -14,11 +15,12 @@ type SocketHandler interface {
 	OnServerPublish(_ *centrifuge.Client, e centrifuge.ServerPublishEvent)
 }
 
-func (c *Client) NewMempoolWebsocket(handler SocketHandler) *centrifuge.Client {
+// NewMempoolWebsocket instantiates a new websocket client to stream mempool transactions
+func (c *Client) NewMempoolWebsocket(handler socketHandler) *centrifuge.Client {
 	return newWebsocketClient(fmt.Sprintf("%s%s", socketEndpoint, "mempool"), handler)
 }
 
-func newWebsocketClient(url string, handler SocketHandler) *centrifuge.Client {
+func newWebsocketClient(url string, handler socketHandler) *centrifuge.Client {
 	if url == "" || handler == nil {
 		return nil
 	}

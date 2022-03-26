@@ -9,7 +9,7 @@ import (
 
 func TestClient_NewMempoolWebsocket(t *testing.T) {
 	type args struct {
-		handler SocketHandler
+		handler socketHandler
 	}
 	tests := []struct {
 		name string
@@ -34,7 +34,7 @@ func TestClient_NewMempoolWebsocket(t *testing.T) {
 func Test_newWebsocketClient(t *testing.T) {
 	type args struct {
 		url     string
-		handler SocketHandler
+		handler socketHandler
 	}
 	tests := []struct {
 		name string
