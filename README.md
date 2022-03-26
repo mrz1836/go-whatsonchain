@@ -90,6 +90,14 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-what
         - [x] Get Exchange Rate
     - [x] Search
         - [x] Get Explorer Links
+    - [ ] Web Sockets
+        - [ ] New block header event
+        - [ ] Block headers history
+        - [ ] Block transactions
+        - [x] Mempool transactions
+        - [ ] Confirmed transactions
+        - [ ] Chain Stats
+        - [ ] Customized events
 
 <details>
 <summary><strong><code>Library Deployment</code></strong></summary>
