@@ -61,6 +61,7 @@ type ScriptService interface {
 type TransactionService interface {
 	BroadcastTx(ctx context.Context, txHex string) (txID string, err error)
 	BulkBroadcastTx(ctx context.Context, rawTxs []string, feedback bool) (response *BulkBroadcastResponse, err error)
+	BulkRawTransactionDataProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error)
 	BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (txList TxList, err error)
 	BulkTransactionDetailsProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error)
 	BulkUnspentTransactions(ctx context.Context, list *AddressList) (response BulkUnspentResponse, err error)
@@ -69,7 +70,6 @@ type TransactionService interface {
 	GetMerkleProof(ctx context.Context, hash string) (merkleResults MerkleResults, err error)
 	GetMerkleProofTSC(ctx context.Context, hash string) (merkleResults MerkleTSCResults, err error)
 	GetRawTransactionData(ctx context.Context, hash string) (string, error)
-	BulkRawTransactionDataProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error)
 	GetRawTransactionOutputData(ctx context.Context, hash string, vOutIndex int) (string, error)
 	GetTxByHash(ctx context.Context, hash string) (txInfo *TxInfo, err error)
 }
@@ -93,6 +93,6 @@ type ClientInterface interface {
 	HTTPClient() HTTPInterface
 	LastRequest() *LastRequest
 	Network() NetworkType
-	UserAgent() string
 	RateLimit() int
+	UserAgent() string
 }
