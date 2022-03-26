@@ -25,6 +25,9 @@ func newWebsocketClient(url string, handler socketHandler) *centrifuge.Client {
 		return nil
 	}
 	c := centrifuge.NewJsonClient(url, centrifuge.DefaultConfig())
+	if c == nil {
+		return nil
+	}
 	c.OnDisconnect(handler)
 	c.OnConnect(handler)
 	c.OnServerPublish(handler)
