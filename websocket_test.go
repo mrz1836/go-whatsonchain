@@ -30,7 +30,7 @@ func (h *testHandler) OnError(_ *centrifuge.Client, _ centrifuge.ErrorEvent) {
 
 func TestClient_NewMempoolWebsocket(t *testing.T) {
 	type args struct {
-		handler socketHandler
+		handler SocketHandler
 	}
 	tests := []struct {
 		name string
@@ -55,7 +55,7 @@ func TestClient_NewMempoolWebsocket(t *testing.T) {
 func Test_newWebsocketClient(t *testing.T) {
 	type args struct {
 		url     string
-		handler socketHandler
+		handler SocketHandler
 	}
 	tests := []struct {
 		name         string

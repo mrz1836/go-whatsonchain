@@ -8,22 +8,22 @@ const (
 	socketEndpointMempool = "mempool"
 )
 
-// socketHandler describe the interface
-type socketHandler interface {
+// SocketHandler describe the interface
+type SocketHandler interface {
 	OnConnect(*centrifuge.Client, centrifuge.ConnectEvent)
-	OnError(*centrifuge.Client, centrifuge.ErrorEvent)
 	OnDisconnect(*centrifuge.Client, centrifuge.DisconnectEvent)
+	OnError(*centrifuge.Client, centrifuge.ErrorEvent)
 	OnMessage(*centrifuge.Client, centrifuge.MessageEvent)
 	OnServerPublish(*centrifuge.Client, centrifuge.ServerPublishEvent)
 }
 
 // NewMempoolWebsocket instantiates a new websocket client to stream mempool transactions
-func (c *Client) NewMempoolWebsocket(handler socketHandler) *centrifuge.Client {
+func (c *Client) NewMempoolWebsocket(handler SocketHandler) *centrifuge.Client {
 	return newWebsocketClient(socketEndpoint+socketEndpointMempool, handler)
 }
 
 // newWebsocketClient will create a new websocket client
-func newWebsocketClient(url string, handler socketHandler) (client *centrifuge.Client) {
+func newWebsocketClient(url string, handler SocketHandler) (client *centrifuge.Client) {
 	if url == "" || handler == nil {
 		return
 	}
