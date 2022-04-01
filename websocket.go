@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	socketEndpointMempool = "mempool/hex"
+	socketEndpointMempool = "mempool"
 )
 
 // SocketHandler describe the interface
