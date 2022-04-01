@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	socketEndpointMempool = "mempool"
+	socketEndpointMempool = "mempool/hex"
 )
 
 // SocketHandler describe the interface
@@ -15,6 +15,10 @@ type SocketHandler interface {
 	OnError(*centrifuge.Client, centrifuge.ErrorEvent)
 	OnMessage(*centrifuge.Client, centrifuge.MessageEvent)
 	OnServerPublish(*centrifuge.Client, centrifuge.ServerPublishEvent)
+	OnServerSubscribe(*centrifuge.Client, centrifuge.ServerSubscribeEvent)
+	OnServerUnsubscribe(*centrifuge.Client, centrifuge.ServerUnsubscribeEvent)
+	OnServerJoin(*centrifuge.Client, centrifuge.ServerJoinEvent)
+	OnServerLeave(*centrifuge.Client, centrifuge.ServerLeaveEvent)
 }
 
 // NewMempoolWebsocket instantiates a new websocket client to stream mempool transactions

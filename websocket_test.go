@@ -27,6 +27,18 @@ func (h *testHandler) OnServerPublish(_ *centrifuge.Client, _ centrifuge.ServerP
 func (h *testHandler) OnError(_ *centrifuge.Client, _ centrifuge.ErrorEvent) {
 	log.Printf("error")
 }
+func (h *testHandler) OnServerJoin(_ *centrifuge.Client, _ centrifuge.ServerJoinEvent) {
+	log.Printf("server join event")
+}
+func (h *testHandler) OnServerLeave(_ *centrifuge.Client, _ centrifuge.ServerLeaveEvent) {
+	log.Printf("server leave event")
+}
+func (h *testHandler) OnServerSubscribe(_ *centrifuge.Client, _ centrifuge.ServerSubscribeEvent) {
+	log.Printf("server subscribe event")
+}
+func (h *testHandler) OnServerUnsubscribe(_ *centrifuge.Client, _ centrifuge.ServerUnsubscribeEvent) {
+	log.Printf("server unsubscribe event")
+}
 
 func TestClient_NewMempoolWebsocket(t *testing.T) {
 	type args struct {
