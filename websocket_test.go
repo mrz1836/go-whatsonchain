@@ -12,6 +12,36 @@ type testHandler struct {
 	HandlerName string
 }
 
+func (h *testHandler) OnPublish(subscription *centrifuge.Subscription, event centrifuge.PublishEvent) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (h *testHandler) OnJoin(subscription *centrifuge.Subscription, event centrifuge.JoinEvent) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (h *testHandler) OnLeave(subscription *centrifuge.Subscription, event centrifuge.LeaveEvent) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (h *testHandler) OnSubscribeSuccess(subscription *centrifuge.Subscription, event centrifuge.SubscribeSuccessEvent) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (h *testHandler) OnSubscribeError(subscription *centrifuge.Subscription, event centrifuge.SubscribeErrorEvent) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (h *testHandler) OnUnsubscribe(subscription *centrifuge.Subscription, event centrifuge.UnsubscribeEvent) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (h *testHandler) OnConnect(_ *centrifuge.Client, _ centrifuge.ConnectEvent) {
 	log.Printf("connected to socket")
 }
