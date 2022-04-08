@@ -19,6 +19,12 @@ type SocketHandler interface {
 	OnServerPublish(*centrifuge.Client, centrifuge.ServerPublishEvent)
 	OnServerSubscribe(*centrifuge.Client, centrifuge.ServerSubscribeEvent)
 	OnServerUnsubscribe(*centrifuge.Client, centrifuge.ServerUnsubscribeEvent)
+	OnPublish(*centrifuge.Subscription, centrifuge.PublishEvent)
+	OnJoin(*centrifuge.Subscription, centrifuge.JoinEvent)
+	OnLeave(*centrifuge.Subscription, centrifuge.LeaveEvent)
+	OnSubscribeSuccess(*centrifuge.Subscription, centrifuge.SubscribeSuccessEvent)
+	OnSubscribeError(*centrifuge.Subscription, centrifuge.SubscribeErrorEvent)
+	OnUnsubscribe(*centrifuge.Subscription, centrifuge.UnsubscribeEvent)
 }
 
 // NewMempoolWebsocket instantiates a new websocket client to stream mempool transactions
