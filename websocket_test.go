@@ -12,34 +12,29 @@ type testHandler struct {
 	HandlerName string
 }
 
-func (h *testHandler) OnPublish(subscription *centrifuge.Subscription, event centrifuge.PublishEvent) {
-	//TODO implement me
-	panic("implement me")
+func (h *testHandler) OnPublish(*centrifuge.Subscription, centrifuge.PublishEvent) {
+	log.Printf("OnPublish")
+
 }
 
-func (h *testHandler) OnJoin(subscription *centrifuge.Subscription, event centrifuge.JoinEvent) {
-	//TODO implement me
-	panic("implement me")
+func (h *testHandler) OnJoin(*centrifuge.Subscription, centrifuge.JoinEvent) {
+	log.Printf("OnJoin")
 }
 
-func (h *testHandler) OnLeave(subscription *centrifuge.Subscription, event centrifuge.LeaveEvent) {
-	//TODO implement me
-	panic("implement me")
+func (h *testHandler) OnLeave(*centrifuge.Subscription, centrifuge.LeaveEvent) {
+	log.Printf("OnLeave")
 }
 
-func (h *testHandler) OnSubscribeSuccess(subscription *centrifuge.Subscription, event centrifuge.SubscribeSuccessEvent) {
-	//TODO implement me
-	panic("implement me")
+func (h *testHandler) OnSubscribeSuccess(*centrifuge.Subscription, centrifuge.SubscribeSuccessEvent) {
+	log.Printf("OnSubscribeSuccess")
 }
 
-func (h *testHandler) OnSubscribeError(subscription *centrifuge.Subscription, event centrifuge.SubscribeErrorEvent) {
-	//TODO implement me
-	panic("implement me")
+func (h *testHandler) OnSubscribeError(*centrifuge.Subscription, centrifuge.SubscribeErrorEvent) {
+	log.Printf("OnSubscribeError")
 }
 
-func (h *testHandler) OnUnsubscribe(subscription *centrifuge.Subscription, event centrifuge.UnsubscribeEvent) {
-	//TODO implement me
-	panic("implement me")
+func (h *testHandler) OnUnsubscribe(*centrifuge.Subscription, centrifuge.UnsubscribeEvent) {
+	log.Printf("OnUnsubscribe")
 }
 
 func (h *testHandler) OnConnect(_ *centrifuge.Client, _ centrifuge.ConnectEvent) {
