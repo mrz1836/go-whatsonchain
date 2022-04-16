@@ -89,6 +89,30 @@ func TestClient_NewMempoolWebsocket(t *testing.T) {
 	}
 }
 
+func TestClient_NewBlockHeadersWebsocket(t *testing.T) {
+	type args struct {
+		handler SocketHandler
+	}
+	tests := []struct {
+		name string
+		args args
+		want *centrifuge.Client
+	}{
+		{"nil handler should set nil client",
+			args{
+				handler: nil,
+			},
+			nil,
+		},
+	}
+	client := newMockClient(&mockHTTPAddresses{})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, client.NewBlockHeadersWebsocket(tt.args.handler), "NewMempoolWebsocket(%v)", tt.args.handler)
+		})
+	}
+}
+
 func Test_newWebsocketClient(t *testing.T) {
 	type args struct {
 		url     string

@@ -5,7 +5,8 @@ import (
 )
 
 const (
-	socketEndpointMempool = "mempool"
+	socketEndpointMempool      = "mempool"
+	socketEndpointBlockHeaders = "blockheaders"
 )
 
 // SocketHandler describe the interface
@@ -47,4 +48,9 @@ func newWebsocketClient(url string, handler SocketHandler) (client *centrifuge.C
 	client.OnServerPublish(handler)
 	client.OnError(handler)
 	return
+}
+
+// NewBlockHeadersWebsocket instantiates a new websocket client to stream block headers
+func (c *Client) NewBlockHeadersWebsocket(handler SocketHandler) *centrifuge.Client {
+	return newWebsocketClient(socketEndpoint+socketEndpointBlockHeaders, handler)
 }
