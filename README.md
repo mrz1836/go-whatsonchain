@@ -91,7 +91,7 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-what
     - [x] Search
         - [x] Get Explorer Links
     - [ ] Web Sockets
-        - [ ] New block header event
+        - [x] New block header event
         - [ ] Block headers history
         - [ ] Block transactions
         - [x] Mempool transactions
