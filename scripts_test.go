@@ -189,9 +189,9 @@ func TestClient_GetScriptUnspentTransactions(t *testing.T) {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
-		} else if output != nil && len(output) > 0 && output[0].Height != test.height && !test.expectedError {
+		} else if len(output) > 0 && output[0].Height != test.height && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%d] height expected, received: [%d]", t.Name(), test.input, test.height, output[0].Height)
-		} else if output != nil && len(output) > 0 && output[0].TxHash != test.hash && !test.expectedError {
+		} else if len(output) > 0 && output[0].TxHash != test.hash && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] hash expected, received: [%s]", t.Name(), test.input, test.hash, output[0].TxHash)
 		} else if client.LastRequest().StatusCode != test.statusCode {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)

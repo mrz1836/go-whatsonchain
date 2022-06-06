@@ -578,9 +578,9 @@ func TestClient_BulkTransactionDetails(t *testing.T) {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 		} else if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
-		} else if output != nil && len(output) >= 1 && output[0].TxID != test.tx1 && !test.expectedError {
+		} else if len(output) >= 1 && output[0].TxID != test.tx1 && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.tx1, output[0].TxID)
-		} else if output != nil && len(output) >= 2 && output[1].TxID != test.tx2 && !test.expectedError {
+		} else if len(output) >= 2 && output[1].TxID != test.tx2 && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.tx2, output[1].TxID)
 		} else if client.LastRequest().StatusCode != test.statusCode {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
@@ -863,9 +863,9 @@ func TestClient_BulkTransactionDetailsProcessor(t *testing.T) {
 				t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 			} else if err != nil && !test.expectedError {
 				t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
-			} else if output != nil && len(output) >= 1 && output[0].TxID != test.tx1 && !test.expectedError {
+			} else if len(output) >= 1 && output[0].TxID != test.tx1 && !test.expectedError {
 				t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.tx1, output[0].TxID)
-			} else if output != nil && len(output) >= 2 && output[1].TxID != test.tx2 && !test.expectedError {
+			} else if len(output) >= 2 && output[1].TxID != test.tx2 && !test.expectedError {
 				t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.tx2, output[1].TxID)
 			} else if client.LastRequest().StatusCode != test.statusCode {
 				t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
@@ -966,9 +966,9 @@ func TestClient_BulkRawTransactionDataProcessor(t *testing.T) {
 				t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
 			} else if err != nil && !test.expectedError {
 				t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
-			} else if output != nil && len(output) >= 1 && output[0].TxID != test.tx1 && !test.expectedError {
+			} else if len(output) >= 1 && output[0].TxID != test.tx1 && !test.expectedError {
 				t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.tx1, output[0].TxID)
-			} else if output != nil && len(output) >= 2 && output[1].TxID != test.tx2 && !test.expectedError {
+			} else if len(output) >= 2 && output[1].TxID != test.tx2 && !test.expectedError {
 				t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.tx2, output[1].TxID)
 			} else if client.LastRequest().StatusCode != test.statusCode {
 				t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
