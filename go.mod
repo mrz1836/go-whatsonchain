@@ -3,13 +3,13 @@ module github.com/mrz1836/go-whatsonchain
 go 1.17
 
 require (
-	github.com/centrifugal/centrifuge-go v0.8.3
+	github.com/centrifugal/centrifuge-go v0.9.0
 	github.com/gojektech/heimdall/v6 v6.1.0
 	github.com/stretchr/testify v1.8.0
 )
 
 require (
-	github.com/centrifugal/protocol v0.8.7 // indirect
+	github.com/centrifugal/protocol v0.8.9 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gojektech/valkyrie v0.0.0-20190210220504-8f62c1e7ba45 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
