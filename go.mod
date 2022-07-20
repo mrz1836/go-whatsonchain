@@ -3,13 +3,13 @@ module github.com/mrz1836/go-whatsonchain
 go 1.17
 
 require (
-	github.com/centrifugal/centrifuge-go v0.8.3
+	github.com/centrifugal/centrifuge-go v0.9.0
 	github.com/gojektech/heimdall/v6 v6.1.0
 	github.com/stretchr/testify v1.8.0
 )
 
 require (
-	github.com/centrifugal/protocol v0.8.7 // indirect
+	github.com/centrifugal/protocol v0.8.10 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gojektech/valkyrie v0.0.0-20190210220504-8f62c1e7ba45 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
@@ -22,7 +22,10 @@ require (
 	github.com/segmentio/encoding v0.3.5 // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// Breaking changes - needs a full refactor in WOC and BUX
+replace github.com/centrifugal/centrifuge-go => github.com/centrifugal/centrifuge-go v0.8.3
