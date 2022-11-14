@@ -310,10 +310,11 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 
 // BulkBroadcastTx will broadcast many transactions at once
 // You can bulk broadcast transactions using this endpoint.
-// 		Size per transaction should be less than 100KB
-//		Overall payload per request should be less than 10MB
-//		Max 100 transactions per request
-//		Only available for mainnet
+//
+//	Size per transaction should be less than 100KB
+//	Overall payload per request should be less than 10MB
+//	Max 100 transactions per request
+//	Only available for mainnet
 //
 // Tip: First transaction in the list should have an output to WOC tip address '16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA'
 //
