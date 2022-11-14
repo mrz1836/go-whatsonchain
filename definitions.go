@@ -159,8 +159,9 @@ type CoinbaseTxInfo struct {
 
 // ExchangeRate is the response from getting the current exchange rate
 type ExchangeRate struct {
-	Currency string `json:"currency"`
-	Rate     string `json:"rate"`
+	Currency string  `json:"currency"`
+	Rate     float64 `json:"rate"`
+	Time     int64   `json:"time"`
 }
 
 // FeeQuote is the structure response for a fee in a quote

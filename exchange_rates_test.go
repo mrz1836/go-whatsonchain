@@ -26,7 +26,7 @@ func (m *mockHTTPExchangeValid) Do(req *http.Request) (*http.Response, error) {
 	// Valid (exchange rate)
 	if strings.Contains(req.URL.String(), "/exchangerate") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`{"currency": "USD","rate": "178.59733333333335"}`)))
+		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`{"rate":38.542,"time":1668439893,"currency":"USD"}`)))
 	}
 
 	// Default is valid
@@ -95,8 +95,8 @@ func TestClient_GetExchangeRate(t *testing.T) {
 		t.Errorf("%s Failed: info was nil", t.Name())
 	} else if info.Currency != "USD" {
 		t.Errorf("%s Failed: currency was [%s] expected [%s]", t.Name(), info.Currency, "USD")
-	} else if info.Rate != "178.59733333333335" {
-		t.Errorf("%s Failed: currency was [%s] expected [%s]", t.Name(), info.Rate, "178.59733333333335")
+	} else if info.Rate != 38.542 {
+		t.Errorf("%s Failed: currency was [%v] expected [%v]", t.Name(), info.Rate, 38.542)
 	}
 
 	// New invalid mock client
