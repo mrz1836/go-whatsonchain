@@ -2,7 +2,7 @@
 > The unofficial golang implementation for the [whatsonchain.com API](https://developers.whatsonchain.com/)
 
 [![Release](https://img.shields.io/github/release-pre/mrz1836/go-whatsonchain.svg?logo=github&style=flat&v=1)](https://github.com/mrz1836/go-whatsonchain/releases)
-[![Build Status](https://img.shields.io/github/workflow/status/mrz1836/go-whatsonchain/run-go-tests?logo=github&v=3)](https://github.com/mrz1836/go-whatsonchain/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/mrz1836/go-whatsonchain/run-tests.yml?branch=master&logo=github&v=3)](https://github.com/mrz1836/go-whatsonchain/actions)
 [![Report](https://goreportcard.com/badge/github.com/mrz1836/go-whatsonchain?style=flat&v=2)](https://goreportcard.com/report/github.com/mrz1836/go-whatsonchain)
 [![codecov](https://codecov.io/gh/mrz1836/go-whatsonchain/branch/master/graph/badge.svg)](https://codecov.io/gh/mrz1836/go-whatsonchain)
 [![Go](https://img.shields.io/github/go-mod/go-version/mrz1836/go-whatsonchain)](https://golang.org/)
