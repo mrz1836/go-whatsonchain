@@ -9,7 +9,7 @@ require (
 )
 
 require (
-	github.com/centrifugal/protocol v0.9.1 // indirect
+	github.com/centrifugal/protocol v0.10.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gojektech/valkyrie v0.0.0-20190210220504-8f62c1e7ba45 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
@@ -22,10 +22,13 @@ require (
 	github.com/segmentio/encoding v0.3.6 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	golang.org/x/sys v0.7.0 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-// Breaking changes - needs a full refactor in WOC and BUX
+// Breaking changes - needs a full refactor
 replace github.com/centrifugal/centrifuge-go => github.com/centrifugal/centrifuge-go v0.8.3
+
+// Breaking changes - needs a full refactor
+replace github.com/centrifugal/protocol => github.com/centrifugal/protocol v0.9.1
