@@ -12,7 +12,7 @@ import (
 const (
 
 	// version is the current version
-	version = "v0.12.2"
+	version = "v0.13.0"
 
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-whatsonchain: " + version
