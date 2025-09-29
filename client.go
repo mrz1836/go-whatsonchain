@@ -92,7 +92,6 @@ func ClientDefaultOptions() (clientOptions *Options) {
 
 // createClient will make a new http client based on the options provided
 func createClient(network NetworkType, options *Options, customHTTPClient HTTPInterface) (c *Client) {
-
 	// Create a client
 	c = &Client{
 		lastRequest: &LastRequest{},

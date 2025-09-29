@@ -17,19 +17,19 @@ func TestNewClient(t *testing.T) {
 	t.Run("main net", func(t *testing.T) {
 		client := NewClient(NetworkMain, nil, nil)
 		require.NotNil(t, client)
-		assert.NotEqual(t, 0, len(client.UserAgent()))
+		assert.NotEmpty(t, client.UserAgent())
 	})
 
 	t.Run("test net", func(t *testing.T) {
 		client := NewClient(NetworkTest, nil, nil)
 		require.NotNil(t, client)
-		assert.NotEqual(t, 0, len(client.UserAgent()))
+		assert.NotEmpty(t, client.UserAgent())
 	})
 
 	t.Run("stn", func(t *testing.T) {
 		client := NewClient(NetworkStn, nil, nil)
 		require.NotNil(t, client)
-		assert.NotEqual(t, 0, len(client.UserAgent()))
+		assert.NotEmpty(t, client.UserAgent())
 	})
 
 	t.Run("with API key", func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestNewClient(t *testing.T) {
 		opts.APIKey = "test1234567"
 		client := NewClient(NetworkStn, opts, nil)
 		require.NotNil(t, client)
-		assert.NotEqual(t, 0, len(client.UserAgent()))
+		assert.NotEmpty(t, client.UserAgent())
 	})
 }
 
@@ -73,7 +73,7 @@ func TestClientDefaultOptions(t *testing.T) {
 	require.NotNil(t, options)
 	assert.Equal(t, defaultUserAgent, options.UserAgent)
 	assert.Equal(t, defaultRateLimit, options.RateLimit)
-	assert.Equal(t, 2.0, options.BackOffExponentFactor)
+	assert.InDelta(t, 2.0, options.BackOffExponentFactor, 0.01)
 	assert.Equal(t, 2*time.Millisecond, options.BackOffInitialTimeout)
 	assert.Equal(t, 2*time.Millisecond, options.BackOffMaximumJitterInterval)
 	assert.Equal(t, 10*time.Millisecond, options.BackOffMaxTimeout)
@@ -85,7 +85,7 @@ func TestClientDefaultOptions(t *testing.T) {
 	assert.Equal(t, 20*time.Second, options.TransportIdleTimeout)
 	assert.Equal(t, 10, options.TransportMaxIdleConnections)
 	assert.Equal(t, 5*time.Second, options.TransportTLSHandshakeTimeout)
-	assert.Equal(t, "", options.APIKey)
+	assert.Empty(t, options.APIKey)
 }
 
 // TestClientDefaultOptions_NoRetry will set 0 retry counts
