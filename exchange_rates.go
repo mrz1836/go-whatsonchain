@@ -18,11 +18,11 @@ func (c *Client) GetExchangeRate(ctx context.Context) (rate *ExchangeRate, err e
 		fmt.Sprintf("%s%s/exchangerate", apiEndpoint, c.Network()),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return rate, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrExchangeRateNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &rate)
-	return
+	return rate, err
 }

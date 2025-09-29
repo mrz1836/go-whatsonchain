@@ -25,7 +25,7 @@ func (m *mockHTTPHealthValid) Do(req *http.Request) (*http.Response, error) {
 	// Valid
 	if strings.Contains(req.URL.String(), "/woc") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`Whats On Chain`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`Whats On Chain`))
 	}
 
 	// Default is valid
