@@ -3,7 +3,6 @@ package whatsonchain
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -20,7 +19,7 @@ func (m *mockHTTPMempoolValid) Do(req *http.Request) (*http.Response, error) {
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, ErrMissingRequest
 	}
 
 	// Valid
@@ -49,19 +48,19 @@ func (m *mockHTTPMempoolInvalid) Do(req *http.Request) (*http.Response, error) {
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, ErrMissingRequest
 	}
 
 	// Invalid
 	if strings.Contains(req.URL.String(), "/mempool/info") {
 		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		return resp, ErrBadRequest
 	}
 
 	// Invalid
 	if strings.Contains(req.URL.String(), "/mempool/raw") {
 		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		return resp, ErrBadRequest
 	}
 
 	// Default is valid
@@ -78,7 +77,7 @@ func (m *mockHTTPMempoolNotFound) Do(req *http.Request) (*http.Response, error) 
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, ErrMissingRequest
 	}
 
 	// Not found
@@ -109,13 +108,23 @@ func TestClient_GetMempoolInfo(t *testing.T) {
 	info, err := client.GetMempoolInfo(ctx)
 	if err != nil {
 		t.Errorf("%s Failed: error [%s]", t.Name(), err.Error())
-	} else if info == nil {
+		return
+	}
+
+	if info == nil {
 		t.Errorf("%s Failed: info was nil", t.Name())
-	} else if info.Size != 520 {
+		return
+	}
+
+	if info.Size != 520 {
 		t.Errorf("%s Failed: size was [%d] expected [%d]", t.Name(), info.Size, 520)
-	} else if info.Bytes != 108095 {
+	}
+
+	if info.Bytes != 108095 {
 		t.Errorf("%s Failed: bytes was [%d] expected [%d]", t.Name(), info.Bytes, 108095)
-	} else if info.MaxMempool != 64000000000 {
+	}
+
+	if info.MaxMempool != 64000000000 {
 		t.Errorf("%s Failed: max mempool was [%d] expected [%d]", t.Name(), info.MaxMempool, 64000000000)
 	}
 

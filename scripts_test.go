@@ -155,16 +155,30 @@ func TestClient_GetScriptHistory(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetScriptHistory(ctx, test.input); err == nil && test.expectedError {
+		output, err := client.GetScriptHistory(ctx, test.input)
+
+		if err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
-		} else if err != nil && !test.expectedError {
+			continue
+		}
+
+		if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
-		} else if output != nil && output[0].Height != test.height && !test.expectedError {
-			t.Errorf("%s Failed: [%s] inputted and [%d] height expected, received: [%d]", t.Name(), test.input, test.height, output[0].Height)
-		} else if output != nil && output[0].TxHash != test.hash && !test.expectedError {
-			t.Errorf("%s Failed: [%s] inputted and [%s] hash expected, received: [%s]", t.Name(), test.input, test.hash, output[0].TxHash)
-		} else if client.LastRequest().StatusCode != test.statusCode {
+			continue
+		}
+
+		if client.LastRequest().StatusCode != test.statusCode {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
+			continue
+		}
+
+		if !test.expectedError && output != nil {
+			if output[0].Height != test.height {
+				t.Errorf("%s Failed: [%s] inputted and [%d] height expected, received: [%d]", t.Name(), test.input, test.height, output[0].Height)
+			}
+			if output[0].TxHash != test.hash {
+				t.Errorf("%s Failed: [%s] inputted and [%s] hash expected, received: [%s]", t.Name(), test.input, test.hash, output[0].TxHash)
+			}
 		}
 	}
 }
@@ -193,16 +207,30 @@ func TestClient_GetScriptUnspentTransactions(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetScriptUnspentTransactions(ctx, test.input); err == nil && test.expectedError {
+		output, err := client.GetScriptUnspentTransactions(ctx, test.input)
+
+		if err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
-		} else if err != nil && !test.expectedError {
+			continue
+		}
+
+		if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
-		} else if len(output) > 0 && output[0].Height != test.height && !test.expectedError {
-			t.Errorf("%s Failed: [%s] inputted and [%d] height expected, received: [%d]", t.Name(), test.input, test.height, output[0].Height)
-		} else if len(output) > 0 && output[0].TxHash != test.hash && !test.expectedError {
-			t.Errorf("%s Failed: [%s] inputted and [%s] hash expected, received: [%s]", t.Name(), test.input, test.hash, output[0].TxHash)
-		} else if client.LastRequest().StatusCode != test.statusCode {
+			continue
+		}
+
+		if client.LastRequest().StatusCode != test.statusCode {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
+			continue
+		}
+
+		if !test.expectedError && len(output) > 0 {
+			if output[0].Height != test.height {
+				t.Errorf("%s Failed: [%s] inputted and [%d] height expected, received: [%d]", t.Name(), test.input, test.height, output[0].Height)
+			}
+			if output[0].TxHash != test.hash {
+				t.Errorf("%s Failed: [%s] inputted and [%s] hash expected, received: [%s]", t.Name(), test.input, test.hash, output[0].TxHash)
+			}
 		}
 	}
 }
@@ -220,7 +248,7 @@ func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
 		}})
 		require.NoError(t, err)
 		assert.NotNil(t, balances)
-		assert.Equal(t, 2, len(balances))
+		assert.Len(t, balances, 2)
 	})
 
 	t.Run("max scripts (error)", func(t *testing.T) {
@@ -249,7 +277,7 @@ func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
 			"20",
 			"21",
 		}})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, balances)
 	})
 
@@ -259,7 +287,7 @@ func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
 		balances, err := client.BulkScriptUnspentTransactions(ctx, &ScriptsList{Scripts: []string{
 			"f814a7c3a40164aacc440871e8b7b14eb6a45f0ca7dcbeaea709edc83274c5e7",
 		}})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, balances)
 	})
 
@@ -269,7 +297,7 @@ func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
 		balances, err := client.BulkScriptUnspentTransactions(ctx, &ScriptsList{Scripts: []string{
 			"notFound",
 		}})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, balances)
 	})
 }

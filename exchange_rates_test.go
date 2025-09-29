@@ -3,7 +3,6 @@ package whatsonchain
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -20,7 +19,7 @@ func (m *mockHTTPExchangeValid) Do(req *http.Request) (*http.Response, error) {
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, ErrMissingRequest
 	}
 
 	// Valid (exchange rate)
@@ -43,13 +42,13 @@ func (m *mockHTTPExchangeInvalid) Do(req *http.Request) (*http.Response, error) 
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, ErrMissingRequest
 	}
 
 	// Invalid (exchange rate)
 	if strings.Contains(req.URL.String(), "/exchangerate") {
 		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		return resp, ErrBadRequest
 	}
 
 	// Default is valid
@@ -66,7 +65,7 @@ func (m *mockHTTPExchangeNotFound) Do(req *http.Request) (*http.Response, error)
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, ErrMissingRequest
 	}
 
 	// Invalid (exchange rate)

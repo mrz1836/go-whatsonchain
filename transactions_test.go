@@ -474,18 +474,33 @@ func TestClient_GetMerkleProofTSC(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetMerkleProofTSC(ctx, test.input); err == nil && test.expectedError {
+		output, err := client.GetMerkleProofTSC(ctx, test.input)
+
+		if err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
-		} else if err != nil && !test.expectedError {
+			continue
+		}
+
+		if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
-		} else if output != nil && output[0].Index != test.index && !test.expectedError {
-			t.Errorf("%s Failed: [%s] inputted and [%d] index expected, received: [%d]", t.Name(), test.input, test.index, output[0].Index)
-		} else if output != nil && output[0].Target != test.target && !test.expectedError {
-			t.Errorf("%s Failed: [%s] inputted and [%s] target (merkle root) expected, received: [%s]", t.Name(), test.input, test.target, output[0].Target)
-		} else if output != nil && !reflect.DeepEqual(output[0].Nodes, test.nodes) && !test.expectedError {
-			t.Errorf("%s Failed: [%s] inputted and [%v] nodes expected, received: [%v]", t.Name(), test.input, test.nodes, output[0].Nodes)
-		} else if client.LastRequest().StatusCode != test.statusCode {
+			continue
+		}
+
+		if client.LastRequest().StatusCode != test.statusCode {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
+			continue
+		}
+
+		if !test.expectedError && output != nil {
+			if output[0].Index != test.index {
+				t.Errorf("%s Failed: [%s] inputted and [%d] index expected, received: [%d]", t.Name(), test.input, test.index, output[0].Index)
+			}
+			if output[0].Target != test.target {
+				t.Errorf("%s Failed: [%s] inputted and [%s] target (merkle root) expected, received: [%s]", t.Name(), test.input, test.target, output[0].Target)
+			}
+			if !reflect.DeepEqual(output[0].Nodes, test.nodes) {
+				t.Errorf("%s Failed: [%s] inputted and [%v] nodes expected, received: [%v]", t.Name(), test.input, test.nodes, output[0].Nodes)
+			}
 		}
 	}
 }
