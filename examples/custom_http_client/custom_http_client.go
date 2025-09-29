@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-
 	// use your own custom http client
 	customClient := http.DefaultClient
 
