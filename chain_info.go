@@ -13,13 +13,13 @@ import (
 //
 // For more information: https://developers.whatsonchain.com/#chain-info
 func (c *Client) GetChainInfo(ctx context.Context) (chainInfo *ChainInfo, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/chain/info
 	if resp, err = c.request(
 		ctx,
 		fmt.Sprintf("%s%s/chain/info", apiEndpoint, c.Network()),
-		http.MethodGet, nil,
+		http.MethodGet,
+		nil,
 	); err != nil {
 		return
 	}
@@ -34,7 +34,6 @@ func (c *Client) GetChainInfo(ctx context.Context) (chainInfo *ChainInfo, err er
 //
 // For more information: https://developers.whatsonchain.com/#get-circulating-supply
 func (c *Client) GetCirculatingSupply(ctx context.Context) (supply float64, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/circulatingsupply
 	if resp, err = c.request(

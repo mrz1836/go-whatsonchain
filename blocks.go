@@ -11,13 +11,13 @@ import (
 //
 // For more information: https://developers.whatsonchain.com/#get-by-hash
 func (c *Client) GetBlockByHash(ctx context.Context, hash string) (blockInfo *BlockInfo, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>
 	if resp, err = c.request(
 		ctx,
 		fmt.Sprintf("%s%s/block/hash/%s", apiEndpoint, c.Network(), hash),
-		http.MethodGet, nil,
+		http.MethodGet,
+		nil,
 	); err != nil {
 		return
 	}
@@ -32,7 +32,6 @@ func (c *Client) GetBlockByHash(ctx context.Context, hash string) (blockInfo *Bl
 //
 // For more information: https://developers.whatsonchain.com/#get-by-height
 func (c *Client) GetBlockByHeight(ctx context.Context, height int64) (blockInfo *BlockInfo, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/height/<height>
 	if resp, err = c.request(
@@ -54,7 +53,6 @@ func (c *Client) GetBlockByHeight(ctx context.Context, height int64) (blockInfo 
 //
 // For more information: https://developers.whatsonchain.com/#get-block-pages
 func (c *Client) GetBlockPages(ctx context.Context, hash string, page int) (txList BlockPagesInfo, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>/page/1
 	if resp, err = c.request(
@@ -75,7 +73,6 @@ func (c *Client) GetBlockPages(ctx context.Context, hash string, page int) (txLi
 //
 // For more information: https://developers.whatsonchain.com/#get-header-by-hash
 func (c *Client) GetHeaderByHash(ctx context.Context, hash string) (headerInfo *BlockInfo, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/<hash>/header
 	if resp, err = c.request(
@@ -96,7 +93,6 @@ func (c *Client) GetHeaderByHash(ctx context.Context, hash string) (headerInfo *
 //
 // For more information: https://developers.whatsonchain.com/#get-headers
 func (c *Client) GetHeaders(ctx context.Context) (blockHeaders []*BlockInfo, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/block/headers
 	if resp, err = c.request(

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -20,19 +20,19 @@ func (m *mockHTTPChainValid) Do(req *http.Request) (*http.Response, error) {
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, ErrMissingRequest
 	}
 
 	// Valid (chain info)
 	if strings.Contains(req.URL.String(), "/chain/info") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`{"chain":"main","blocks":640504,"headers":640504,"bestblockhash":"00000000000000000187b269ba0ed06be21c0d0d623c68957ad0308b3004f8ee","difficulty":286794300954.8341,"mediantime":1592843022,"verificationprogress":0.9999928741979456,"pruned":false,"chainwork":"0000000000000000000000000000000000000000010e6322afd01e2bb1415909"}`)))
+		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`{"chain":"main","blocks":640504,"headers":640504,"bestblockhash":"00000000000000000187b269ba0ed06be21c0d0d623c68957ad0308b3004f8ee","difficulty":286794300954.8341,"mediantime":1592843022,"verificationprogress":0.9999928741979456,"pruned":false,"chainwork":"0000000000000000000000000000000000000000010e6322afd01e2bb1415909"}`)))
 	}
 
 	// Valid (circulating supply)
 	if strings.Contains(req.URL.String(), "/circulatingsupply") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`18440650`)))
+		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`18440650`)))
 	}
 
 	// Default is valid
@@ -54,14 +54,14 @@ func (m *mockHTTPChainInvalid) Do(req *http.Request) (*http.Response, error) {
 
 	// Invalid (chain info)
 	if strings.Contains(req.URL.String(), "/chain/info") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, ErrBadRequest
 	}
 
 	// Invalid (circulating supply)
 	if strings.Contains(req.URL.String(), "/circulatingsupply") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		return resp, ErrBadRequest
 	}
 
 	// Default is valid
@@ -83,13 +83,13 @@ func (m *mockHTTPChainNotFound) Do(req *http.Request) (*http.Response, error) {
 
 	// Not found (chain info)
 	if strings.Contains(req.URL.String(), "/chain/info") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
 		return resp, nil
 	}
 
 	// Not found (circulating supply)
 	if strings.Contains(req.URL.String(), "/circulatingsupply") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
 		return resp, nil
 	}
 
