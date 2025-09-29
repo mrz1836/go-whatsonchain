@@ -1,3 +1,4 @@
+// Package main demonstrates retrieving an address balance using the whatsonchain client.
 package main
 
 import (

@@ -1,3 +1,4 @@
+// Package main demonstrates bulk UTXO retrieval using the whatsonchain client.
 package main
 
 import (

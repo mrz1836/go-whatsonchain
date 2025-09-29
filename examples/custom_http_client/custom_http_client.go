@@ -1,3 +1,4 @@
+// Package main demonstrates using a custom HTTP client with the whatsonchain library.
 package main
 
 import (
