@@ -1,3 +1,4 @@
+// Package main demonstrates bulk balance lookup functionality.
 package main
 
 import (

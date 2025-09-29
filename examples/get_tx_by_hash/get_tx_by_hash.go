@@ -1,3 +1,4 @@
+// Package main demonstrates transaction lookup by hash functionality.
 package main
 
 import (
