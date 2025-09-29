@@ -28,8 +28,7 @@ func (c *Client) GetChainInfo(ctx context.Context) (chainInfo *ChainInfo, err er
 		return nil, ErrChainInfoNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &chainInfo)
-
-	return
+	return chainInfo, err
 }
 
 // GetCirculatingSupply this endpoint retrieves the current circulating supply
@@ -43,7 +42,7 @@ func (c *Client) GetCirculatingSupply(ctx context.Context) (supply float64, err 
 		fmt.Sprintf("%s%s/circulatingsupply", apiEndpoint, c.Network()),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return supply, err
 	}
 
 	return strconv.ParseFloat(strings.TrimSpace(resp), 64)

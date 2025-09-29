@@ -48,7 +48,8 @@ func (c *Client) AddressBalance(ctx context.Context, address string) (balance *A
 		return nil, ErrAddressNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &balance)
-	return
+
+	return balance, err
 }
 
 // AddressHistory this endpoint retrieves confirmed and unconfirmed address transactions.
@@ -62,13 +63,13 @@ func (c *Client) AddressHistory(ctx context.Context, address string) (history Ad
 		fmt.Sprintf("%s%s/address/%s/history", apiEndpoint, c.Network(), address),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return history, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrAddressNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &history)
-	return
+	return history, err
 }
 
 // AddressUnspentTransactions this endpoint retrieves ordered list of UTXOs.
@@ -82,13 +83,13 @@ func (c *Client) AddressUnspentTransactions(ctx context.Context, address string)
 		fmt.Sprintf("%s%s/address/%s/unspent", apiEndpoint, c.Network(), address),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return history, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrAddressNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &history)
-	return
+	return history, err
 }
 
 // AddressUnspentTransactionDetails this endpoint retrieves transaction details for a given address
@@ -99,9 +100,9 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 	// Get the address UTXO history
 	var utxos AddressHistory
 	if utxos, err = c.AddressUnspentTransactions(ctx, address); err != nil {
-		return
+		return history, err
 	} else if len(utxos) == 0 {
-		return
+		return history, err
 	}
 
 	// Do we have a "custom max" amount?
@@ -144,7 +145,7 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 		// Get the tx details (max of MaxTransactionsUTXO)
 		var txList TxList
 		if txList, err = c.BulkTransactionDetails(ctx, txHashes); err != nil {
-			return
+			return history, err
 		}
 
 		// Add to the history list
@@ -158,7 +159,7 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 		}
 	}
 
-	return
+	return history, err
 }
 
 // DownloadStatement this endpoint downloads an address statement (PDF)
@@ -194,7 +195,7 @@ func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (balances A
 	// Get the JSON
 	var postData []byte
 	if postData, err = bulkRequest(list); err != nil {
-		return
+		return balances, err
 	}
 
 	var resp string
@@ -204,13 +205,13 @@ func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (balances A
 		fmt.Sprintf("%s%s/addresses/balance", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
-		return
+		return balances, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrAddressNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &balances)
-	return
+	return balances, err
 }
 
 // BulkUnspentTransactionsProcessor will fetch UTXOs for multiple addresses in a single request while automatically batching
@@ -233,7 +234,7 @@ func (c *Client) BulkUnspentTransactionsProcessor(ctx context.Context, list *Add
 		addressList.Addresses = append(addressList.Addresses, batch...)
 		var returnedList BulkUnspentResponse
 		if returnedList, err = c.BulkUnspentTransactions(ctx, addressList); err != nil {
-			return
+			return responseList, err
 		}
 		responseList = append(responseList, returnedList...)
 		currentRateLimit++
@@ -242,7 +243,7 @@ func (c *Client) BulkUnspentTransactionsProcessor(ctx context.Context, list *Add
 			currentRateLimit = 0
 		}
 	}
-	return
+	return responseList, err
 }
 
 // BulkUnspentTransactions will fetch UTXOs for multiple addresses in a single request
@@ -253,7 +254,7 @@ func (c *Client) BulkUnspentTransactions(ctx context.Context, list *AddressList)
 	// Get the JSON
 	var postData []byte
 	if postData, err = bulkRequest(list); err != nil {
-		return
+		return response, err
 	}
 
 	var resp string
@@ -263,11 +264,11 @@ func (c *Client) BulkUnspentTransactions(ctx context.Context, list *AddressList)
 		fmt.Sprintf("%s%s/addresses/unspent", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
-		return
+		return response, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrAddressNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &response)
-	return
+	return response, err
 }

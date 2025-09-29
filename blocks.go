@@ -27,7 +27,7 @@ func (c *Client) GetBlockByHash(ctx context.Context, hash string) (blockInfo *Bl
 	}
 	err = json.Unmarshal([]byte(resp), &blockInfo)
 
-	return
+	return blockInfo, err
 }
 
 // GetBlockByHeight this endpoint retrieves block details with given block height.
@@ -41,14 +41,13 @@ func (c *Client) GetBlockByHeight(ctx context.Context, height int64) (blockInfo 
 		fmt.Sprintf("%s%s/block/height/%d", apiEndpoint, c.Network(), height),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return blockInfo, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrBlockNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &blockInfo)
-
-	return
+	return blockInfo, err
 }
 
 // GetBlockPages if the block has more than 1000 transactions the page URIs will
@@ -63,13 +62,13 @@ func (c *Client) GetBlockPages(ctx context.Context, hash string, page int) (txLi
 		fmt.Sprintf("%s%s/block/hash/%s/page/%d", apiEndpoint, c.Network(), hash, page),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return txList, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrBlockNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &txList)
-	return
+	return txList, err
 }
 
 // GetHeaderByHash this endpoint retrieves block header details with given hash.
@@ -83,13 +82,13 @@ func (c *Client) GetHeaderByHash(ctx context.Context, hash string) (headerInfo *
 		fmt.Sprintf("%s%s/block/%s/header", apiEndpoint, c.Network(), hash),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return headerInfo, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrBlockNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &headerInfo)
-	return
+	return headerInfo, err
 }
 
 // GetHeaders this endpoint retrieves last 10 block headers.
@@ -103,11 +102,11 @@ func (c *Client) GetHeaders(ctx context.Context) (blockHeaders []*BlockInfo, err
 		fmt.Sprintf("%s%s/block/headers", apiEndpoint, c.Network()),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return blockHeaders, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrHeadersNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &blockHeaders)
-	return
+	return blockHeaders, err
 }
