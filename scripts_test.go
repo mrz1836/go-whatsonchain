@@ -36,7 +36,7 @@ func (m *mockHTTPScript) Do(req *http.Request) (*http.Response, error) {
 	// Valid
 	if strings.Contains(req.URL.String(), "script/995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3/history") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`[{"tx_hash":"52dfceb815ad129a0fd946e3d665f44fa61f068135b9f38b05d3c697e11bad48","height":620539},{"tx_hash":"4ec3b63d764558303eda720e8e51f69bbcfe81376075657313fb587306f8a9b0","height":620539}]`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`[{"tx_hash":"52dfceb815ad129a0fd946e3d665f44fa61f068135b9f38b05d3c697e11bad48","height":620539},{"tx_hash":"4ec3b63d764558303eda720e8e51f69bbcfe81376075657313fb587306f8a9b0","height":620539}]`))
 	}
 
 	// Invalid
@@ -55,13 +55,13 @@ func (m *mockHTTPScript) Do(req *http.Request) (*http.Response, error) {
 	// Valid (has utxo)
 	if strings.Contains(req.URL.String(), "script/92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb/unspent") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`[{"height": 640558,"tx_pos": 1,"tx_hash": "5c6ac3a685be0791aa6e6eedb03d48cbf76046ea499e0a9cefbdc0fb3969ad13","value": 533335}]`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`[{"height": 640558,"tx_pos": 1,"tx_hash": "5c6ac3a685be0791aa6e6eedb03d48cbf76046ea499e0a9cefbdc0fb3969ad13","value": 533335}]`))
 	}
 
 	// Valid (empty)
 	if strings.Contains(req.URL.String(), "script/995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3/unspent") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`[]`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 	}
 
 	// Invalid
@@ -80,7 +80,7 @@ func (m *mockHTTPScript) Do(req *http.Request) (*http.Response, error) {
 	// Valid (unspent)
 	if strings.Contains(req.URL.String(), "/scripts/unspent") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`[{"script":"f814a7c3a40164aacc440871e8b7b14eb6a45f0ca7dcbeaea709edc83274c5e7","unspent":[{"height":620539,"tx_pos":0,"tx_hash":"4ec3b63d764558303eda720e8e51f69bbcfe81376075657313fb587306f8a9b0","value":450000}],"error":""},{"script":"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3","unspent":[],"error":""}]`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`[{"script":"f814a7c3a40164aacc440871e8b7b14eb6a45f0ca7dcbeaea709edc83274c5e7","unspent":[{"height":620539,"tx_pos":0,"tx_hash":"4ec3b63d764558303eda720e8e51f69bbcfe81376075657313fb587306f8a9b0","value":450000}],"error":""},{"script":"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3","unspent":[],"error":""}]`))
 	}
 
 	// Default is valid

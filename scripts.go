@@ -18,13 +18,13 @@ func (c *Client) GetScriptHistory(ctx context.Context, scriptHash string) (histo
 		fmt.Sprintf("%s%s/script/%s/history", apiEndpoint, c.Network(), scriptHash),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return history, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrScriptNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &history)
-	return
+	return history, err
 }
 
 // GetScriptUnspentTransactions this endpoint retrieves ordered list of UTXOs
@@ -40,14 +40,17 @@ func (c *Client) GetScriptUnspentTransactions(ctx context.Context,
 		fmt.Sprintf("%s%s/script/%s/unspent", apiEndpoint, c.Network(), scriptHash),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return scriptList, err
 	}
 	if len(resp) == 0 {
-		return nil, ErrScriptNotFound
+		if c.LastRequest().StatusCode == http.StatusNotFound {
+			return nil, ErrScriptNotFound
+		}
+		return scriptList, nil
 	}
 	err = json.Unmarshal([]byte(resp), &scriptList)
 
-	return
+	return scriptList, err
 }
 
 // BulkScriptUnspentTransactions will fetch UTXOs for multiple scripts in a single request
@@ -65,7 +68,7 @@ func (c *Client) BulkScriptUnspentTransactions(ctx context.Context,
 	// Get the JSON
 	var postData []byte
 	if postData, err = json.Marshal(list); err != nil {
-		return
+		return response, err
 	}
 
 	var resp string
@@ -75,11 +78,11 @@ func (c *Client) BulkScriptUnspentTransactions(ctx context.Context,
 		fmt.Sprintf("%s%s/scripts/unspent", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
-		return
+		return response, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrScriptNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &response)
-	return
+	return response, err
 }

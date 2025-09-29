@@ -18,13 +18,13 @@ func (c *Client) GetMempoolInfo(ctx context.Context) (info *MempoolInfo, err err
 		fmt.Sprintf("%s%s/mempool/info", apiEndpoint, c.Network()),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return info, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrMempoolInfoNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &info)
-	return
+	return info, err
 }
 
 // GetMempoolTransactions this endpoint will retrieve a list of transaction ids from the node's mempool
@@ -39,11 +39,11 @@ func (c *Client) GetMempoolTransactions(ctx context.Context) (transactions []str
 		fmt.Sprintf("%s%s/mempool/raw", apiEndpoint, c.Network()),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return transactions, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrMempoolInfoNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &transactions)
-	return
+	return transactions, err
 }

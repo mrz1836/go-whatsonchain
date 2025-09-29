@@ -108,7 +108,7 @@ func createClient(network NetworkType, options *Options, customHTTPClient HTTPIn
 	// Is there a custom HTTP client to use?
 	if customHTTPClient != nil {
 		c.httpClient = customHTTPClient
-		return
+		return c
 	}
 
 	// dial is the net dialer for clientDefaultTransport
@@ -145,5 +145,5 @@ func createClient(network NetworkType, options *Options, customHTTPClient HTTPIn
 		c.httpClient = NewRetryableHTTPClient(baseHTTPClient, options.RequestRetryCount, backOff)
 	}
 
-	return
+	return c
 }
