@@ -1,0 +1,327 @@
+# ------------------------------------------------------------------------------------
+#  Warm Cache Composite Action (GoFortress)
+#
+#  Purpose: Warm Go module and build caches for efficient CI/CD execution.
+#  This action handles cache restoration, warming, and saving for Go projects.
+#
+#  Maintainer: @mrz1836
+#
+# ------------------------------------------------------------------------------------
+
+name: "Warm Go Caches"
+description: "Warm Go module and build caches for the specified Go version and OS"
+
+inputs:
+  go-version:
+    description: "Go version to use"
+    required: true
+  matrix-os:
+    description: "Operating system for the runner"
+    required: true
+  matrix-name:
+    description: "Display name for the matrix configuration"
+    required: true
+  enable-verbose:
+    description: "Enable verbose output"
+    required: false
+    default: "false"
+  go-primary-version:
+    description: "Primary Go version for comparison"
+    required: true
+  go-secondary-version:
+    description: "Secondary Go version for comparison"
+    required: true
+  env-json:
+    description: "JSON string of environment variables"
+    required: true
+  redis-enabled:
+    description: "Whether Redis caching is enabled"
+    required: false
+    default: "false"
+  redis-versions:
+    description: "Comma-separated list of Redis versions to warm"
+    required: false
+    default: "7-alpine"
+  redis-cache-force-pull:
+    description: "Whether to force pull Redis images even when cached"
+    required: false
+    default: "false"
+  go-sum-file:
+    description: "Path to go.sum file for cache key generation"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    # --------------------------------------------------------------------
+    # Parse environment variables
+    # --------------------------------------------------------------------
+    - name: 🔧 Parse environment variables
+      shell: bash
+      env:
+        ENV_JSON: ${{ inputs.env-json }}
+      run: |
+        echo "📋 Setting environment variables..."
+        echo "$ENV_JSON" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' | while IFS='=' read -r key value; do
+          echo "$key=$value" >> $GITHUB_ENV
+        done
+
+    # --------------------------------------------------------------------
+    # Checkout code to access local actions (setup-go-with-cache, setup-magex)
+    # --------------------------------------------------------------------
+    - name: 📥 Checkout code
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+    # --------------------------------------------------------------------
+    # Set environment variables
+    # --------------------------------------------------------------------
+    - name: ⚙️ Set cache paths
+      id: set-cache-env
+      shell: bash
+      run: |
+        echo "🔧 Setting up cache environment variables..."
+        echo "GOCACHE=$HOME/.cache/go-build" >> $GITHUB_ENV
+        echo "GOMODCACHE=$HOME/go/pkg/mod" >> $GITHUB_ENV
+        echo "GOLANGCI_LINT_CACHE=$HOME/.cache/golangci-lint" >> $GITHUB_ENV
+        echo "✅ Cache Environment variables set successfully"
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Setup Go with caching and version management
+    # ────────────────────────────────────────────────────────────────────────────
+    - name: 🏗️ Setup Go with Cache
+      id: setup-go
+      uses: ./.github/actions/setup-go-with-cache
+      with:
+        go-version: ${{ inputs.go-version }}
+        matrix-os: ${{ inputs.matrix-os }}
+        go-primary-version: ${{ inputs.go-primary-version }}
+        go-secondary-version: ${{ inputs.go-secondary-version }}
+        go-sum-file: ${{ inputs.go-sum-file }}
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Setup MAGE-X (required for magex commands in cache warming)
+    # ────────────────────────────────────────────────────────────────────────────
+    - name: 🔧 Setup MAGE-X
+      uses: ./.github/actions/setup-magex
+      with:
+        magex-version: ${{ env.MAGE_X_VERSION }}
+        runner-os: ${{ inputs.matrix-os }}
+
+    # --------------------------------------------------------------------
+    # Warm Redis Docker image cache
+    # --------------------------------------------------------------------
+    - name: 🗄️ Warm Redis Cache
+      if: inputs.redis-enabled == 'true'
+      id: warm-redis
+      uses: ./.github/actions/warm-redis-cache
+      with:
+        redis-versions: ${{ inputs.redis-versions }}
+        runner-os: ${{ inputs.matrix-os }}
+        force-pull: ${{ inputs.redis-cache-force-pull }}
+
+    # --------------------------------------------------------------------
+    # Extract Go module directory from GO_SUM_FILE path
+    # --------------------------------------------------------------------
+    - name: 🔧 Extract Go module directory
+      id: extract-module-dir
+      shell: bash
+      run: |
+        GO_SUM_FILE="${{ inputs.go-sum-file }}"
+        GO_MODULE_DIR=$(dirname "$GO_SUM_FILE")
+
+        # Handle root directory case (dirname returns ".")
+        if [ "$GO_MODULE_DIR" = "." ]; then
+          GO_MODULE_DIR=""
+          echo "📁 Go module directory: repository root"
+        else
+          echo "📁 Go module directory: $GO_MODULE_DIR"
+        fi
+
+        # Export for subsequent steps
+        echo "GO_MODULE_DIR=$GO_MODULE_DIR" >> $GITHUB_ENV
+        echo "module-dir=$GO_MODULE_DIR" >> $GITHUB_OUTPUT
+
+    # --------------------------------------------------------------------
+    # Ensure go.sum exists and download modules
+    # --------------------------------------------------------------------
+    - name: 📋 Ensure go.sum exists
+      shell: bash
+      run: |
+        GO_SUM_FILE="${{ inputs.go-sum-file }}"
+        GO_MODULE_DIR="${{ env.GO_MODULE_DIR }}"
+
+        echo "🔍 Checking for go.sum file at: $GO_SUM_FILE"
+        if [ ! -f "$GO_SUM_FILE" ]; then
+          echo "⚠️ Go.sum not found at $GO_SUM_FILE, running 'magex tidy' to generate it."
+          if [ -n "$GO_MODULE_DIR" ]; then
+            echo "🔧 Running magex tidy from directory: $GO_MODULE_DIR"
+            (cd "$GO_MODULE_DIR" && magex tidy)
+          else
+            echo "🔧 Running magex tidy from repository root"
+            magex tidy
+          fi
+          echo "✅ Go.sum generated successfully at $GO_SUM_FILE"
+        else
+          echo "✅ Go.sum already exists at $GO_SUM_FILE"
+        fi
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Ensure cache directories exist
+    # ────────────────────────────────────────────────────────────────────────────
+    - name: 📁 Ensure cache directories exist
+      shell: bash
+      run: |
+        echo "📁 Ensuring cache directories exist..."
+        mkdir -p "$GOMODCACHE"
+        mkdir -p "$GOCACHE"
+        mkdir -p "$GOCACHE/test"
+        echo "✅ Cache directories created successfully"
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Download modules when module cache missed
+    # ────────────────────────────────────────────────────────────────────────────
+    - name: ⬇️ Download modules (module cache miss)
+      if: steps.setup-go.outputs.module-cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        GO_MODULE_DIR="${{ env.GO_MODULE_DIR }}"
+        echo "⬇️ Module cache miss - downloading modules..."
+
+        echo "============================================================"
+        echo "=== Downloading Dependencies ==="
+        echo "============================================================"
+
+        if [ -n "$GO_MODULE_DIR" ]; then
+          echo "🔧 Running magex deps:download from directory: $GO_MODULE_DIR"
+          (cd "$GO_MODULE_DIR" && magex deps:download)
+        else
+          echo "🔧 Running magex deps:download from repository root"
+          magex deps:download
+        fi
+        echo "✅ Modules downloaded successfully"
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Warm build cache when build cache missed
+    # ────────────────────────────────────────────────────────────────────────────
+    - name: 🏗️ Warm build cache (build cache miss)
+      if: steps.setup-go.outputs.build-cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        GO_MODULE_DIR="${{ env.GO_MODULE_DIR }}"
+        echo "🔧 Build cache miss - pre-building packages..."
+
+        echo "============================================================"
+        echo "=== Pre-building Packages ==="
+        echo "============================================================"
+
+        # Use MAGE_X_PARALLEL from env if set, otherwise default to 1 for memory safety
+        PARALLEL_JOBS="${MAGE_X_PARALLEL:-1}"
+        echo "🔧 Using parallelism level: $PARALLEL_JOBS (from MAGE_X_PARALLEL env var)"
+
+        if [ -n "$GO_MODULE_DIR" ]; then
+          echo "🔧 Running build commands from directory: $GO_MODULE_DIR"
+          # Use configured parallelism to avoid OOM on GitHub Actions runners
+          (cd "$GO_MODULE_DIR" && magex build:prebuild p="$PARALLEL_JOBS" strategy=smart)
+
+          echo "🏗️ Building stdlib for host platform..."
+          (cd "$GO_MODULE_DIR" && magex install:stdlib)
+        else
+          echo "🔧 Running build commands from repository root"
+          # Use configured parallelism to avoid OOM on GitHub Actions runners
+          magex build:prebuild p="$PARALLEL_JOBS" strategy=smart
+
+          echo "🏗️ Building stdlib for host platform..."
+          magex install:stdlib
+        fi
+
+        echo "✅ Build cache warmed for Go ${{ inputs.go-version }}"
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Save the build cache we just created
+    # ────────────────────────────────────────────────────────────────────────────
+    - name: 💾 Save Go build cache
+      if: steps.setup-go.outputs.build-cache-hit != 'true'
+      uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.0.2
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/.cache/go-build/test
+        key: ${{ inputs.matrix-os }}-gobuild-${{ inputs.go-version }}-${{ hashFiles(inputs.go-sum-file) }}
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Save the Go module cache we just populated
+    # ────────────────────────────────────────────────────────────────────────────
+    - name: 💾 Save Go module cache
+      if: steps.setup-go.outputs.module-cache-hit != 'true'
+      uses: actions/cache/save@5a3ec84eff668545956fd18022155c47e93e2684 # v4.0.2
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ inputs.matrix-os }}-gomod-${{ hashFiles(inputs.go-sum-file) }}
+
+    # --------------------------------------------------------------------
+    # Track cache performance (no outputs - use artifacts instead)
+    # --------------------------------------------------------------------
+    - name: 📊 Calculate cache statistics
+      id: cache-summary
+      if: always()
+      shell: bash
+      run: |
+        STATS_FILE="cache-stats-${{ inputs.matrix-os }}-${{ inputs.go-version }}.json"
+
+        # Redis cache statistics
+        REDIS_ENABLED="${{ inputs.redis-enabled }}"
+        REDIS_VERSIONS_WARMED="${{ steps.warm-redis.outputs.versions-warmed || '0' }}"
+        REDIS_TOTAL_CACHE_SIZE="${{ steps.warm-redis.outputs.total-cache-size || '0' }}"
+        REDIS_OPERATION_TIME="${{ steps.warm-redis.outputs.operation-time || '0' }}"
+        REDIS_WARMING_STATUS="${{ steps.warm-redis.outputs.warming-status || 'disabled' }}"
+        REDIS_CACHE_KEYS="${{ steps.warm-redis.outputs.cache-keys || '' }}"
+
+        cat > "$STATS_FILE" << EOF
+        {
+          "os": "${{ inputs.matrix-os }}",
+          "go_version": "${{ inputs.go-version }}",
+          "gomod_cache_hit": ${{ steps.setup-go.outputs.module-cache-hit == 'true' && 'true' || 'false' }},
+          "gobuild_cache_hit": ${{ steps.setup-go.outputs.build-cache-hit == 'true' && 'true' || 'false' }},
+          "cache_size_gomod": "$(du -sh $GOMODCACHE 2>/dev/null | cut -f1 || echo '0')",
+          "cache_size_gobuild": "$(du -sh $GOCACHE 2>/dev/null | cut -f1 || echo '0')",
+          "redis_enabled": "$REDIS_ENABLED",
+          "redis_versions_warmed": "$REDIS_VERSIONS_WARMED",
+          "redis_cache_size_mb": "$REDIS_TOTAL_CACHE_SIZE",
+          "redis_operation_time_s": "$REDIS_OPERATION_TIME",
+          "redis_warming_status": "$REDIS_WARMING_STATUS",
+          "redis_cache_keys": "$REDIS_CACHE_KEYS",
+          "workflow": "cache-warm",
+          "job_name": "warm-cache",
+          "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        }
+        EOF
+
+        echo "📊 Cache statistics:"
+        jq . "$STATS_FILE"
+
+        # Additional Redis warming report
+        if [[ "$REDIS_ENABLED" == "true" ]]; then
+          echo ""
+          echo "🗄️ Redis Cache Warming Summary:"
+          echo "   • Versions Warmed: $REDIS_VERSIONS_WARMED"
+          echo "   • Total Cache Size: ${REDIS_TOTAL_CACHE_SIZE}MB"
+          echo "   • Operation Time: ${REDIS_OPERATION_TIME}s"
+          echo "   • Status: $REDIS_WARMING_STATUS"
+          if [[ -n "$REDIS_CACHE_KEYS" ]]; then
+            echo "   • Cache Keys:"
+            echo "$REDIS_CACHE_KEYS" | tr ',' '\n' | sed 's/^/     - /'
+          fi
+        fi
+
+    # --------------------------------------------------------------------
+    # Upload cache statistics
+    # --------------------------------------------------------------------
+    - name: 📤 Upload cache statistics
+      if: always()
+      uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      with:
+        name: cache-stats-${{ inputs.matrix-os }}-${{ inputs.go-version }}
+        path: cache-stats-*.json
+        retention-days: 1
