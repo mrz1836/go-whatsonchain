@@ -1,3 +1,4 @@
+// Package main demonstrates retrieving UTXO details using the whatsonchain client.
 package main
 
 import (

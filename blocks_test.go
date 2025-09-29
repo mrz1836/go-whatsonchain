@@ -3,7 +3,6 @@ package whatsonchain
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -117,7 +116,7 @@ func (m *mockHTTPBlocks) Do(req *http.Request) (*http.Response, error) {
 	// Invalid (by page) return an error
 	if strings.Contains(req.URL.String(), "hash/error/page") {
 		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		return resp, ErrBadRequest
 	}
 
 	// Not found (by page) return an error
@@ -173,7 +172,7 @@ func (m *mockHTTPHeadersError) Do(req *http.Request) (*http.Response, error) {
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("bad request")
+		return resp, ErrBadRequest
 	}
 
 	// Invalid
@@ -181,7 +180,7 @@ func (m *mockHTTPHeadersError) Do(req *http.Request) (*http.Response, error) {
 		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
 	}
 
-	return resp, fmt.Errorf("bad request")
+	return resp, ErrBadRequest
 }
 
 // TestClient_GetBlockByHash tests the GetBlockByHash()
