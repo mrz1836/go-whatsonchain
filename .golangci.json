@@ -45,6 +45,7 @@
             "gocritic",
             "godot",
             "gocognit",
+            "nestif",
             "gocyclo",
             "wsl_v5"
         ],
@@ -87,7 +88,6 @@
             "misspell",
             "musttag",
             "nakedret",
-            "nestif",
             "nilerr",
             "nilnesserr",
             "nilnil",
