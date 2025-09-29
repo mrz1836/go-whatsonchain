@@ -11,7 +11,6 @@ import (
 //
 // For more information: https://developers.whatsonchain.com/#get-script-history
 func (c *Client) GetScriptHistory(ctx context.Context, scriptHash string) (history ScriptList, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/script/<scriptHash>/history
 	if resp, err = c.request(
@@ -32,8 +31,8 @@ func (c *Client) GetScriptHistory(ctx context.Context, scriptHash string) (histo
 //
 // For more information: https://developers.whatsonchain.com/#get-script-unspent-transactions
 func (c *Client) GetScriptUnspentTransactions(ctx context.Context,
-	scriptHash string) (scriptList ScriptList, err error) {
-
+	scriptHash string,
+) (scriptList ScriptList, err error) {
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/script/<scriptHash>/unspent
 	if resp, err = c.request(
@@ -56,14 +55,11 @@ func (c *Client) GetScriptUnspentTransactions(ctx context.Context,
 //
 // For more information: https://developers.whatsonchain.com/#bulk-script-unspent-transactions
 func (c *Client) BulkScriptUnspentTransactions(ctx context.Context,
-	list *ScriptsList) (response BulkScriptUnspentResponse, err error) {
-
+	list *ScriptsList,
+) (response BulkScriptUnspentResponse, err error) {
 	// The max limit by WOC
 	if len(list.Scripts) > MaxScriptsForLookup {
-		return nil, fmt.Errorf(
-			"max limit of scripts is %d and you sent %d",
-			MaxScriptsForLookup, len(list.Scripts),
-		)
+		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
 	}
 
 	// Get the JSON

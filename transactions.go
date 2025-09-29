@@ -13,7 +13,6 @@ import (
 //
 // For more information: https://developers.whatsonchain.com/#get-by-tx-hash
 func (c *Client) GetTxByHash(ctx context.Context, hash string) (txInfo *TxInfo, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>
 	if resp, err = c.request(
@@ -35,13 +34,9 @@ func (c *Client) GetTxByHash(ctx context.Context, hash string) (txInfo *TxInfo, 
 //
 // For more information: https://developers.whatsonchain.com/#bulk-transaction-details
 func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
-
 	// The max limit by WOC
 	if len(hashes.TxIDs) > MaxTransactionsUTXO {
-		err = fmt.Errorf(
-			"max limit of utxos is %d and you sent %d",
-			MaxTransactionsUTXO, len(hashes.TxIDs),
-		)
+		err = fmt.Errorf("%w: %d UTXOs requested, max is %d", ErrMaxUTXOsExceeded, len(hashes.TxIDs), MaxTransactionsUTXO)
 		return
 	}
 
@@ -71,7 +66,6 @@ func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (
 // Processes 20 transactions per request
 // See: BulkTransactionDetails()
 func (c *Client) BulkTransactionDetailsProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
-
 	// Break up the transactions into batches
 	var batches [][]string
 	chunkSize := MaxTransactionsUTXO
@@ -101,7 +95,7 @@ func (c *Client) BulkTransactionDetailsProcessor(ctx context.Context, hashes *Tx
 		if returnedList, err = c.BulkTransactionDetails(
 			ctx, txHashes,
 		); err != nil {
-			return
+			return txList, err
 		}
 
 		// Add to the list
@@ -115,14 +109,13 @@ func (c *Client) BulkTransactionDetailsProcessor(ctx context.Context, hashes *Tx
 		}
 	}
 
-	return
+	return txList, err
 }
 
 // GetMerkleProof this endpoint returns merkle branch to a confirmed transaction
 //
 // For more information: https://developers.whatsonchain.com/#get-merkle-proof
 func (c *Client) GetMerkleProof(ctx context.Context, hash string) (merkleResults MerkleResults, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/proof
 	if resp, err = c.request(
@@ -143,7 +136,6 @@ func (c *Client) GetMerkleProof(ctx context.Context, hash string) (merkleResults
 //
 // For more information: TODO! No link today
 func (c *Client) GetMerkleProofTSC(ctx context.Context, hash string) (merkleResults MerkleTSCResults, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/proof/tsc
 	if resp, err = c.request(
@@ -164,7 +156,6 @@ func (c *Client) GetMerkleProofTSC(ctx context.Context, hash string) (merkleResu
 //
 // For more information: https://developers.whatsonchain.com/#get-raw-transaction-data
 func (c *Client) GetRawTransactionData(ctx context.Context, hash string) (string, error) {
-
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/hex
 	return c.request(
 		ctx,
@@ -179,13 +170,9 @@ func (c *Client) GetRawTransactionData(ctx context.Context, hash string) (string
 //
 // For more information: https://developers.whatsonchain.com/#bulk-raw-transaction-data
 func (c *Client) BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
-
 	// The max limit by WOC
 	if len(hashes.TxIDs) > MaxTransactionsRaw {
-		err = fmt.Errorf(
-			"max limit of transactions is %d and you sent %d",
-			MaxTransactionsRaw, len(hashes.TxIDs),
-		)
+		err = fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxRawTransactionsExceeded, len(hashes.TxIDs), MaxTransactionsRaw)
 		return
 	}
 
@@ -218,7 +205,6 @@ func (c *Client) BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (
 //
 // For more information: https://developers.whatsonchain.com/#bulk-raw-transaction-data
 func (c *Client) BulkRawTransactionDataProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
-
 	// Break up the transactions into batches
 	var batches [][]string
 	chunkSize := MaxTransactionsRaw
@@ -248,7 +234,7 @@ func (c *Client) BulkRawTransactionDataProcessor(ctx context.Context, hashes *Tx
 		if returnedList, err = c.BulkRawTransactionData(
 			ctx, txHashes,
 		); err != nil {
-			return
+			return txList, err
 		}
 
 		// Add to the list
@@ -262,14 +248,13 @@ func (c *Client) BulkRawTransactionDataProcessor(ctx context.Context, hashes *Tx
 		}
 	}
 
-	return
+	return txList, err
 }
 
 // GetRawTransactionOutputData this endpoint returns raw hex for the transaction output with given hash and index
 //
 // For more information: https://developers.whatsonchain.com/#get-raw-transaction-output-data
 func (c *Client) GetRawTransactionOutputData(ctx context.Context, hash string, vOutIndex int) (string, error) {
-
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/out/<index>/hex
 	return c.request(
 		ctx,
@@ -283,7 +268,6 @@ func (c *Client) GetRawTransactionOutputData(ctx context.Context, hash string, v
 //
 // For more information: https://developers.whatsonchain.com/#broadcast-transaction
 func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, err error) {
-
 	// Start the post data
 	postData := []byte(fmt.Sprintf(`{"txhex":"%s"}`, txHex))
 
@@ -298,11 +282,11 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 
 	// Got an error
 	if c.lastRequest.StatusCode > http.StatusOK {
-		err = fmt.Errorf("error broadcasting: %s", txID)
+		err = fmt.Errorf("%w: %s", ErrBroadcastFailed, txID)
 		txID = "" // remove the error message
 	} else {
 		// Remove quotes or spaces
-		txID = strings.TrimSpace(strings.Replace(txID, `"`, "", -1))
+		txID = strings.TrimSpace(strings.ReplaceAll(txID, `"`, ""))
 	}
 
 	return
@@ -326,24 +310,24 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 //
 // For more information: https://developers.whatsonchain.com/#bulk-broadcast
 func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
-	feedback bool) (response *BulkBroadcastResponse, err error) {
-
+	feedback bool,
+) (response *BulkBroadcastResponse, err error) {
 	// Set a max (from WOC)
 	if len(rawTxs) > MaxBroadcastTransactions {
-		err = fmt.Errorf("max transactions are %d", MaxBroadcastTransactions)
+		err = fmt.Errorf("%w: %d transactions, max is %d", ErrMaxTransactionsExceeded, len(rawTxs), MaxBroadcastTransactions)
 		return
 	}
 
 	// Set a total max
 	if len(strings.Join(rawTxs[:], ",")) > MaxCombinedTransactionSize {
-		err = fmt.Errorf("max overall payload of 10MB (%f bytes)", MaxCombinedTransactionSize)
+		err = fmt.Errorf("%w: payload size %.0f bytes, max is %.0f bytes", ErrMaxPayloadSizeExceeded, float64(len(strings.Join(rawTxs[:], ","))), MaxCombinedTransactionSize)
 		return
 	}
 
 	// Check size of each tx
 	for _, tx := range rawTxs {
 		if len(tx) > MaxSingleTransactionSize {
-			err = fmt.Errorf("max tx size of 100kb (%d bytes)", MaxSingleTransactionSize)
+			err = fmt.Errorf("%w: transaction size %d bytes, max is %d bytes", ErrMaxTransactionSizeExceeded, len(tx), MaxSingleTransactionSize)
 			return
 		}
 	}
@@ -374,7 +358,7 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 
 	// Got an error
 	if c.lastRequest.StatusCode > http.StatusOK {
-		err = fmt.Errorf("error broadcasting: %s", resp)
+		err = fmt.Errorf("%w: %s", ErrBroadcastFailed, resp)
 	}
 
 	return
@@ -384,7 +368,6 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 //
 // For more information: https://developers.whatsonchain.com/#decode-transaction
 func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (txInfo *TxInfo, err error) {
-
 	// Start the post data
 	postData := []byte(fmt.Sprintf(`{"txhex":"%s"}`, txHex))
 
@@ -409,7 +392,6 @@ func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (txInfo *T
 //
 // For more information: https://developers.whatsonchain.com/#download-receipt
 func (c *Client) DownloadReceipt(ctx context.Context, hash string) (string, error) {
-
 	// https://<network>.whatsonchain.com/receipt/<hash>
 	// todo: this endpoint does not follow the convention of the WOC API v1
 	return c.request(

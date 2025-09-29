@@ -12,7 +12,6 @@ import (
 //
 // For more information: https://developers.whatsonchain.com/#get-history
 func (c *Client) GetExplorerLinks(ctx context.Context, query string) (results SearchResults, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/search/links
 	if resp, err = c.request(

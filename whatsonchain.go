@@ -23,14 +23,12 @@ import (
 
 // NewClient creates a new client for WOC requests
 func NewClient(network NetworkType, clientOptions *Options, customHTTPClient HTTPInterface) ClientInterface {
-
 	// Sets the network, options and custom HTTP client
 	return createClient(network, clientOptions, customHTTPClient)
 }
 
 // request is a generic request wrapper that can be used without constraints
-func (c *Client) request(ctx context.Context, url string, method string, payload []byte) (response string, err error) {
-
+func (c *Client) request(ctx context.Context, url, method string, payload []byte) (response string, err error) {
 	// Set reader
 	var bodyReader io.Reader
 
