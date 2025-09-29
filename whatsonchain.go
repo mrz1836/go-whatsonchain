@@ -18,7 +18,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -85,7 +84,7 @@ func (c *Client) request(ctx context.Context, url string, method string, payload
 
 	// Read the body
 	var body []byte
-	if body, err = ioutil.ReadAll(resp.Body); err != nil {
+	if body, err = io.ReadAll(resp.Body); err != nil {
 		return
 	}
 
