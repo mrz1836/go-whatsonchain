@@ -44,7 +44,7 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-what
 ### Features
 - [Client](client.go) is completely configurable
 - Customize the network per request (`main`, `test` or `stn`)
-- Using default [heimdall http client](https://github.com/gojek/heimdall) with exponential backoff & more
+- Using native Go HTTP client with exponential backoff & retry logic
 - Use your own custom `HTTP client` and `API Key`
 - Current coverage for the [whatsonchain.com API](https://developers.whatsonchain.com/)
     - [x] Health
