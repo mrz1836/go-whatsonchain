@@ -12,13 +12,13 @@ import (
 //
 // For more information: https://developers.whatsonchain.com/#address
 func (c *Client) AddressInfo(ctx context.Context, address string) (addressInfo *AddressInfo, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/info
 	if resp, err = c.request(
 		ctx,
 		fmt.Sprintf("%s%s/address/%s/info", apiEndpoint, c.Network(), address),
-		http.MethodGet, nil,
+		http.MethodGet,
+		nil,
 	); err != nil {
 		return
 	}
@@ -33,7 +33,6 @@ func (c *Client) AddressInfo(ctx context.Context, address string) (addressInfo *
 //
 // For more information: https://developers.whatsonchain.com/#get-balance
 func (c *Client) AddressBalance(ctx context.Context, address string) (balance *AddressBalance, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/balance
 	if resp, err = c.request(
@@ -54,7 +53,6 @@ func (c *Client) AddressBalance(ctx context.Context, address string) (balance *A
 //
 // For more information: https://developers.whatsonchain.com/#get-history
 func (c *Client) AddressHistory(ctx context.Context, address string) (history AddressHistory, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/history
 	if resp, err = c.request(
@@ -75,7 +73,6 @@ func (c *Client) AddressHistory(ctx context.Context, address string) (history Ad
 //
 // For more information: https://developers.whatsonchain.com/#get-unspent-transactions
 func (c *Client) AddressUnspentTransactions(ctx context.Context, address string) (history AddressHistory, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/unspent
 	if resp, err = c.request(
@@ -97,7 +94,6 @@ func (c *Client) AddressUnspentTransactions(ctx context.Context, address string)
 //
 // For more information: (custom request for this go package)
 func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address string, maxTransactions int) (history AddressHistory, err error) {
-
 	// Get the address UTXO history
 	var utxos AddressHistory
 	if utxos, err = c.AddressUnspentTransactions(ctx, address); err != nil {
@@ -168,7 +164,6 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 //
 // For more information: https://developers.whatsonchain.com/#download-statement
 func (c *Client) DownloadStatement(ctx context.Context, address string) (string, error) {
-
 	// https://<network>.whatsonchain.com/statement/<hash>
 	// todo: this endpoint does not follow the convention of the WOC API v1
 	return c.request(
@@ -180,13 +175,9 @@ func (c *Client) DownloadStatement(ctx context.Context, address string) (string,
 
 // bulkRequest is the common parts of the bulk requests
 func bulkRequest(list *AddressList) ([]byte, error) {
-
 	// The max limit by WOC
 	if len(list.Addresses) > MaxAddressesForLookup {
-		return nil, fmt.Errorf(
-			"max limit of addresses is %d and you sent %d",
-			MaxAddressesForLookup, len(list.Addresses),
-		)
+		return nil, fmt.Errorf("%w: %d addresses requested, max is %d", ErrMaxAddressesExceeded, len(list.Addresses), MaxAddressesForLookup)
 	}
 
 	// Convert to JSON
@@ -198,7 +189,6 @@ func bulkRequest(list *AddressList) ([]byte, error) {
 //
 // For more information: https://developers.whatsonchain.com/#bulk-balance
 func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (balances AddressBalances, err error) {
-
 	// Get the JSON
 	var postData []byte
 	if postData, err = bulkRequest(list); err != nil {

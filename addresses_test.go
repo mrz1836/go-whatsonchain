@@ -5,20 +5,20 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Test error variables
 var (
-	errMissingRequest       = errors.New("missing request")
-	errBadRequest          = errors.New("bad request")
-	errNoValidResponse     = errors.New("no valid response found")
+	errMissingRequest  = errors.New("missing request")
+	errBadRequest      = errors.New("bad request")
+	errNoValidResponse = errors.New("no valid response found")
 )
 
 // mockHTTPAddresses for mocking requests
@@ -48,7 +48,7 @@ func (m *mockHTTPAddresses) Do(req *http.Request) (*http.Response, error) {
 	if strings.Contains(req.URL.String(), "/error/info") {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("missing request")
+		return resp, errMissingRequest
 	}
 
 	// Valid (but invalid bsv address)
@@ -77,7 +77,7 @@ func (m *mockHTTPAddresses) Do(req *http.Request) (*http.Response, error) {
 	// Invalid (balance) return an error
 	if strings.Contains(req.URL.String(), "/16ZqP5invalid/balance") {
 		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		return resp, errBadRequest
 	}
 
 	// Not found
@@ -106,7 +106,7 @@ func (m *mockHTTPAddresses) Do(req *http.Request) (*http.Response, error) {
 	// Invalid (history) return an error
 	if strings.Contains(req.URL.String(), "/16ZqP5invalid/history") {
 		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		return resp, errBadRequest
 	}
 
 	// Not found
@@ -135,7 +135,7 @@ func (m *mockHTTPAddresses) Do(req *http.Request) (*http.Response, error) {
 	// Invalid (unspent) return an error
 	if strings.Contains(req.URL.String(), "/16ZqP5invalid/unspent") {
 		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		return resp, errBadRequest
 	}
 
 	// Not found
@@ -240,24 +240,24 @@ func (m *mockHTTPAddressesErrors) Do(req *http.Request) (*http.Response, error) 
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, errMissingRequest
 	}
 
 	// Invalid (info) return an error
 	if strings.Contains(req.URL.String(), "/addresses/balance") {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("missing request")
+		return resp, errMissingRequest
 	}
 
 	// Invalid (info) return an error
 	if strings.Contains(req.URL.String(), "/addresses/unspent") {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("missing request")
+		return resp, errMissingRequest
 	}
 
-	return nil, fmt.Errorf("no valid response found")
+	return nil, errNoValidResponse
 }
 
 // mockHTTPAddressesNotFound for mocking requests
@@ -270,7 +270,7 @@ func (m *mockHTTPAddressesNotFound) Do(req *http.Request) (*http.Response, error
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, errMissingRequest
 	}
 
 	// Not found
@@ -297,7 +297,7 @@ func TestClient_AddressInfo(t *testing.T) {
 	ctx := context.Background()
 
 	// Create the list of tests
-	var tests = []struct {
+	tests := []struct {
 		input         string
 		expected      string
 		expectedError bool
@@ -332,7 +332,7 @@ func TestClient_AddressBalance(t *testing.T) {
 	ctx := context.Background()
 
 	// Create the list of tests
-	var tests = []struct {
+	tests := []struct {
 		input         string
 		confirmed     int64
 		unconfirmed   int64
@@ -369,7 +369,7 @@ func TestClient_AddressHistory(t *testing.T) {
 	ctx := context.Background()
 
 	// Create the list of tests
-	var tests = []struct {
+	tests := []struct {
 		input         string
 		txHash        string
 		height        int64
@@ -407,7 +407,7 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 	ctx := context.Background()
 
 	// Create the list of tests
-	var tests = []struct {
+	tests := []struct {
 		input         string
 		txHash        string
 		height        int64
@@ -450,7 +450,7 @@ func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
 	ctx := context.Background()
 
 	// Create the list of tests
-	var tests = []struct {
+	tests := []struct {
 		input         string
 		txHash        string ``
 		height        int64
@@ -487,7 +487,7 @@ func TestClient_DownloadStatement(t *testing.T) {
 	ctx := context.Background()
 
 	// Create the list of tests
-	var tests = []struct {
+	tests := []struct {
 		input         string
 		expected      string
 		expectedError bool
@@ -519,9 +519,9 @@ func TestClient_BulkBalance(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
 		balances, err := client.BulkBalance(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, balances)
-		assert.Equal(t, 2, len(balances))
+		assert.Len(t, balances, 2)
 	})
 
 	t.Run("max addresses (error)", func(t *testing.T) {
@@ -550,7 +550,7 @@ func TestClient_BulkBalance(t *testing.T) {
 			"20",
 			"21",
 		}})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, balances)
 	})
 
@@ -560,7 +560,7 @@ func TestClient_BulkBalance(t *testing.T) {
 		balances, err := client.BulkBalance(ctx, &AddressList{Addresses: []string{
 			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
 		}})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, balances)
 	})
 
@@ -570,7 +570,7 @@ func TestClient_BulkBalance(t *testing.T) {
 		balances, err := client.BulkBalance(ctx, &AddressList{Addresses: []string{
 			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
 		}})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, balances)
 	})
 }
@@ -583,9 +583,9 @@ func TestClient_BulkUnspentTransactionsProcessor(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
 		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, balances)
-		assert.Equal(t, 2, len(balances))
+		assert.Len(t, balances, 2)
 	})
 
 	t.Run("over max addresses (no error)", func(t *testing.T) {
@@ -625,7 +625,7 @@ func TestClient_BulkUnspentTransactionsProcessor(t *testing.T) {
 			"1AU4yMBFnnB8SWjy7nofZcPDRd8x8pJdY5",
 			"18x1r2cL1CGjoMbKn5sq3BuDfYFdbjdK3U",
 		}})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, balances)
 	})
 
@@ -635,7 +635,7 @@ func TestClient_BulkUnspentTransactionsProcessor(t *testing.T) {
 		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{
 			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
 		}})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, balances)
 	})
 
@@ -645,7 +645,7 @@ func TestClient_BulkUnspentTransactionsProcessor(t *testing.T) {
 		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{
 			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
 		}})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, balances)
 	})
 }
@@ -658,9 +658,9 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
 		balances, err := client.BulkUnspentTransactions(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, balances)
-		assert.Equal(t, 2, len(balances))
+		assert.Len(t, balances, 2)
 	})
 
 	t.Run("max addresses (error)", func(t *testing.T) {
@@ -689,7 +689,7 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 			"20",
 			"21",
 		}})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, balances)
 	})
 
@@ -699,7 +699,7 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 		balances, err := client.BulkUnspentTransactions(ctx, &AddressList{Addresses: []string{
 			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
 		}})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, balances)
 	})
 
@@ -709,7 +709,7 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 		balances, err := client.BulkUnspentTransactions(ctx, &AddressList{Addresses: []string{
 			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
 		}})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, balances)
 	})
 }
