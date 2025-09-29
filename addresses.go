@@ -20,13 +20,15 @@ func (c *Client) AddressInfo(ctx context.Context, address string) (addressInfo *
 		http.MethodGet,
 		nil,
 	); err != nil {
-		return
+		return nil, err
 	}
+
 	if len(resp) == 0 {
 		return nil, ErrAddressNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &addressInfo)
-	return
+
+	return addressInfo, err
 }
 
 // AddressBalance this endpoint retrieves confirmed and unconfirmed address balance.
@@ -40,7 +42,7 @@ func (c *Client) AddressBalance(ctx context.Context, address string) (balance *A
 		fmt.Sprintf("%s%s/address/%s/balance", apiEndpoint, c.Network(), address),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return balance, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrAddressNotFound

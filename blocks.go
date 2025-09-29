@@ -19,12 +19,14 @@ func (c *Client) GetBlockByHash(ctx context.Context, hash string) (blockInfo *Bl
 		http.MethodGet,
 		nil,
 	); err != nil {
-		return
+		return blockInfo, err
 	}
+
 	if len(resp) == 0 {
 		return nil, ErrBlockNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &blockInfo)
+
 	return
 }
 
@@ -45,6 +47,7 @@ func (c *Client) GetBlockByHeight(ctx context.Context, height int64) (blockInfo 
 		return nil, ErrBlockNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &blockInfo)
+
 	return
 }
 

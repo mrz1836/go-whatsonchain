@@ -21,12 +21,14 @@ func (c *Client) GetChainInfo(ctx context.Context) (chainInfo *ChainInfo, err er
 		http.MethodGet,
 		nil,
 	); err != nil {
-		return
+		return chainInfo, err
 	}
+
 	if len(resp) == 0 {
 		return nil, ErrChainInfoNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &chainInfo)
+
 	return
 }
 

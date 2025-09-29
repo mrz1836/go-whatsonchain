@@ -53,13 +53,13 @@ func (m *mockHTTPChainInvalid) Do(req *http.Request) (*http.Response, error) {
 
 	// Invalid (chain info)
 	if strings.Contains(req.URL.String(), "/chain/info") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, ErrBadRequest
 	}
 
 	// Invalid (circulating supply)
 	if strings.Contains(req.URL.String(), "/circulatingsupply") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, ErrBadRequest
 	}
 
@@ -82,13 +82,13 @@ func (m *mockHTTPChainNotFound) Do(req *http.Request) (*http.Response, error) {
 
 	// Not found (chain info)
 	if strings.Contains(req.URL.String(), "/chain/info") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
 	// Not found (circulating supply)
 	if strings.Contains(req.URL.String(), "/circulatingsupply") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
