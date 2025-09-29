@@ -1,3 +1,4 @@
+// Package main demonstrates API key usage with the WhatsOnChain client.
 package main
 
 import (
@@ -7,7 +8,6 @@ import (
 )
 
 func main() {
-
 	// Create options (add your api key)
 	opts := whatsonchain.ClientDefaultOptions()
 	opts.APIKey = "your-secret-key"
