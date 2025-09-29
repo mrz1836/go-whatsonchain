@@ -47,7 +47,7 @@ func (c *Client) request(ctx context.Context, url, method string, payload []byte
 	if request, err = http.NewRequestWithContext(
 		ctx, method, url, bodyReader,
 	); err != nil {
-		return
+		return response, err
 	}
 
 	// Change the header (user agent is in case they block default Go user agents)
@@ -69,7 +69,7 @@ func (c *Client) request(ctx context.Context, url, method string, payload []byte
 		if resp != nil {
 			c.LastRequest().StatusCode = resp.StatusCode
 		}
-		return
+		return response, err
 	}
 
 	// Close the response body
@@ -83,12 +83,12 @@ func (c *Client) request(ctx context.Context, url, method string, payload []byte
 	// Read the body
 	var body []byte
 	if body, err = io.ReadAll(resp.Body); err != nil {
-		return
+		return response, err
 	}
 
 	// Return the raw JSON response
 	response = string(body)
-	return
+	return response, err
 }
 
 // UserAgent will return the current user agent

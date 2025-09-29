@@ -20,13 +20,13 @@ func (c *Client) GetTxByHash(ctx context.Context, hash string) (txInfo *TxInfo, 
 		fmt.Sprintf("%s%s/tx/hash/%s", apiEndpoint, c.Network(), hash),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return txInfo, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrTransactionNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &txInfo)
-	return
+	return txInfo, err
 }
 
 // BulkTransactionDetails this fetches details for multiple transactions in single request
@@ -37,13 +37,13 @@ func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (
 	// The max limit by WOC
 	if len(hashes.TxIDs) > MaxTransactionsUTXO {
 		err = fmt.Errorf("%w: %d UTXOs requested, max is %d", ErrMaxUTXOsExceeded, len(hashes.TxIDs), MaxTransactionsUTXO)
-		return
+		return txList, err
 	}
 
 	// Convert to JSON
 	var postData []byte
 	if postData, err = json.Marshal(hashes); err != nil {
-		return
+		return txList, err
 	}
 
 	var resp string
@@ -53,13 +53,13 @@ func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (
 		fmt.Sprintf("%s%s/txs", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
-		return
+		return txList, err
 	}
 
 	if len(resp) > 0 {
 		err = json.Unmarshal([]byte(resp), &txList)
 	}
-	return
+	return txList, err
 }
 
 // BulkTransactionDetailsProcessor will get the details for ALL transactions in batches
@@ -123,13 +123,13 @@ func (c *Client) GetMerkleProof(ctx context.Context, hash string) (merkleResults
 		fmt.Sprintf("%s%s/tx/%s/proof", apiEndpoint, c.Network(), hash),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return merkleResults, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrTransactionNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &merkleResults)
-	return
+	return merkleResults, err
 }
 
 // GetMerkleProofTSC this endpoint returns TSC compliant proof to a confirmed transaction
@@ -143,13 +143,13 @@ func (c *Client) GetMerkleProofTSC(ctx context.Context, hash string) (merkleResu
 		fmt.Sprintf("%s%s/tx/%s/proof/tsc", apiEndpoint, c.Network(), hash),
 		http.MethodGet, nil,
 	); err != nil {
-		return
+		return merkleResults, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrTransactionNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &merkleResults)
-	return
+	return merkleResults, err
 }
 
 // GetRawTransactionData this endpoint returns raw hex for the transaction with given hash
@@ -173,13 +173,13 @@ func (c *Client) BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (
 	// The max limit by WOC
 	if len(hashes.TxIDs) > MaxTransactionsRaw {
 		err = fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxRawTransactionsExceeded, len(hashes.TxIDs), MaxTransactionsRaw)
-		return
+		return txList, err
 	}
 
 	// Convert to JSON
 	var postData []byte
 	if postData, err = json.Marshal(hashes); err != nil {
-		return
+		return txList, err
 	}
 
 	var resp string
@@ -190,13 +190,13 @@ func (c *Client) BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (
 		fmt.Sprintf("%s%s/txs/hex", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
-		return
+		return txList, err
 	}
 
 	if len(resp) > 0 {
 		err = json.Unmarshal([]byte(resp), &txList)
 	}
-	return
+	return txList, err
 }
 
 // BulkRawTransactionDataProcessor this fetches raw hex data for
@@ -277,7 +277,7 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 		fmt.Sprintf("%s%s/tx/raw", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
-		return
+		return txID, err
 	}
 
 	// Got an error
@@ -289,7 +289,7 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 		txID = strings.TrimSpace(strings.ReplaceAll(txID, `"`, ""))
 	}
 
-	return
+	return txID, err
 }
 
 // BulkBroadcastTx will broadcast many transactions at once
@@ -315,20 +315,20 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 	// Set a max (from WOC)
 	if len(rawTxs) > MaxBroadcastTransactions {
 		err = fmt.Errorf("%w: %d transactions, max is %d", ErrMaxTransactionsExceeded, len(rawTxs), MaxBroadcastTransactions)
-		return
+		return response, err
 	}
 
 	// Set a total max
 	if len(strings.Join(rawTxs[:], ",")) > MaxCombinedTransactionSize {
 		err = fmt.Errorf("%w: payload size %.0f bytes, max is %.0f bytes", ErrMaxPayloadSizeExceeded, float64(len(strings.Join(rawTxs[:], ","))), MaxCombinedTransactionSize)
-		return
+		return response, err
 	}
 
 	// Check size of each tx
 	for _, tx := range rawTxs {
 		if len(tx) > MaxSingleTransactionSize {
 			err = fmt.Errorf("%w: transaction size %d bytes, max is %d bytes", ErrMaxTransactionSizeExceeded, len(tx), MaxSingleTransactionSize)
-			return
+			return response, err
 		}
 	}
 
@@ -346,13 +346,13 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 		fmt.Sprintf("%stx/broadcast?feedback=%t", apiEndpoint, feedback),
 		http.MethodPost, postData,
 	); err != nil {
-		return
+		return response, err
 	}
 
 	response = &BulkBroadcastResponse{Feedback: feedback}
 	if feedback {
 		if err = json.Unmarshal([]byte(resp), response); err != nil {
-			return
+			return response, err
 		}
 	}
 
@@ -361,7 +361,7 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 		err = fmt.Errorf("%w: %s", ErrBroadcastFailed, resp)
 	}
 
-	return
+	return response, err
 }
 
 // DecodeTransaction this endpoint decodes raw transaction
@@ -378,13 +378,13 @@ func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (txInfo *T
 		fmt.Sprintf("%s%s/tx/decode", apiEndpoint, c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
-		return
+		return txInfo, err
 	}
 	if len(resp) == 0 {
 		return nil, ErrTransactionNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &txInfo)
-	return
+	return txInfo, err
 }
 
 // DownloadReceipt this endpoint downloads a transaction receipt (PDF)

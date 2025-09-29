@@ -38,25 +38,25 @@ func (m *mockHTTPSearchValid) Do(req *http.Request) (*http.Response, error) {
 	// Valid (address)
 	if strings.Contains(data.Query, "1GJ3x5bcEnKMnzNFPPELDfXUCwKEaLHM5H") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`{"results":[{"type":"address","url":"https://whatsonchain.com/address/1GJ3x5bcEnKMnzNFPPELDfXUCwKEaLHM5H"}]}`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"results":[{"type":"address","url":"https://whatsonchain.com/address/1GJ3x5bcEnKMnzNFPPELDfXUCwKEaLHM5H"}]}`))
 	}
 
 	// Valid (tx)
 	if strings.Contains(data.Query, "6a7c821fd13c5cec773f7e221479651804197866469e92a4d6d47e1fd34d090d") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`{"results":[{"type":"tx","url":"https://whatsonchain.com/tx/6a7c821fd13c5cec773f7e221479651804197866469e92a4d6d47e1fd34d090d"}]}`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"results":[{"type":"tx","url":"https://whatsonchain.com/tx/6a7c821fd13c5cec773f7e221479651804197866469e92a4d6d47e1fd34d090d"}]}`))
 	}
 
 	// Valid (block)
 	if strings.Contains(data.Query, "000000000000000002080d0ad78d08691d956d08fb8556339b6dd84fbbfdf1bc") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`{"results":[{"type":"block","url":"https://whatsonchain.com/block/000000000000000002080d0ad78d08691d956d08fb8556339b6dd84fbbfdf1bc"}]}`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"results":[{"type":"block","url":"https://whatsonchain.com/block/000000000000000002080d0ad78d08691d956d08fb8556339b6dd84fbbfdf1bc"}]}`))
 	}
 
 	// Valid (op_return)
 	if strings.Contains(data.Query, "unknown") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`{"results":[{"type":"op_return","url":"https://whatsonchain.com/opreturn-query?term=unknown\u0026size=10\u0026offset=0"}]}`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"results":[{"type":"op_return","url":"https://whatsonchain.com/opreturn-query?term=unknown\u0026size=10\u0026offset=0"}]}`))
 	}
 
 	// Invalid

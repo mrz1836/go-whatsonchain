@@ -19,11 +19,11 @@ func (c *Client) GetExplorerLinks(ctx context.Context, query string) (results Se
 		fmt.Sprintf("%s%s/search/links", apiEndpoint, c.Network()),
 		http.MethodPost, []byte(fmt.Sprintf(`{"query":"%s"}`, query)),
 	); err != nil {
-		return
+		return results, err
 	}
 	if len(resp) == 0 {
 		return results, ErrChainInfoNotFound
 	}
 	err = json.Unmarshal([]byte(resp), &results)
-	return
+	return results, err
 }
