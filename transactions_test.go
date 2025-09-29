@@ -49,14 +49,14 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 	// Invalid - return an error
 	if strings.Contains(req.URL.String(), "/tx/hash/error") {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, errTxMissingRequest
 	}
 
 	// Not found
 	if strings.Contains(req.URL.String(), "/tx/hash/notFound") {
 		resp.StatusCode = http.StatusNotFound
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
@@ -79,7 +79,7 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 	// Not found
 	if strings.Contains(req.URL.String(), "/tx/notFound/proof") {
 		resp.StatusCode = http.StatusNotFound
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
@@ -108,7 +108,7 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 	// Not found
 	if strings.Contains(req.URL.String(), "/tx/notFound/proof/tsc") {
 		resp.StatusCode = http.StatusNotFound
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
@@ -137,13 +137,13 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 	// Invalid - tx is not valid
 	if strings.Contains(req.URL.String(), "/tx/c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz/hex") {
 		resp.StatusCode = http.StatusNotFound
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 	}
 
 	// Not found
 	if strings.Contains(req.URL.String(), "/tx/notFound/hex") {
 		resp.StatusCode = http.StatusNotFound
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
@@ -166,7 +166,7 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 	// Invalid - tx is not valid
 	if strings.Contains(req.URL.String(), "/tx/c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz/out/0/hex") {
 		resp.StatusCode = http.StatusBadGateway
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 	}
 
 	//
@@ -209,14 +209,14 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 		// Invalid - force an error
 		if strings.Contains(data.TxIDs[0], "error") {
 			resp.StatusCode = http.StatusBadRequest
-			resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+			resp.Body = io.NopCloser(bytes.NewBufferString(""))
 			return resp, errTxUnknownError
 		}
 
 		// Not found
 		if strings.Contains(data.TxIDs[0], "notFound") {
 			resp.StatusCode = http.StatusNotFound
-			resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+			resp.Body = io.NopCloser(bytes.NewBufferString(""))
 			return resp, nil
 		}
 	}
@@ -242,7 +242,7 @@ endobj
 	// Invalid (download receipt) (invalid address)
 	if strings.Contains(req.URL.String(), "/receipt/invalid") {
 		resp.StatusCode = http.StatusGatewayTimeout
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, errTxGatewayTimeout
 	}
 
@@ -300,7 +300,7 @@ func (m *mockHTTPBroadcast) Do(req *http.Request) (*http.Response, error) {
 	// Invalid - bad status code, no error
 	if strings.Contains(data.TxHex, "bad-status-code") {
 		resp.StatusCode = http.StatusExpectationFailed
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
@@ -323,7 +323,7 @@ func (m *mockHTTPBroadcast) Do(req *http.Request) (*http.Response, error) {
 	// Not found
 	if strings.Contains(data.TxHex, "notFound") {
 		resp.StatusCode = http.StatusNotFound
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
@@ -358,7 +358,7 @@ func (m *mockHTTPBroadcastBulk) Do(req *http.Request) (*http.Response, error) {
 	// Valid (no feedback)
 	if strings.Contains(data[0], "020000000232900e9b0e359cb95ad3853e1450591fdf01e3efaa1b3b2b5ab5c5ef784946b8010000006a473044022055ec4f9b9cbdd97cf5f4893f921da75287483edb4ebba4f5b23231577212fd5f022007ed037ab7da039e0d4cf0fa35f620f2d7f71285959dcb6c885652d843d0038741210232b357c5309644cf4aa72b9b2d8bfe58bdf2515d40119318d5cb51ef378cae7efffffffff91d2feda79506806c5b0dc74b6fa6ae42fb7963da460ac256383fce498b9952020000006b483045022100ac75defcda55d644b6c095c2e7cbded92e38ea52e4d7f561f37962aa036a92fe0220059c0071d7c53cc964f641fa60ba2a076e3030ae6edc0f650792041c7691c66641210282d7e568e56f59e01a4edae297ac26caabc4684971ac6c7558c91c0fa84002f7ffffffff03322a093f000000001976a914c4263eb96d88849f498d139424b59a0cba1005e888ac2f92bb09000000001976a9146cbff9881ac47da8cb699e4543c28f9b3d6941da88ac404b4c00000000001976a914f7899faf1696892e6cb029b00c713f044761f03588ac00000000") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 	}
 
 	// Valid (with feedback)

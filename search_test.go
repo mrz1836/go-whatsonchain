@@ -61,14 +61,14 @@ func (m *mockHTTPSearchValid) Do(req *http.Request) (*http.Response, error) {
 
 	// Invalid
 	if strings.Contains(data.Query, "error") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, ErrBadRequest
 	}
 
 	// Not found
 	if strings.Contains(data.Query, "notFound") {
 		resp.StatusCode = http.StatusNotFound
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 

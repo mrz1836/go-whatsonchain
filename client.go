@@ -4,9 +4,6 @@ import (
 	"net"
 	"net/http"
 	"time"
-
-	"github.com/gojektech/heimdall/v6"
-	"github.com/gojektech/heimdall/v6/httpclient"
 )
 
 const (
@@ -27,15 +24,15 @@ const (
 	apiHeaderKey string = "woc-api-key"
 )
 
-// HTTPInterface is used for the http client (mocking heimdall)
+// HTTPInterface is used for the http client
 type HTTPInterface interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-// Client is the parent struct that wraps the heimdall client
+// Client is the parent struct that contains the HTTP client
 type Client struct {
 	apiKey      string        // optional for requests that require an API Key
-	httpClient  HTTPInterface // carries out the http operations (heimdall client)
+	httpClient  HTTPInterface // carries out the http operations
 	lastRequest *LastRequest  // is the raw information from the last request
 	network     NetworkType   // is the BitcoinSV network to use
 	rateLimit   int           // configured rate limit per second
@@ -127,33 +124,25 @@ func createClient(network NetworkType, options *Options, customHTTPClient HTTPIn
 		TLSHandshakeTimeout:   options.TransportTLSHandshakeTimeout,
 	}
 
+	// Create the base HTTP client with custom transport
+	baseHTTPClient := &http.Client{
+		Transport: clientDefaultTransport,
+		Timeout:   options.RequestTimeout,
+	}
+
 	// Determine the strategy for the http client (no retry enabled)
 	if options.RequestRetryCount <= 0 {
-		c.httpClient = httpclient.NewClient(
-			httpclient.WithHTTPTimeout(options.RequestTimeout),
-			httpclient.WithHTTPClient(&http.Client{
-				Transport: clientDefaultTransport,
-				Timeout:   options.RequestTimeout,
-			}),
-		)
+		c.httpClient = NewSimpleHTTPClient(baseHTTPClient)
 	} else { // Retry enabled
 		// Create exponential back-off
-		backOff := heimdall.NewExponentialBackoff(
+		backOff := NewExponentialBackoff(
 			options.BackOffInitialTimeout,
 			options.BackOffMaxTimeout,
 			options.BackOffExponentFactor,
 			options.BackOffMaximumJitterInterval,
 		)
 
-		c.httpClient = httpclient.NewClient(
-			httpclient.WithHTTPTimeout(options.RequestTimeout),
-			httpclient.WithRetrier(heimdall.NewRetrier(backOff)),
-			httpclient.WithRetryCount(options.RequestRetryCount),
-			httpclient.WithHTTPClient(&http.Client{
-				Transport: clientDefaultTransport,
-				Timeout:   options.RequestTimeout,
-			}),
-		)
+		c.httpClient = NewRetryableHTTPClient(baseHTTPClient, options.RequestRetryCount, backOff)
 	}
 
 	return

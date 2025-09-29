@@ -47,7 +47,7 @@ func (m *mockHTTPHealthInvalid) Do(req *http.Request) (*http.Response, error) {
 
 	// Invalid
 	if strings.Contains(req.URL.String(), "/woc") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, ErrBadRequest
 	}
 

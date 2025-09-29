@@ -41,14 +41,14 @@ func (m *mockHTTPScript) Do(req *http.Request) (*http.Response, error) {
 
 	// Invalid
 	if strings.Contains(req.URL.String(), "script/invalidTx/history") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, errScriptBadRequest
 	}
 
 	// Not found
 	if strings.Contains(req.URL.String(), "script/notFound/history") {
 		resp.StatusCode = http.StatusNotFound
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
@@ -66,14 +66,14 @@ func (m *mockHTTPScript) Do(req *http.Request) (*http.Response, error) {
 
 	// Invalid
 	if strings.Contains(req.URL.String(), "script/invalidTx/unspent") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, errScriptBadRequest
 	}
 
 	// Not found
 	if strings.Contains(req.URL.String(), "script/notFound/unspent") {
 		resp.StatusCode = http.StatusNotFound
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
@@ -103,7 +103,7 @@ func (m *mockHTTPScriptErrors) Do(req *http.Request) (*http.Response, error) {
 	// Invalid (info) return an error
 	if strings.Contains(req.URL.String(), "/scripts/unspent") {
 		resp.StatusCode = http.StatusInternalServerError
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, errScriptMissingRequest
 	}
 
@@ -125,7 +125,7 @@ func (m *mockHTTPScriptNotFound) Do(req *http.Request) (*http.Response, error) {
 
 	// Invalid (info) return an error
 	if strings.Contains(req.URL.String(), "/scripts/unspent") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 

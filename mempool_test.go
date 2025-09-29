@@ -53,13 +53,13 @@ func (m *mockHTTPMempoolInvalid) Do(req *http.Request) (*http.Response, error) {
 
 	// Invalid
 	if strings.Contains(req.URL.String(), "/mempool/info") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, ErrBadRequest
 	}
 
 	// Invalid
 	if strings.Contains(req.URL.String(), "/mempool/raw") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, ErrBadRequest
 	}
 
@@ -82,13 +82,13 @@ func (m *mockHTTPMempoolNotFound) Do(req *http.Request) (*http.Response, error) 
 
 	// Not found
 	if strings.Contains(req.URL.String(), "/mempool/info") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
 	// Not found
 	if strings.Contains(req.URL.String(), "/mempool/raw") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 

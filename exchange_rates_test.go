@@ -47,7 +47,7 @@ func (m *mockHTTPExchangeInvalid) Do(req *http.Request) (*http.Response, error) 
 
 	// Invalid (exchange rate)
 	if strings.Contains(req.URL.String(), "/exchangerate") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, ErrBadRequest
 	}
 
@@ -70,7 +70,7 @@ func (m *mockHTTPExchangeNotFound) Do(req *http.Request) (*http.Response, error)
 
 	// Invalid (exchange rate)
 	if strings.Contains(req.URL.String(), "/exchangerate") {
-		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
