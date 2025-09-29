@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -26,7 +26,7 @@ func (m *mockHTTPExchangeValid) Do(req *http.Request) (*http.Response, error) {
 	// Valid (exchange rate)
 	if strings.Contains(req.URL.String(), "/exchangerate") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`{"rate":38.542,"time":1668439893,"currency":"USD"}`)))
+		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`{"rate":38.542,"time":1668439893,"currency":"USD"}`)))
 	}
 
 	// Default is valid
@@ -48,7 +48,7 @@ func (m *mockHTTPExchangeInvalid) Do(req *http.Request) (*http.Response, error) 
 
 	// Invalid (exchange rate)
 	if strings.Contains(req.URL.String(), "/exchangerate") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
 		return resp, fmt.Errorf("bad request")
 	}
 
@@ -71,7 +71,7 @@ func (m *mockHTTPExchangeNotFound) Do(req *http.Request) (*http.Response, error)
 
 	// Invalid (exchange rate)
 	if strings.Contains(req.URL.String(), "/exchangerate") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
 		return resp, nil
 	}
 
