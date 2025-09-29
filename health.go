@@ -10,7 +10,6 @@ import (
 //
 // For more information: https://developers.whatsonchain.com/#health
 func (c *Client) GetHealth(ctx context.Context) (string, error) {
-
 	// https://api.whatsonchain.com/v1/bsv/<network>/woc
 	return c.request(
 		ctx,

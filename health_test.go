@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -26,7 +26,7 @@ func (m *mockHTTPHealthValid) Do(req *http.Request) (*http.Response, error) {
 	// Valid
 	if strings.Contains(req.URL.String(), "/woc") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`Whats On Chain`)))
+		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(`Whats On Chain`)))
 	}
 
 	// Default is valid
@@ -48,7 +48,7 @@ func (m *mockHTTPHealthInvalid) Do(req *http.Request) (*http.Response, error) {
 
 	// Invalid
 	if strings.Contains(req.URL.String(), "/woc") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBuffer([]byte(``)))
 		return resp, fmt.Errorf("bad request")
 	}
 

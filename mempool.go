@@ -11,7 +11,6 @@ import (
 //
 // For more information: https://developers.whatsonchain.com/#get-mempool-info
 func (c *Client) GetMempoolInfo(ctx context.Context) (info *MempoolInfo, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/mempool/info
 	if resp, err = c.request(
@@ -33,7 +32,6 @@ func (c *Client) GetMempoolInfo(ctx context.Context) (info *MempoolInfo, err err
 //
 // For more information: https://developers.whatsonchain.com/#get-mempool-transactions
 func (c *Client) GetMempoolTransactions(ctx context.Context) (transactions []string, err error) {
-
 	var resp string
 	// https://api.whatsonchain.com/v1/bsv/<network>/mempool/raw
 	if resp, err = c.request(
