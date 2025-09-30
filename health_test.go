@@ -193,7 +193,10 @@ func TestClient_GetHealthWithChains(t *testing.T) {
 			t.Parallel()
 
 			// Create client with specific chain and network
-			client := NewClientWithChain(tt.chain, tt.network, nil, tt.mockClient)
+			client, err := NewClient(context.Background(), WithChain(tt.chain), WithNetwork(tt.network), WithHTTPClient(tt.mockClient))
+			if err != nil {
+				t.Fatal(err)
+			}
 			ctx := context.Background()
 
 			// Test GetHealth
@@ -298,10 +301,13 @@ func TestClient_GetHealthURLConstruction(t *testing.T) {
 				}
 			}
 
-			client := NewClientWithChain(tt.chain, tt.network, nil, mockClient)
+			client, err := NewClient(context.Background(), WithChain(tt.chain), WithNetwork(tt.network), WithHTTPClient(mockClient))
+			if err != nil {
+				t.Fatal(err)
+			}
 			ctx := context.Background()
 
-			_, err := client.GetHealth(ctx)
+			_, err = client.GetHealth(ctx)
 
 			if tt.shouldFail {
 				if err == nil {
