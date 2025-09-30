@@ -400,3 +400,206 @@ func (c *Client) DownloadReceipt(ctx context.Context, hash string) (string, erro
 		http.MethodGet, nil,
 	)
 }
+
+// GetTransactionPropagationStatus this endpoint retrieves transaction propagation status (BSV only)
+//
+// For more information: https://developers.whatsonchain.com/#get-tx-propagation
+func (c *Client) GetTransactionPropagationStatus(ctx context.Context, hash string) (propagationStatus *PropagationStatus, err error) {
+	// Check if this is BSV chain only
+	if c.Chain() != ChainBSV {
+		return nil, ErrBSVChainRequired
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>/propagation
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/tx/hash/%s/propagation", apiEndpointBase, c.Chain(), c.Network(), hash),
+		http.MethodGet, nil,
+	); err != nil {
+		return propagationStatus, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrTransactionNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &propagationStatus)
+	return propagationStatus, err
+}
+
+// BulkTransactionStatus this endpoint fetches status for multiple transactions in single request
+// Max 20 transactions per request
+//
+// For more information: https://developers.whatsonchain.com/#bulk-transaction-status
+func (c *Client) BulkTransactionStatus(ctx context.Context, hashes *TxHashes) (txStatusList TxStatusList, err error) {
+	// The max limit by WOC
+	if len(hashes.TxIDs) > MaxTransactionsUTXO {
+		err = fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxUTXOsExceeded, len(hashes.TxIDs), MaxTransactionsUTXO)
+		return txStatusList, err
+	}
+
+	// Convert to JSON
+	var postData []byte
+	if postData, err = json.Marshal(hashes); err != nil {
+		return txStatusList, err
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/txs/status
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/txs/status", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodPost, postData,
+	); err != nil {
+		return txStatusList, err
+	}
+
+	if len(resp) > 0 {
+		err = json.Unmarshal([]byte(resp), &txStatusList)
+	}
+	return txStatusList, err
+}
+
+// GetTransactionAsBinary this endpoint retrieves transaction data as binary
+//
+// For more information: https://developers.whatsonchain.com/#get-tx-binary
+func (c *Client) GetTransactionAsBinary(ctx context.Context, hash string) ([]byte, error) {
+	// https://api.whatsonchain.com/v1/<chain>/<network>/tx/<hash>/bin
+	resp, err := c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/tx/%s/bin", apiEndpointBase, c.Chain(), c.Network(), hash),
+		http.MethodGet, nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrTransactionNotFound
+	}
+	return []byte(resp), nil
+}
+
+// BulkRawTransactionOutputData this endpoint fetches raw output data for multiple transactions in single request
+// Max 20 transactions per request
+//
+// For more information: https://developers.whatsonchain.com/#bulk-raw-tx-output
+func (c *Client) BulkRawTransactionOutputData(ctx context.Context, request *BulkRawOutputRequest) (responses []*BulkRawOutputResponse, err error) {
+	// The max limit by WOC
+	if len(request.TxIDs) > MaxTransactionsUTXO {
+		err = fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxUTXOsExceeded, len(request.TxIDs), MaxTransactionsUTXO)
+		return responses, err
+	}
+
+	// Convert to JSON
+	var postData []byte
+	if postData, err = json.Marshal(request); err != nil {
+		return responses, err
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/txs/vouts/hex
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/txs/vouts/hex", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodPost, postData,
+	); err != nil {
+		return responses, err
+	}
+
+	if len(resp) > 0 {
+		err = json.Unmarshal([]byte(resp), &responses)
+	}
+	return responses, err
+}
+
+// GetUnconfirmedSpentOutput this endpoint retrieves unconfirmed spent transaction output details
+//
+// For more information: https://developers.whatsonchain.com/#get-unconfirmed-spent
+func (c *Client) GetUnconfirmedSpentOutput(ctx context.Context, txHash string, index int) (spentOutput *SpentOutput, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/tx/<hash>/<index>/unconfirmed/spent
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/tx/%s/%d/unconfirmed/spent", apiEndpointBase, c.Chain(), c.Network(), txHash, index),
+		http.MethodGet, nil,
+	); err != nil {
+		return spentOutput, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrTransactionNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &spentOutput)
+	return spentOutput, err
+}
+
+// GetConfirmedSpentOutput this endpoint retrieves confirmed spent transaction output details
+//
+// For more information: https://developers.whatsonchain.com/#get-confirmed-spent
+func (c *Client) GetConfirmedSpentOutput(ctx context.Context, txHash string, index int) (spentOutput *SpentOutput, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/tx/<hash>/<index>/confirmed/spent
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/tx/%s/%d/confirmed/spent", apiEndpointBase, c.Chain(), c.Network(), txHash, index),
+		http.MethodGet, nil,
+	); err != nil {
+		return spentOutput, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrTransactionNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &spentOutput)
+	return spentOutput, err
+}
+
+// GetSpentOutput this endpoint retrieves spent transaction output details (both confirmed and unconfirmed)
+//
+// For more information: https://developers.whatsonchain.com/#get-spent-output
+func (c *Client) GetSpentOutput(ctx context.Context, txHash string, index int) (spentOutput *SpentOutput, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/tx/<hash>/<index>/spent
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/tx/%s/%d/spent", apiEndpointBase, c.Chain(), c.Network(), txHash, index),
+		http.MethodGet, nil,
+	); err != nil {
+		return spentOutput, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrTransactionNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &spentOutput)
+	return spentOutput, err
+}
+
+// BulkSpentOutputs this endpoint retrieves spent output details for multiple UTXOs
+// Max 20 UTXOs per request
+//
+// For more information: https://developers.whatsonchain.com/#bulk-spent-outputs
+func (c *Client) BulkSpentOutputs(ctx context.Context, request *BulkSpentOutputRequest) (response BulkSpentOutputResponse, err error) {
+	// The max limit by WOC
+	if len(request.UTXOs) > MaxTransactionsUTXO {
+		err = fmt.Errorf("%w: %d UTXOs requested, max is %d", ErrMaxUTXOsExceeded, len(request.UTXOs), MaxTransactionsUTXO)
+		return response, err
+	}
+
+	// Convert to JSON
+	var postData []byte
+	if postData, err = json.Marshal(request); err != nil {
+		return response, err
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/utxos/spent
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/utxos/spent", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodPost, postData,
+	); err != nil {
+		return response, err
+	}
+
+	if len(resp) > 0 {
+		err = json.Unmarshal([]byte(resp), &response)
+	}
+	return response, err
+}

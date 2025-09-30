@@ -5,11 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // Test error variables
@@ -34,6 +38,35 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 	// No req found
 	if req == nil {
 		return resp, errTxMissingRequest
+	}
+
+	// Bulk Raw Transaction Data (/txs/hex)
+	if strings.Contains(req.URL.String(), "txs/hex") {
+		var bulkRawData TxHashes
+		decoder := json.NewDecoder(req.Body)
+		err := decoder.Decode(&bulkRawData)
+		if err != nil {
+			return resp, err
+		}
+
+		// Valid (two raw txs)
+		if len(bulkRawData.TxIDs) > 0 && strings.Contains(bulkRawData.TxIDs[0], "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa") {
+			resp.StatusCode = http.StatusOK
+			resp.Body = io.NopCloser(bytes.NewBufferString(`[{"txid":"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa","hex":"0100000001b8dba875299dc159710df0d75a3f8ad3600e09a605c79dc7d9f2254e2be8d057000000008a47304402206b9956a6dd39d7f081f6a2d3731b2b7c875ec563743d7620ea55b37f3c2d1ffd02202594d52b6df818d100a3e721b0d245625cbe200e51a7a846fd37436607e08a0a412103998489e31affb06deaa6890deea42447ac9b4b31c5fc93d023525de9f850b281ffffffff1b00000000000000001a6a1a6761746c696e6720626974636f696e626c6f636b732e6c6976650c030000000000001976a9148432682cb8f5cbbb36913266fbe84176a999ac9988ac0c030000000000001976a914f6b68ada06df7323aca315ec54aa251e806c516888ac0c030000000000001976a914d47ab37ea2bcffe4a7bf98086a65d489acdf2fd688ac0c030000000000001976a914a20568923f3c65f91c0d7a3be3ca4f8b14c7d04888ac0c030000000000001976a9140e80337d887c653d2bd7228281aa7ecf4bf2c9dc88ac0c030000000000001976a9147bc3cebb1dc5ee6356931add1f5f1196fce7b53188ac0c030000000000001976a914a8854465a2bbefeb1d47c5c79b8aef737d62f06f88ac0c030000000000001976a9146c376c6d05ff152e1537667cfb52e628547f620a88ac0c030000000000001976a9147c0bd6447ac246f100fec9392a396191a06fcae288ac0c030000000000001976a9145221bd8f6901612cb1bf0618a39823229233474988ac0c030000000000001976a91432c248707616cd030a3f346aec13c9d5ae8d99b088ac0c030000000000001976a914c31eaefc851f6de4830f51d649e1731706159dc888ac0c030000000000001976a9143d980ead104586cba895d944280f93ca8323b47588ac0c030000000000001976a91473721ce4189c5b996819f81f8cce7366a1bb780488ac0c030000000000001976a9141fd249a4cac1a2c95b95ad8ecbbe23129831232e88ac0c030000000000001976a914ae4661a1c0f8192e79b5c304cadd39470077c8a488ac0c030000000000001976a914e99c1003b189bfe7ababb7cbe2e39b8eb2317ccf88ac0c030000000000001976a914e26673b87c7e644688b0a62f1e2cd5e7cc4db63c88ac0c030000000000001976a9145cce10f43fa0458b2f8c3982a9349e7a67e6736588ac0c030000000000001976a9144f062ff6e6921a8b6f43c79fc0e89f582a22225388ac0c030000000000001976a9146dacfcede9e86678de202cb30d17bd1eb656cec388ac0c030000000000001976a914fcdaf0d9fd36b2c1dbfa90e659a373290795230b88ac0c030000000000001976a91482f1a346d023fd8e5eb976bba6df7e6a2095003288ac0c030000000000001976a9142f82e5b519a351b646d23ceed7d43bd53213209488ac408a7a25000000001976a9143d0e5368bdadddca108a0fe44739919274c726c788ac00000000"},{"txid":"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258","hex":"01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff20033f6b092f636f696e6765656b2e636f6d2f7759319af9d4f815e3a2fae5e60000ffffffff01a715aa4a000000001976a9148460e9a972a8600766a1b38fac4a2cfb8692d3ad88ac00000000"}]`))
+			return resp, nil
+		}
+
+		// Invalid
+		if len(bulkRawData.TxIDs) > 0 && strings.Contains(bulkRawData.TxIDs[0], "error") {
+			resp.StatusCode = http.StatusBadRequest
+			resp.Body = io.NopCloser(bytes.NewBufferString(""))
+			return resp, errTxUnknownError
+		}
+
+		// Default response for unmatched conditions - return empty array for 200 OK
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(bytes.NewBufferString(`[]`))
+		return resp, nil
 	}
 
 	//
@@ -244,6 +277,56 @@ endobj
 		resp.StatusCode = http.StatusGatewayTimeout
 		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, errTxGatewayTimeout
+	}
+
+	//
+	// Spent Outputs (/tx/{hash}/{index}/spent)
+	//
+
+	// Valid spent output
+	if strings.Contains(req.URL.String(), "/tx/c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96/0/spent") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"txid":"spendingTxId123","vin":0}`))
+	}
+
+	// Valid unconfirmed spent output
+	if strings.Contains(req.URL.String(), "/tx/c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96/0/unconfirmed/spent") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"txid":"unconfirmedSpendingTxId456","vin":1}`))
+	}
+
+	// Valid confirmed spent output
+	if strings.Contains(req.URL.String(), "/tx/c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96/0/confirmed/spent") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"txid":"confirmedSpendingTxId789","vin":2}`))
+	}
+
+	// Not found spent output
+	if strings.Contains(req.URL.String(), "/tx/notFound/0/spent") ||
+		strings.Contains(req.URL.String(), "/tx/notFound/0/unconfirmed/spent") ||
+		strings.Contains(req.URL.String(), "/tx/notFound/0/confirmed/spent") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
+		return resp, nil
+	}
+
+	//
+	// Bulk Spent Outputs (/utxos/spent)
+	//
+
+	var bulkSpentRequest BulkSpentOutputRequest
+	if strings.Contains(req.URL.String(), "/utxos/spent") {
+		decoder := json.NewDecoder(req.Body)
+		err := decoder.Decode(&bulkSpentRequest)
+		if err != nil {
+			return resp, err
+		}
+
+		// Valid bulk spent outputs
+		if len(bulkSpentRequest.UTXOs) > 0 && bulkSpentRequest.UTXOs[0].TxID == "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96" {
+			resp.StatusCode = http.StatusOK
+			resp.Body = io.NopCloser(bytes.NewBufferString(`[{"txid":"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96","vout":0,"spent":{"txid":"spendingTxId123","vin":0}}]`))
+		}
 	}
 
 	// Default is valid
@@ -1013,4 +1096,527 @@ func TestClient_BulkRawTransactionDataProcessor(t *testing.T) {
 			}
 		})
 	}
+}
+
+// mockHTTPPropagationStatus for mocking requests
+type mockHTTPPropagationStatus struct{}
+
+// Do is a mock http request
+func (m *mockHTTPPropagationStatus) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusBadRequest
+
+	// No req found
+	if req == nil {
+		return resp, errTxMissingRequest
+	}
+
+	// Valid
+	if strings.Contains(req.URL.String(), "propagation") && !strings.Contains(req.URL.String(), "invalid") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`{"txid":"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96","propagation":[{"peer":"127.0.0.1","status":"accepted","timestamp":1640995200}]}`))
+	} else {
+		// Invalid case - return error
+		resp.Body = io.NopCloser(strings.NewReader("invalid"))
+		return resp, errTxUnknownError
+	}
+	return resp, nil
+}
+
+// TestClient_GetTransactionPropagationStatus tests the GetTransactionPropagationStatus()
+func TestClient_GetTransactionPropagationStatus(t *testing.T) {
+	t.Parallel()
+
+	// New mock client for BSV
+	client := newMockClientBSV(&mockHTTPPropagationStatus{})
+	ctx := context.Background()
+
+	// Create the list of tests
+	tests := []struct {
+		input         string
+		expected      string
+		expectedError bool
+		statusCode    int
+	}{
+		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", false, http.StatusOK},
+		{"invalid", "invalid", true, http.StatusBadRequest},
+	}
+
+	// Test all
+	for _, test := range tests {
+		if output, err := client.GetTransactionPropagationStatus(ctx, test.input); err == nil && test.expectedError {
+			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
+		} else if err != nil && !test.expectedError {
+			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
+		} else if output != nil && output.TxID != test.expected && !test.expectedError {
+			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.expected, output.TxID)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
+		}
+	}
+
+	// Test BTC chain should fail
+	btcClient := newMockClientBTC(&mockHTTPPropagationStatus{})
+	if _, err := btcClient.GetTransactionPropagationStatus(ctx, "somehash"); err == nil {
+		t.Errorf("Expected error for BTC chain, but got none")
+	}
+}
+
+// mockHTTPTransactionStatus for mocking requests
+type mockHTTPTransactionStatus struct{}
+
+// Do is a mock http request
+func (m *mockHTTPTransactionStatus) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusBadRequest
+
+	// No req found
+	if req == nil {
+		return resp, errTxMissingRequest
+	}
+
+	// Valid
+	if strings.Contains(req.URL.String(), "txs/status") && req.Method == http.MethodPost {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"txid":"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa","valid":true,"height":575191},{"txid":"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258","valid":true,"height":575191}]`))
+	}
+	return resp, nil
+}
+
+// TestClient_BulkTransactionStatus tests the BulkTransactionStatus()
+func TestClient_BulkTransactionStatus(t *testing.T) {
+	t.Parallel()
+
+	// New mock client
+	client := newMockClient(&mockHTTPTransactionStatus{})
+	ctx := context.Background()
+
+	// Create the list of tests
+	tests := []struct {
+		input         *TxHashes
+		tx1           string
+		tx2           string
+		expectedError bool
+		statusCode    int
+	}{
+		{
+			&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258"}},
+			"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
+			"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+			false,
+			http.StatusOK,
+		},
+		{
+			&TxHashes{TxIDs: make([]string, 21)}, // Too many transactions
+			"",
+			"",
+			true,
+			http.StatusBadRequest,
+		},
+	}
+
+	// Test all
+	for _, test := range tests {
+		if output, err := client.BulkTransactionStatus(ctx, test.input); err == nil && test.expectedError {
+			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
+		} else if err != nil && !test.expectedError {
+			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
+		} else if len(output) >= 1 && output[0].TxID != test.tx1 && !test.expectedError {
+			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.tx1, output[0].TxID)
+		} else if len(output) >= 2 && output[1].TxID != test.tx2 && !test.expectedError {
+			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.tx2, output[1].TxID)
+		} else if err == nil && client.LastRequest().StatusCode != test.statusCode {
+			// Only check status code if no error occurred (HTTP request was made)
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
+		}
+	}
+}
+
+// mockHTTPTransactionBinary for mocking requests
+type mockHTTPTransactionBinary struct{}
+
+// Do is a mock http request
+func (m *mockHTTPTransactionBinary) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusBadRequest
+
+	// No req found
+	if req == nil {
+		return resp, errTxMissingRequest
+	}
+
+	// Valid
+	if strings.Contains(req.URL.String(), "/bin") && !strings.Contains(req.URL.String(), "invalid") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader("binary_data_here"))
+	} else {
+		// Invalid case - return error
+		resp.Body = io.NopCloser(strings.NewReader("invalid"))
+		return resp, errTxUnknownError
+	}
+	return resp, nil
+}
+
+// TestClient_GetTransactionAsBinary tests the GetTransactionAsBinary()
+func TestClient_GetTransactionAsBinary(t *testing.T) {
+	t.Parallel()
+
+	// New mock client
+	client := newMockClient(&mockHTTPTransactionBinary{})
+	ctx := context.Background()
+
+	// Create the list of tests
+	tests := []struct {
+		input         string
+		expected      string
+		expectedError bool
+		statusCode    int
+	}{
+		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "binary_data_here", false, http.StatusOK},
+		{"invalid", "invalid", true, http.StatusBadRequest},
+	}
+
+	// Test all
+	for _, test := range tests {
+		if output, err := client.GetTransactionAsBinary(ctx, test.input); err == nil && test.expectedError {
+			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
+		} else if err != nil && !test.expectedError {
+			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
+		} else if string(output) != test.expected && !test.expectedError {
+			t.Errorf("%s Failed: [%s] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.expected, string(output))
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
+		}
+	}
+}
+
+// mockHTTPBulkRawOutput for mocking requests
+type mockHTTPBulkRawOutput struct{}
+
+// Do is a mock http request
+func (m *mockHTTPBulkRawOutput) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusBadRequest
+
+	// No req found
+	if req == nil {
+		return resp, errTxMissingRequest
+	}
+
+	// Valid
+	if strings.Contains(req.URL.String(), "txs/vouts/hex") && req.Method == http.MethodPost {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"txid":"e8022f0904e636a7f4c1e561ca0af794b354f6fb71bdfb57b5ac3528e3f40e2f","vouts":[{"n":0,"hex":"hex_data_0"},{"n":1,"hex":"hex_data_1"}]}]`))
+	}
+	return resp, nil
+}
+
+// TestClient_BulkRawTransactionOutputData tests the BulkRawTransactionOutputData()
+func TestClient_BulkRawTransactionOutputData(t *testing.T) {
+	t.Parallel()
+
+	// New mock client
+	client := newMockClient(&mockHTTPBulkRawOutput{})
+	ctx := context.Background()
+
+	// Create the list of tests
+	tests := []struct {
+		name          string
+		input         *BulkRawOutputRequest
+		expectedTxID  string
+		expectedVouts int
+		expectedError bool
+		statusCode    int
+	}{
+		{
+			"valid request",
+			&BulkRawOutputRequest{
+				TxIDs: []BulkRawOutputTxID{
+					{
+						TxID:  "e8022f0904e636a7f4c1e561ca0af794b354f6fb71bdfb57b5ac3528e3f40e2f",
+						Vouts: []int{0, 1},
+					},
+				},
+			},
+			"e8022f0904e636a7f4c1e561ca0af794b354f6fb71bdfb57b5ac3528e3f40e2f",
+			2,
+			false,
+			http.StatusOK,
+		},
+		{
+			"too many transactions",
+			&BulkRawOutputRequest{
+				TxIDs: make([]BulkRawOutputTxID, 21),
+			},
+			"",
+			0,
+			true,
+			http.StatusBadRequest,
+		},
+	}
+
+	// Test all
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if output, err := client.BulkRawTransactionOutputData(ctx, test.input); err == nil && test.expectedError {
+				t.Errorf("%s Failed: expected to throw an error, no error [%v] inputted", t.Name(), test.input)
+			} else if err != nil && !test.expectedError {
+				t.Errorf("%s Failed: [%v] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
+			} else if len(output) >= 1 && output[0].TxID != test.expectedTxID && !test.expectedError {
+				t.Errorf("%s Failed: [%v] inputted and [%s] expected, received: [%s]", t.Name(), test.input, test.expectedTxID, output[0].TxID)
+			} else if len(output) >= 1 && len(output[0].Vouts) != test.expectedVouts && !test.expectedError {
+				t.Errorf("%s Failed: [%v] inputted and %d vouts expected, received: %d", t.Name(), test.input, test.expectedVouts, len(output[0].Vouts))
+			} else if err == nil && client.LastRequest().StatusCode != test.statusCode {
+				// Only check status code if no error occurred (HTTP request was made)
+				t.Errorf("%s Expected status code to be %d, got %d, [%v] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
+			}
+		})
+	}
+}
+
+// TestClient_BulkRawTransactionData tests the BulkRawTransactionData()
+func TestClient_BulkRawTransactionData(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPTransactions{})
+		ctx := context.Background()
+		txList, err := client.BulkRawTransactionData(ctx, &TxHashes{TxIDs: []string{
+			"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
+			"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+		}})
+		require.NoError(t, err)
+		assert.NotNil(t, txList)
+		assert.Len(t, txList, 2)
+		assert.Equal(t, "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", txList[0].TxID)
+		assert.NotEmpty(t, txList[0].Hex)
+	})
+
+	t.Run("max transactions (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPTransactions{})
+		ctx := context.Background()
+		var txIDs []string
+		for i := 0; i < 21; i++ {
+			txIDs = append(txIDs, "hash"+fmt.Sprintf("%d", i))
+		}
+		txList, err := client.BulkRawTransactionData(ctx, &TxHashes{TxIDs: txIDs})
+		require.Error(t, err)
+		assert.Nil(t, txList)
+	})
+
+	t.Run("bad response (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPTransactions{})
+		ctx := context.Background()
+		txList, err := client.BulkRawTransactionData(ctx, &TxHashes{TxIDs: []string{
+			"error",
+		}})
+		require.Error(t, err)
+		assert.Nil(t, txList)
+	})
+}
+
+// TestClient_GetUnconfirmedSpentOutput tests the GetUnconfirmedSpentOutput()
+func TestClient_GetUnconfirmedSpentOutput(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
+
+	tests := []struct {
+		name          string
+		txHash        string
+		index         int
+		expectedTxID  string
+		expectedVin   int
+		expectedError bool
+		statusCode    int
+	}{
+		{
+			name:          "valid unconfirmed spent output",
+			txHash:        "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96",
+			index:         0,
+			expectedTxID:  "unconfirmedSpendingTxId456",
+			expectedVin:   1,
+			expectedError: false,
+			statusCode:    http.StatusOK,
+		},
+		{
+			name:          "not found",
+			txHash:        "notFound",
+			index:         0,
+			expectedTxID:  "",
+			expectedVin:   0,
+			expectedError: true,
+			statusCode:    http.StatusNotFound,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			output, err := client.GetUnconfirmedSpentOutput(ctx, test.txHash, test.index)
+
+			if test.expectedError {
+				require.Error(t, err)
+				assert.Nil(t, output)
+			} else {
+				require.NoError(t, err)
+				assert.NotNil(t, output)
+				assert.Equal(t, test.expectedTxID, output.TxID)
+				assert.Equal(t, test.expectedVin, output.Vin)
+			}
+
+			assert.Equal(t, test.statusCode, client.LastRequest().StatusCode)
+		})
+	}
+}
+
+// TestClient_GetConfirmedSpentOutput tests the GetConfirmedSpentOutput()
+func TestClient_GetConfirmedSpentOutput(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
+
+	tests := []struct {
+		name          string
+		txHash        string
+		index         int
+		expectedTxID  string
+		expectedVin   int
+		expectedError bool
+		statusCode    int
+	}{
+		{
+			name:          "valid confirmed spent output",
+			txHash:        "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96",
+			index:         0,
+			expectedTxID:  "confirmedSpendingTxId789",
+			expectedVin:   2,
+			expectedError: false,
+			statusCode:    http.StatusOK,
+		},
+		{
+			name:          "not found",
+			txHash:        "notFound",
+			index:         0,
+			expectedTxID:  "",
+			expectedVin:   0,
+			expectedError: true,
+			statusCode:    http.StatusNotFound,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			output, err := client.GetConfirmedSpentOutput(ctx, test.txHash, test.index)
+
+			if test.expectedError {
+				require.Error(t, err)
+				assert.Nil(t, output)
+			} else {
+				require.NoError(t, err)
+				assert.NotNil(t, output)
+				assert.Equal(t, test.expectedTxID, output.TxID)
+				assert.Equal(t, test.expectedVin, output.Vin)
+			}
+
+			assert.Equal(t, test.statusCode, client.LastRequest().StatusCode)
+		})
+	}
+}
+
+// TestClient_GetSpentOutput tests the GetSpentOutput()
+func TestClient_GetSpentOutput(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPTransactions{})
+	ctx := context.Background()
+
+	tests := []struct {
+		name          string
+		txHash        string
+		index         int
+		expectedTxID  string
+		expectedVin   int
+		expectedError bool
+		statusCode    int
+	}{
+		{
+			name:          "valid spent output",
+			txHash:        "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96",
+			index:         0,
+			expectedTxID:  "spendingTxId123",
+			expectedVin:   0,
+			expectedError: false,
+			statusCode:    http.StatusOK,
+		},
+		{
+			name:          "not found",
+			txHash:        "notFound",
+			index:         0,
+			expectedTxID:  "",
+			expectedVin:   0,
+			expectedError: true,
+			statusCode:    http.StatusNotFound,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			output, err := client.GetSpentOutput(ctx, test.txHash, test.index)
+
+			if test.expectedError {
+				require.Error(t, err)
+				assert.Nil(t, output)
+			} else {
+				require.NoError(t, err)
+				assert.NotNil(t, output)
+				assert.Equal(t, test.expectedTxID, output.TxID)
+				assert.Equal(t, test.expectedVin, output.Vin)
+			}
+
+			assert.Equal(t, test.statusCode, client.LastRequest().StatusCode)
+		})
+	}
+}
+
+// TestClient_BulkSpentOutputs tests the BulkSpentOutputs()
+func TestClient_BulkSpentOutputs(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPTransactions{})
+		ctx := context.Background()
+		response, err := client.BulkSpentOutputs(ctx, &BulkSpentOutputRequest{
+			UTXOs: []BulkSpentUTXO{
+				{
+					TxID: "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96",
+					Vout: 0,
+				},
+			},
+		})
+		require.NoError(t, err)
+		assert.NotNil(t, response)
+		assert.Len(t, response, 1)
+		assert.Equal(t, "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", response[0].TxID)
+		assert.Equal(t, 0, response[0].Vout)
+		assert.NotNil(t, response[0].Spent)
+		assert.Equal(t, "spendingTxId123", response[0].Spent.TxID)
+		assert.Equal(t, 0, response[0].Spent.Vin)
+	})
+
+	t.Run("max UTXOs (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPTransactions{})
+		ctx := context.Background()
+		var utxos []BulkSpentUTXO
+		for i := 0; i < 21; i++ {
+			utxos = append(utxos, BulkSpentUTXO{
+				TxID: fmt.Sprintf("hash%d", i),
+				Vout: i,
+			})
+		}
+		response, err := client.BulkSpentOutputs(ctx, &BulkSpentOutputRequest{UTXOs: utxos})
+		require.Error(t, err)
+		assert.Nil(t, response)
+	})
 }
