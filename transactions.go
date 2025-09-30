@@ -17,7 +17,7 @@ func (c *Client) GetTxByHash(ctx context.Context, hash string) (txInfo *TxInfo, 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/hash/<hash>
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/hash/%s", apiEndpoint, c.Network(), hash),
+		fmt.Sprintf("%s%s/%s/tx/hash/%s", apiEndpointBase, c.Chain(), c.Network(), hash),
 		http.MethodGet, nil,
 	); err != nil {
 		return txInfo, err
@@ -50,7 +50,7 @@ func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (
 	// https://api.whatsonchain.com/v1/bsv/<network>/txs
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/txs", apiEndpoint, c.Network()),
+		fmt.Sprintf("%s%s/%s/txs", apiEndpointBase, c.Chain(), c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
 		return txList, err
@@ -120,7 +120,7 @@ func (c *Client) GetMerkleProof(ctx context.Context, hash string) (merkleResults
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/proof
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/%s/proof", apiEndpoint, c.Network(), hash),
+		fmt.Sprintf("%s%s/%s/tx/%s/proof", apiEndpointBase, c.Chain(), c.Network(), hash),
 		http.MethodGet, nil,
 	); err != nil {
 		return merkleResults, err
@@ -140,7 +140,7 @@ func (c *Client) GetMerkleProofTSC(ctx context.Context, hash string) (merkleResu
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/proof/tsc
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/%s/proof/tsc", apiEndpoint, c.Network(), hash),
+		fmt.Sprintf("%s%s/%s/tx/%s/proof/tsc", apiEndpointBase, c.Chain(), c.Network(), hash),
 		http.MethodGet, nil,
 	); err != nil {
 		return merkleResults, err
@@ -159,7 +159,7 @@ func (c *Client) GetRawTransactionData(ctx context.Context, hash string) (string
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/hex
 	return c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/%s/hex", apiEndpoint, c.Network(), hash),
+		fmt.Sprintf("%s%s/%s/tx/%s/hex", apiEndpointBase, c.Chain(), c.Network(), hash),
 		http.MethodGet, nil,
 	)
 }
@@ -187,7 +187,7 @@ func (c *Client) BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (
 
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/txs/hex", apiEndpoint, c.Network()),
+		fmt.Sprintf("%s%s/%s/txs/hex", apiEndpointBase, c.Chain(), c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
 		return txList, err
@@ -258,7 +258,7 @@ func (c *Client) GetRawTransactionOutputData(ctx context.Context, hash string, v
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<hash>/out/<index>/hex
 	return c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/%s/out/%d/hex", apiEndpoint, c.Network(), hash, vOutIndex),
+		fmt.Sprintf("%s%s/%s/tx/%s/out/%d/hex", apiEndpointBase, c.Chain(), c.Network(), hash, vOutIndex),
 		http.MethodGet, nil,
 	)
 }
@@ -274,7 +274,7 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
 	if txID, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/raw", apiEndpoint, c.Network()),
+		fmt.Sprintf("%s%s/%s/tx/raw", apiEndpointBase, c.Chain(), c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
 		return txID, err
@@ -343,7 +343,7 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 	// https://api.whatsonchain.com/v1/bsv/tx/broadcast?feedback=<feedback>
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%stx/broadcast?feedback=%t", apiEndpoint, feedback),
+		fmt.Sprintf("%s%s/%s/tx/broadcast?feedback=%t", apiEndpointBase, c.Chain(), c.Network(), feedback),
 		http.MethodPost, postData,
 	); err != nil {
 		return response, err
@@ -375,7 +375,7 @@ func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (txInfo *T
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/decode
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/tx/decode", apiEndpoint, c.Network()),
+		fmt.Sprintf("%s%s/%s/tx/decode", apiEndpointBase, c.Chain(), c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
 		return txInfo, err

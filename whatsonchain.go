@@ -21,10 +21,16 @@ import (
 	"net/http"
 )
 
-// NewClient creates a new client for WOC requests
+// NewClient creates a new client for WOC requests (defaults to BSV for backward compatibility)
 func NewClient(network NetworkType, clientOptions *Options, customHTTPClient HTTPInterface) ClientInterface {
-	// Sets the network, options and custom HTTP client
-	return createClient(network, clientOptions, customHTTPClient)
+	// Sets the network, options and custom HTTP client (defaults to BSV for backward compatibility)
+	return createClient(ChainBSV, network, clientOptions, customHTTPClient)
+}
+
+// NewClientWithChain creates a new client for WOC requests with specified blockchain
+func NewClientWithChain(chain ChainType, network NetworkType, clientOptions *Options, customHTTPClient HTTPInterface) ClientInterface {
+	// Sets the chain, network, options and custom HTTP client
+	return createClient(chain, network, clientOptions, customHTTPClient)
 }
 
 // request is a generic request wrapper that can be used without constraints
@@ -99,6 +105,11 @@ func (c *Client) UserAgent() string {
 // RateLimit will return the current configured rate limit
 func (c *Client) RateLimit() int {
 	return c.rateLimit
+}
+
+// Chain will return the chain
+func (c *Client) Chain() ChainType {
+	return c.chain
 }
 
 // Network will return the network

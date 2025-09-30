@@ -82,6 +82,9 @@ type ClientInterface interface {
 	MempoolService
 	ScriptService
 	TransactionService
+	BSVService
+	BTCService
+	Chain() ChainType
 	HTTPClient() HTTPInterface
 	LastRequest() *LastRequest
 	Network() NetworkType
