@@ -267,11 +267,14 @@ func main() {
 ## 📚 Documentation
 
 ### Features
-- Supports both [BSV](https://bsvblockchain.org/) and [BTC](https://thatsbtcnotbitcoin.com/) blockchains
-- [Client](client.go) is completely configurable
-- Customize the network per request (`main`, `test` or `stn`)
-- Using native Go HTTP client with exponential backoff & retry logic
-- Use your own custom `HTTP client` and `API Key`
+- **Multi-blockchain support** - Seamless switching between [BSV](https://bsvblockchain.org/) and [BTC](https://thatsbtcnotbitcoin.com/) blockchains with a single client
+- **Production-ready HTTP client** - Built-in exponential backoff with configurable retry logic and crypto-secure jitter to handle transient failures gracefully
+- **Intelligent rate limiting** - Per-second request throttling with automatic sleep intervals to stay within API quotas
+- **Zero external dependencies** - Pure Go implementation with no production dependencies (testify only for testing)
+- **Comprehensive API coverage** - 135+ endpoints (71 BSV, 64 BTC) fully implemented and tested
+- **Flexible configuration** - Functional options pattern for clean, type-safe client initialization
+- **Enterprise-grade transport** - Fine-grained control over timeouts, keep-alives, connection pooling, and TLS handshake settings
+- **Network flexibility** - Switch between mainnet, testnet, and STN per client or per request
 
 View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-whatsonchain?tab=doc)
 
