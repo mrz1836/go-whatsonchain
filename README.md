@@ -684,12 +684,9 @@ Benchmarks run on **Apple M1 Max** using Go's built-in benchmark tool with 2-sec
 | Get Mempool Transactions           |        2,648 |         2,593 |                      32 |
 
 **Notes:**
-- All times are in nanoseconds per operation (lower is better)
-- Memory is bytes allocated per operation (lower is better)
-- Allocations are number of distinct memory allocations per operation (lower is better)
+- All times are in nanoseconds per operation
+- Memory is bytes allocated per operation
 - Benchmarks use mock HTTP responses for consistent, reproducible results
-- Configuration operations (getters/setters) are sub-nanosecond and use zero allocations
-- Bulk operations show excellent scaling characteristics with minimal overhead per additional item
 
 To reproduce these benchmarks:
 ```bash
