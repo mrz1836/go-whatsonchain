@@ -377,6 +377,60 @@ invalid
 		resp.Body = io.NopCloser(strings.NewReader(`[{"address":"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP","history":[{"tx_hash":"6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1","height":563052},{"tx_hash":"unconfirmed123","height":0}]},{"address":"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob","history":[]}]`))
 	}
 
+	//
+	// Address Unconfirmed UTXOs
+	//
+
+	// Valid (unconfirmed/unspent)
+	if strings.Contains(req.URL.String(), "/16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA/unconfirmed/unspent") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"tx_hash":"unconfirmed_utxo_123","height":0,"tx_pos":1,"value":50000}]`))
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/unconfirmed/unspent") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = io.NopCloser(strings.NewReader(``))
+		return resp, nil
+	}
+
+	//
+	// Address Confirmed UTXOs
+	//
+
+	// Valid (confirmed/unspent)
+	if strings.Contains(req.URL.String(), "/16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA/confirmed/unspent") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"tx_hash":"6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1","height":563052,"tx_pos":0,"value":100000}]`))
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/confirmed/unspent") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = io.NopCloser(strings.NewReader(``))
+		return resp, nil
+	}
+
+	//
+	// Bulk Address Unconfirmed UTXOs
+	//
+
+	// Valid (addresses/unconfirmed/unspent)
+	if strings.Contains(req.URL.String(), "/addresses/unconfirmed/unspent") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"address":"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP","unspent":[{"tx_hash":"unconfirmed_bulk_123","height":0,"tx_pos":1,"value":25000}]},{"address":"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob","unspent":[]}]`))
+	}
+
+	//
+	// Bulk Address Confirmed UTXOs
+	//
+
+	// Valid (addresses/confirmed/unspent)
+	if strings.Contains(req.URL.String(), "/addresses/confirmed/unspent") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"address":"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP","unspent":[{"tx_hash":"confirmed_bulk_456","height":563052,"tx_pos":0,"value":75000}]},{"address":"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob","unspent":[]}]`))
+	}
+
 	// Default is valid
 	return resp, nil
 }
@@ -424,18 +478,8 @@ func (m *mockHTTPAddressesNotFound) Do(req *http.Request) (*http.Response, error
 		return resp, errMissingRequest
 	}
 
-	// Not found
-	if strings.Contains(req.URL.String(), "/addresses/balance") {
-		resp.Body = io.NopCloser(strings.NewReader(``))
-		return resp, nil
-	}
-
-	// Not found
-	if strings.Contains(req.URL.String(), "/addresses/unspent/all") {
-		resp.Body = io.NopCloser(strings.NewReader(``))
-		return resp, nil
-	}
-
+	// Always return empty body for not found
+	resp.Body = io.NopCloser(strings.NewReader(``))
 	return resp, nil
 }
 
@@ -1192,4 +1236,247 @@ func TestClient_BulkAddressHistory(t *testing.T) {
 		require.Error(t, err)
 		assert.Nil(t, history)
 	})
+}
+
+// TestClient_AddressUnconfirmedUTXOs tests the AddressUnconfirmedUTXOs()
+func TestClient_AddressUnconfirmedUTXOs(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		utxos, err := client.AddressUnconfirmedUTXOs(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		require.NoError(t, err)
+		assert.NotNil(t, utxos)
+		assert.Len(t, utxos, 1)
+		assert.Equal(t, "unconfirmed_utxo_123", utxos[0].TxHash)
+		assert.Equal(t, int64(0), utxos[0].Height)
+		assert.Equal(t, int64(1), utxos[0].TxPos)
+		assert.Equal(t, int64(50000), utxos[0].Value)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		utxos, err := client.AddressUnconfirmedUTXOs(ctx, "16ZqP5notFound")
+		require.Error(t, err)
+		assert.Nil(t, utxos)
+	})
+}
+
+// TestClient_AddressConfirmedUTXOs tests the AddressConfirmedUTXOs()
+func TestClient_AddressConfirmedUTXOs(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		utxos, err := client.AddressConfirmedUTXOs(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		require.NoError(t, err)
+		assert.NotNil(t, utxos)
+		assert.Len(t, utxos, 1)
+		assert.Equal(t, "6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1", utxos[0].TxHash)
+		assert.Equal(t, int64(563052), utxos[0].Height)
+		assert.Equal(t, int64(0), utxos[0].TxPos)
+		assert.Equal(t, int64(100000), utxos[0].Value)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		utxos, err := client.AddressConfirmedUTXOs(ctx, "16ZqP5notFound")
+		require.Error(t, err)
+		assert.Nil(t, utxos)
+	})
+}
+
+// TestClient_BulkAddressUnconfirmedUTXOs tests the BulkAddressUnconfirmedUTXOs()
+func TestClient_BulkAddressUnconfirmedUTXOs(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		response, err := client.BulkAddressUnconfirmedUTXOs(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		require.NoError(t, err)
+		assert.NotNil(t, response)
+		assert.Len(t, response, 2)
+		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", response[0].Address)
+		assert.Len(t, response[0].Utxos, 1)
+		assert.Equal(t, "unconfirmed_bulk_123", response[0].Utxos[0].TxHash)
+		assert.Equal(t, int64(0), response[0].Utxos[0].Height)
+		assert.Equal(t, int64(25000), response[0].Utxos[0].Value)
+	})
+
+	t.Run("max addresses (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		response, err := client.BulkAddressUnconfirmedUTXOs(ctx, &AddressList{Addresses: []string{
+			"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+			"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21",
+		}})
+		require.Error(t, err)
+		assert.Nil(t, response)
+	})
+}
+
+// TestClient_BulkAddressConfirmedUTXOs tests the BulkAddressConfirmedUTXOs()
+func TestClient_BulkAddressConfirmedUTXOs(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		response, err := client.BulkAddressConfirmedUTXOs(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		require.NoError(t, err)
+		assert.NotNil(t, response)
+		assert.Len(t, response, 2)
+		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", response[0].Address)
+		assert.Len(t, response[0].Utxos, 1)
+		assert.Equal(t, "confirmed_bulk_456", response[0].Utxos[0].TxHash)
+		assert.Equal(t, int64(563052), response[0].Utxos[0].Height)
+		assert.Equal(t, int64(75000), response[0].Utxos[0].Value)
+	})
+
+	t.Run("max addresses (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		response, err := client.BulkAddressConfirmedUTXOs(ctx, &AddressList{Addresses: []string{
+			"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+			"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21",
+		}})
+		require.Error(t, err)
+		assert.Nil(t, response)
+	})
+}
+
+// TestClient_AddressUnconfirmedUTXOs_EmptyResponse tests AddressUnconfirmedUTXOs with empty response
+func TestClient_AddressUnconfirmedUTXOs_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPAddressesNotFound{})
+	ctx := context.Background()
+	history, err := client.AddressUnconfirmedUTXOs(ctx, "notFound")
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrAddressNotFound)
+	assert.Nil(t, history)
+}
+
+// TestClient_AddressConfirmedUTXOs_EmptyResponse tests AddressConfirmedUTXOs with empty response
+func TestClient_AddressConfirmedUTXOs_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPAddressesNotFound{})
+	ctx := context.Background()
+	history, err := client.AddressConfirmedUTXOs(ctx, "notFound")
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrAddressNotFound)
+	assert.Nil(t, history)
+}
+
+// TestClient_AddressUsed_EmptyResponse tests AddressUsed with empty response
+func TestClient_AddressUsed_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPAddressesNotFound{})
+	ctx := context.Background()
+	_, err := client.AddressUsed(ctx, "notFound")
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrAddressNotFound)
+}
+
+// TestClient_AddressScripts_EmptyResponse tests AddressScripts with empty response
+func TestClient_AddressScripts_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPAddressesNotFound{})
+	ctx := context.Background()
+	scripts, err := client.AddressScripts(ctx, "notFound")
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrAddressNotFound)
+	assert.Nil(t, scripts)
+}
+
+// TestClient_BulkAddressUnconfirmedBalance_EmptyResponse tests BulkAddressUnconfirmedBalance with empty response
+func TestClient_BulkAddressUnconfirmedBalance_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPAddressesNotFound{})
+	ctx := context.Background()
+	balances, err := client.BulkAddressUnconfirmedBalance(ctx, &AddressList{Addresses: []string{"notFound"}})
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrAddressNotFound)
+	assert.Nil(t, balances)
+}
+
+// TestClient_BulkAddressConfirmedBalance_EmptyResponse tests BulkAddressConfirmedBalance with empty response
+func TestClient_BulkAddressConfirmedBalance_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPAddressesNotFound{})
+	ctx := context.Background()
+	balances, err := client.BulkAddressConfirmedBalance(ctx, &AddressList{Addresses: []string{"notFound"}})
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrAddressNotFound)
+	assert.Nil(t, balances)
+}
+
+// TestClient_BulkAddressUnconfirmedHistory_EmptyResponse tests BulkAddressUnconfirmedHistory with empty response
+func TestClient_BulkAddressUnconfirmedHistory_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPAddressesNotFound{})
+	ctx := context.Background()
+	history, err := client.BulkAddressUnconfirmedHistory(ctx, &AddressList{Addresses: []string{"notFound"}})
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrAddressNotFound)
+	assert.Nil(t, history)
+}
+
+// TestClient_BulkAddressConfirmedHistory_EmptyResponse tests BulkAddressConfirmedHistory with empty response
+func TestClient_BulkAddressConfirmedHistory_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPAddressesNotFound{})
+	ctx := context.Background()
+	history, err := client.BulkAddressConfirmedHistory(ctx, &AddressList{Addresses: []string{"notFound"}})
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrAddressNotFound)
+	assert.Nil(t, history)
+}
+
+// TestClient_BulkAddressHistory_EmptyResponse tests BulkAddressHistory with empty response
+func TestClient_BulkAddressHistory_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPAddressesNotFound{})
+	ctx := context.Background()
+	history, err := client.BulkAddressHistory(ctx, &AddressList{Addresses: []string{"notFound"}})
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrAddressNotFound)
+	assert.Nil(t, history)
+}
+
+// TestClient_BulkAddressUnconfirmedUTXOs_EmptyResponse tests BulkAddressUnconfirmedUTXOs with empty response
+func TestClient_BulkAddressUnconfirmedUTXOs_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPAddressesNotFound{})
+	ctx := context.Background()
+	response, err := client.BulkAddressUnconfirmedUTXOs(ctx, &AddressList{Addresses: []string{"notFound"}})
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrAddressNotFound)
+	assert.Nil(t, response)
+}
+
+// TestClient_BulkAddressConfirmedUTXOs_EmptyResponse tests BulkAddressConfirmedUTXOs with empty response
+func TestClient_BulkAddressConfirmedUTXOs_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPAddressesNotFound{})
+	ctx := context.Background()
+	response, err := client.BulkAddressConfirmedUTXOs(ctx, &AddressList{Addresses: []string{"notFound"}})
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrAddressNotFound)
+	assert.Nil(t, response)
 }
