@@ -81,6 +81,36 @@ type AddressBalances []*AddressBalanceRecord
 // AddressHistory is the history of transactions for an address
 type AddressHistory []*HistoryRecord
 
+// AddressUsed is the response for address usage status
+type AddressUsed struct {
+	Used bool `json:"used"`
+}
+
+// AddressScripts is the response for associated scripthashes
+type AddressScripts struct {
+	Scripts []string `json:"scripts"`
+}
+
+// AddressUnconfirmedBalance is the unconfirmed balance for an address
+type AddressUnconfirmedBalance struct {
+	Balance int64 `json:"balance"`
+}
+
+// AddressConfirmedBalance is the confirmed balance for an address
+type AddressConfirmedBalance struct {
+	Balance int64 `json:"balance"`
+}
+
+// BulkAddressHistoryRecord is a single address history record in bulk response
+type BulkAddressHistoryRecord struct {
+	Address string         `json:"address"`
+	Error   string         `json:"error"`
+	History AddressHistory `json:"history"`
+}
+
+// BulkAddressHistoryResponse is the response from bulk history requests
+type BulkAddressHistoryResponse []*BulkAddressHistoryRecord
+
 // BlockInfo is the response info about a returned block
 type BlockInfo struct {
 	Bits              string         `json:"bits"`
@@ -135,6 +165,16 @@ type BulkScriptResponseRecord struct {
 	Utxos  []*HistoryRecord `json:"unspent"`
 }
 
+// BulkScriptHistoryResponse is the response from Bulk Script History requests
+type BulkScriptHistoryResponse []*BulkScriptHistoryRecord
+
+// BulkScriptHistoryRecord is the record in the results for Bulk Script History requests
+type BulkScriptHistoryRecord struct {
+	Script  string     `json:"script"`
+	Error   string     `json:"error"`
+	History ScriptList `json:"history"`
+}
+
 // ChainInfo is the structure response from getting info about the chain
 type ChainInfo struct {
 	BestBlockHash        string  `json:"bestblockhash"`
@@ -146,6 +186,43 @@ type ChainInfo struct {
 	MedianTime           int64   `json:"mediantime"`
 	Pruned               bool    `json:"pruned"`
 	VerificationProgress float64 `json:"verificationprogress"`
+}
+
+// ChainTip is the structure response from getting chain tips
+type ChainTip struct {
+	Height    int64  `json:"height"`
+	Hash      string `json:"hash"`
+	BranchLen int64  `json:"branchlen"`
+	Status    string `json:"status"`
+}
+
+// PeerInfo is the structure response from getting peer info
+type PeerInfo struct {
+	ID              int     `json:"id"`
+	Addr            string  `json:"addr"`
+	AddrLocal       string  `json:"addrlocal"`
+	Services        string  `json:"services"`
+	RelayTxes       bool    `json:"relaytxes"`
+	LastSend        int64   `json:"lastsend"`
+	LastRecv        int64   `json:"lastrecv"`
+	BytesSent       int64   `json:"bytessent"`
+	BytesRecv       int64   `json:"bytesrecv"`
+	ConnTime        int64   `json:"conntime"`
+	TimeOffset      int64   `json:"timeoffset"`
+	PingTime        float64 `json:"pingtime"`
+	MinPing         float64 `json:"minping"`
+	Version         int64   `json:"version"`
+	SubVer          string  `json:"subver"`
+	Inbound         bool    `json:"inbound"`
+	AddNode         bool    `json:"addnode"`
+	StartingHeight  int64   `json:"startingheight"`
+	TxnInvSize      int64   `json:"txninvsize"`
+	BanScore        int64   `json:"banscore"`
+	SyncedHeaders   int64   `json:"synced_headers"`
+	SyncedBlocks    int64   `json:"synced_blocks"`
+	Whitelisted     bool    `json:"whitelisted"`
+	BytesSentPerMsg float64 `json:"bytessent_per_msg"`
+	BytesRecvPerMsg float64 `json:"bytesrecv_per_msg"`
 }
 
 // CirculatingSupply is the structure response
@@ -169,6 +246,13 @@ type CoinbaseTxInfo struct {
 
 // ExchangeRate is the response from getting the current exchange rate
 type ExchangeRate struct {
+	Currency string  `json:"currency"`
+	Rate     float64 `json:"rate"`
+	Time     int64   `json:"time"`
+}
+
+// HistoricalExchangeRate is the response from getting historical exchange rates
+type HistoricalExchangeRate struct {
 	Currency string  `json:"currency"`
 	Rate     float64 `json:"rate"`
 	Time     int64   `json:"time"`
@@ -391,6 +475,52 @@ type TxHashes struct {
 	TxIDs []string `json:"txids"`
 }
 
+// TxStatus represents the status of a transaction
+type TxStatus struct {
+	TxID   string `json:"txid"`
+	Valid  bool   `json:"valid"`
+	Height int64  `json:"height"`
+}
+
+// TxStatusList is the list of transaction statuses
+type TxStatusList []*TxStatus
+
+// PropagationStatus represents the propagation status of a transaction
+type PropagationStatus struct {
+	TxID        string                    `json:"txid"`
+	Propagation []PropagationStatusDetail `json:"propagation"`
+}
+
+// PropagationStatusDetail contains details about transaction propagation
+type PropagationStatusDetail struct {
+	Peer      string `json:"peer"`
+	Status    string `json:"status"`
+	Timestamp int64  `json:"timestamp"`
+}
+
+// BulkRawOutputRequest represents the request structure for bulk raw transaction output data
+type BulkRawOutputRequest struct {
+	TxIDs []BulkRawOutputTxID `json:"txids"`
+}
+
+// BulkRawOutputTxID represents a transaction ID with specific output indices
+type BulkRawOutputTxID struct {
+	TxID  string `json:"txid"`
+	Vouts []int  `json:"vouts"`
+}
+
+// BulkRawOutputResponse represents the response for bulk raw transaction output data
+type BulkRawOutputResponse struct {
+	TxID  string                    `json:"txid"`
+	Vouts []BulkRawOutputVoutDetail `json:"vouts"`
+}
+
+// BulkRawOutputVoutDetail contains the raw output data for a specific vout
+type BulkRawOutputVoutDetail struct {
+	N   int    `json:"n"`
+	Hex string `json:"hex"`
+}
+
 // VinInfo is the vin info inside the CoinbaseTxInfo
 type VinInfo struct {
 	Coinbase  string        `json:"coinbase"`
@@ -405,4 +535,166 @@ type VoutInfo struct {
 	N            int64            `json:"n"`
 	ScriptPubKey ScriptPubKeyInfo `json:"scriptPubKey"`
 	Value        float64          `json:"value"`
+}
+
+// HeaderBytesResource is the response from get header bytes file links endpoint
+type HeaderBytesResource struct {
+	Description string                    `json:"description"`
+	Links       []HeaderBytesResourceLink `json:"links"`
+}
+
+// HeaderBytesResourceLink is a link in the header bytes resource response
+type HeaderBytesResourceLink struct {
+	Format string `json:"format"`
+	URI    string `json:"uri"`
+}
+
+// SpentOutput represents the response from a spent output query
+type SpentOutput struct {
+	TxID string `json:"txid"`
+	Vin  int    `json:"vin"`
+}
+
+// BulkSpentOutputRequest represents the request structure for bulk spent outputs
+type BulkSpentOutputRequest struct {
+	UTXOs []BulkSpentUTXO `json:"utxos"`
+}
+
+// BulkSpentUTXO represents a UTXO in bulk spent output requests
+type BulkSpentUTXO struct {
+	TxID string `json:"txid"`
+	Vout int    `json:"vout"`
+}
+
+// BulkSpentOutputResponse represents the response for bulk spent outputs
+type BulkSpentOutputResponse []BulkSpentOutputResult
+
+// BulkSpentOutputResult represents a single result in bulk spent output response
+type BulkSpentOutputResult struct {
+	TxID  string       `json:"txid"`
+	Vout  int          `json:"vout"`
+	Spent *SpentOutput `json:"spent"`
+}
+
+// OneSatOrdinalToken represents a 1Sat Ordinal token
+type OneSatOrdinalToken struct {
+	Outpoint      string  `json:"outpoint"`
+	Origin        string  `json:"origin"`
+	Height        int64   `json:"height"`
+	Idx           int64   `json:"idx"`
+	Lock          string  `json:"lock"`
+	Spend         string  `json:"spend"`
+	Data          string  `json:"data"`
+	File          *File   `json:"file,omitempty"`
+	Sigma         []Sigma `json:"sigma,omitempty"`
+	Map           Map     `json:"map,omitempty"`
+	Listing       bool    `json:"listing"`
+	Bsv20         bool    `json:"bsv20"`
+	LatestListing string  `json:"latest_listing"`
+}
+
+// File represents file data in a 1Sat Ordinal token
+type File struct {
+	Hash string `json:"hash"`
+	Size int64  `json:"size"`
+	Type string `json:"type"`
+}
+
+// Sigma represents sigma data in a 1Sat Ordinal token
+type Sigma struct {
+	Algorithm string `json:"algorithm"`
+	Address   string `json:"address"`
+	Signature string `json:"signature"`
+	Vin       int    `json:"vin"`
+}
+
+// Map represents map data in a 1Sat Ordinal token
+type Map struct {
+	App         string `json:"app,omitempty"`
+	Type        string `json:"type,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Subtype     string `json:"subtype,omitempty"`
+	Royalties   string `json:"royalties,omitempty"`
+	Previewable string `json:"previewable,omitempty"`
+}
+
+// OneSatOrdinalContent represents content data for a 1Sat Ordinal
+type OneSatOrdinalContent struct {
+	Content []byte `json:"content"`
+	Type    string `json:"type"`
+}
+
+// OneSatOrdinalLatest represents the latest transfer of a 1Sat Ordinal
+type OneSatOrdinalLatest struct {
+	TxID   string `json:"txid"`
+	Vout   int    `json:"vout"`
+	Height int64  `json:"height"`
+	Idx    int64  `json:"idx"`
+}
+
+// OneSatOrdinalHistory represents transfer history of a 1Sat Ordinal
+type OneSatOrdinalHistory struct {
+	TxID   string `json:"txid"`
+	Vout   int    `json:"vout"`
+	Height int64  `json:"height"`
+	Idx    int64  `json:"idx"`
+}
+
+// OneSatOrdinalStats represents statistics for 1Sat Ordinals
+type OneSatOrdinalStats struct {
+	Pending   int64 `json:"pending"`
+	Confirmed int64 `json:"confirmed"`
+}
+
+// STASToken represents a STAS token
+type STASToken struct {
+	ContractID        string      `json:"contractId"`
+	Symbol            string      `json:"symbol"`
+	IssuerPK          string      `json:"issuerPk"`
+	IsZeroSupplyToken bool        `json:"isZeroSupplyToken"`
+	ProtocolID        string      `json:"protocolId"`
+	Schema            interface{} `json:"schema,omitempty"`
+	TotalSupply       int64       `json:"totalSupply"`
+	CirculatingSupply int64       `json:"circulatingSupply"`
+	DecimalPrecision  int         `json:"decimalPrecision"`
+	Name              string      `json:"name"`
+	Description       string      `json:"description"`
+	Image             string      `json:"image"`
+	TokenType         string      `json:"tokenType"`
+	Properties        interface{} `json:"properties,omitempty"`
+	SatsPerToken      int64       `json:"satsPerToken"`
+	LifeCycleComplete bool        `json:"lifeCycleComplete"`
+}
+
+// STASTokenBalance represents token balance for an address
+type STASTokenBalance struct {
+	Address string                 `json:"address"`
+	Tokens  []STASTokenBalanceInfo `json:"tokens"`
+}
+
+// STASTokenBalanceInfo represents individual token balance info
+type STASTokenBalanceInfo struct {
+	ContractID string `json:"contractId"`
+	Symbol     string `json:"symbol"`
+	Balance    int64  `json:"balance"`
+	Decimal    int    `json:"decimal"`
+}
+
+// STASTokenUTXO represents a STAS token UTXO
+type STASTokenUTXO struct {
+	TxID       string `json:"txid"`
+	Vout       int    `json:"vout"`
+	Amount     int64  `json:"amount"`
+	Script     string `json:"script"`
+	ContractID string `json:"contractId"`
+	Symbol     string `json:"symbol"`
+	Value      int64  `json:"value"`
+	Height     int64  `json:"height"`
+}
+
+// STASStats represents statistics for STAS tokens
+type STASStats struct {
+	Tokens      int64 `json:"tokens"`
+	Issuers     int64 `json:"issuers"`
+	TotalSupply int64 `json:"totalSupply"`
 }

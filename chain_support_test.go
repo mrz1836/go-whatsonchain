@@ -133,25 +133,37 @@ func TestClient_BTCSpecificMethods(t *testing.T) {
 		}
 	})
 
-	t.Run("BSV chain rejects BTC-specific methods", func(t *testing.T) {
+	t.Run("BSV chain supports stats methods", func(t *testing.T) {
+		if testing.Short() {
+			t.Skip("skipping integration test")
+		}
+
 		client := NewClientWithChain(ChainBSV, NetworkMain, nil, nil)
 
+		// Test that stats methods work for BSV (they are now shared between chains)
 		_, err := client.GetBlockStats(context.Background(), 700000)
 
-		expectedError := "operation is only available for BTC chain"
-		if err == nil || err.Error() != expectedError {
-			t.Errorf("Expected error '%s', got %v", expectedError, err)
+		// We don't test for success since this might not exist,
+		// just that it doesn't error due to chain restriction
+		if err != nil && err.Error() == "operation is only available for BTC chain" {
+			t.Errorf("BSV client should now allow GetBlockStats as stats are shared")
 		}
 	})
 
-	t.Run("BSV chain rejects BTC miner stats", func(t *testing.T) {
+	t.Run("BSV chain supports miner stats", func(t *testing.T) {
+		if testing.Short() {
+			t.Skip("skipping integration test")
+		}
+
 		client := NewClientWithChain(ChainBSV, NetworkMain, nil, nil)
 
+		// Test that miner stats methods work for BSV (they are now shared between chains)
 		_, err := client.GetMinerBlocksStats(context.Background(), 1)
 
-		expectedError := "operation is only available for BTC chain"
-		if err == nil || err.Error() != expectedError {
-			t.Errorf("Expected error '%s', got %v", expectedError, err)
+		// We don't test for success since this might not exist,
+		// just that it doesn't error due to chain restriction
+		if err != nil && err.Error() == "operation is only available for BTC chain" {
+			t.Errorf("BSV client should now allow GetMinerBlocksStats as stats are shared")
 		}
 	})
 }

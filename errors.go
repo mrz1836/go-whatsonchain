@@ -11,6 +11,12 @@ var ErrBlockNotFound = errors.New("block not found")
 // ErrChainInfoNotFound is when the chain info is not found
 var ErrChainInfoNotFound = errors.New("chain info not found")
 
+// ErrChainTipsNotFound is when the chain tips are not found
+var ErrChainTipsNotFound = errors.New("chain tips not found")
+
+// ErrPeerInfoNotFound is when the peer info is not found
+var ErrPeerInfoNotFound = errors.New("peer info not found")
+
 // ErrExchangeRateNotFound is when the exchange rate is not found
 var ErrExchangeRateNotFound = errors.New("exchange rate not found")
 
@@ -61,3 +67,6 @@ var ErrBSVChainRequired = errors.New("operation is only available for BSV chain"
 
 // ErrBTCChainRequired is when a BTC-only operation is attempted on a non-BTC chain
 var ErrBTCChainRequired = errors.New("operation is only available for BTC chain")
+
+// ErrTokenNotFound is when a token is not found
+var ErrTokenNotFound = errors.New("token not found")
