@@ -26,6 +26,13 @@ func (m *mockHTTPTokensValid) Do(req *http.Request) (*http.Response, error) {
 
 	// 1Sat Ordinals endpoints
 	if strings.Contains(req.URL.String(), "/bsv/") && strings.Contains(req.URL.String(), "/token/1satordinals/") {
+		// Check for "invalid" to trigger 404
+		if strings.Contains(req.URL.String(), "/invalid/") {
+			resp.StatusCode = http.StatusNotFound
+			resp.Body = io.NopCloser(bytes.NewBufferString(`{"error":"Not found"}`))
+			return resp, nil
+		}
+
 		resp.StatusCode = http.StatusOK
 
 		if strings.Contains(req.URL.String(), "/origin") {
@@ -281,28 +288,14 @@ func (m *mockHTTPTokensValid) Do(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
-// mockHTTPTokensInvalid for mocking invalid token requests
-type mockHTTPTokensInvalid struct{}
-
-// Do is a mock http request
-func (m *mockHTTPTokensInvalid) Do(req *http.Request) (*http.Response, error) {
-	resp := new(http.Response)
-	resp.StatusCode = http.StatusNotFound
-
-	// No req found
-	if req == nil {
-		return resp, ErrMissingRequest
-	}
-
-	resp.Body = io.NopCloser(bytes.NewBufferString(`{"error":"Not found"}`))
-	return resp, nil
-}
-
 // TestClient_GetOneSatOrdinalByOrigin tests the GetOneSatOrdinalByOrigin method
 func TestClient_GetOneSatOrdinalByOrigin(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetOneSatOrdinalByOrigin(context.Background(), "827748:753:0")
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetOneSatOrdinalByOrigin(context.Background(), "827748:753:0")
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -318,19 +311,22 @@ func TestClient_GetOneSatOrdinalByOrigin(t *testing.T) {
 		t.Fatalf("expected origin: 827748:753:0, got: %s", token.Origin)
 	}
 
-	// Test invalid request
-	client = newMockClientBSV(&mockHTTPTokensInvalid{})
+	// Test 404 not found
+	client = newMockClientBSV(&mockHTTPTokensValid{})
 	_, err = client.GetOneSatOrdinalByOrigin(context.Background(), "invalid")
-	if err == nil {
-		t.Fatal("expected error but got nil")
+	if !errors.Is(err, ErrTokenNotFound) {
+		t.Fatalf("expected ErrTokenNotFound, got: %v", err)
 	}
 }
 
 // TestClient_GetOneSatOrdinalByOutpoint tests the GetOneSatOrdinalByOutpoint method
 func TestClient_GetOneSatOrdinalByOutpoint(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetOneSatOrdinalByOutpoint(context.Background(), "test_outpoint")
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetOneSatOrdinalByOutpoint(context.Background(), "test_outpoint")
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -350,8 +346,11 @@ func TestClient_GetOneSatOrdinalByOutpoint(t *testing.T) {
 // TestClient_GetOneSatOrdinalContent tests the GetOneSatOrdinalContent method
 func TestClient_GetOneSatOrdinalContent(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetOneSatOrdinalContent(context.Background(), "test_outpoint")
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetOneSatOrdinalContent(context.Background(), "test_outpoint")
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -371,8 +370,11 @@ func TestClient_GetOneSatOrdinalContent(t *testing.T) {
 // TestClient_GetOneSatOrdinalLatest tests the GetOneSatOrdinalLatest method
 func TestClient_GetOneSatOrdinalLatest(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetOneSatOrdinalLatest(context.Background(), "test_outpoint")
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetOneSatOrdinalLatest(context.Background(), "test_outpoint")
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -392,8 +394,11 @@ func TestClient_GetOneSatOrdinalLatest(t *testing.T) {
 // TestClient_GetOneSatOrdinalHistory tests the GetOneSatOrdinalHistory method
 func TestClient_GetOneSatOrdinalHistory(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetOneSatOrdinalHistory(context.Background(), "test_outpoint")
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetOneSatOrdinalHistory(context.Background(), "test_outpoint")
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -417,8 +422,11 @@ func TestClient_GetOneSatOrdinalHistory(t *testing.T) {
 // TestClient_GetOneSatOrdinalsByTxID tests the GetOneSatOrdinalsByTxID method
 func TestClient_GetOneSatOrdinalsByTxID(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetOneSatOrdinalsByTxID(context.Background(), "test_txid")
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetOneSatOrdinalsByTxID(context.Background(), "test_txid")
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -442,8 +450,11 @@ func TestClient_GetOneSatOrdinalsByTxID(t *testing.T) {
 // TestClient_GetOneSatOrdinalsStats tests the GetOneSatOrdinalsStats method
 func TestClient_GetOneSatOrdinalsStats(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetOneSatOrdinalsStats(context.Background())
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetOneSatOrdinalsStats(context.Background())
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -467,8 +478,11 @@ func TestClient_GetOneSatOrdinalsStats(t *testing.T) {
 // TestClient_GetAllSTASTokens tests the GetAllSTASTokens method
 func TestClient_GetAllSTASTokens(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetAllSTASTokens(context.Background())
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetAllSTASTokens(context.Background())
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -492,8 +506,11 @@ func TestClient_GetAllSTASTokens(t *testing.T) {
 // TestClient_GetSTASTokenByID tests the GetSTASTokenByID method
 func TestClient_GetSTASTokenByID(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetSTASTokenByID(context.Background(), "test_contract", "TEST")
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetSTASTokenByID(context.Background(), "test_contract", "TEST")
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -513,8 +530,11 @@ func TestClient_GetSTASTokenByID(t *testing.T) {
 // TestClient_GetTokenUTXOsForAddress tests the GetTokenUTXOsForAddress method
 func TestClient_GetTokenUTXOsForAddress(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetTokenUTXOsForAddress(context.Background(), "test_address")
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetTokenUTXOsForAddress(context.Background(), "test_address")
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -538,8 +558,11 @@ func TestClient_GetTokenUTXOsForAddress(t *testing.T) {
 // TestClient_GetAddressTokenBalance tests the GetAddressTokenBalance method
 func TestClient_GetAddressTokenBalance(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetAddressTokenBalance(context.Background(), "test_address")
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetAddressTokenBalance(context.Background(), "test_address")
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -563,8 +586,11 @@ func TestClient_GetAddressTokenBalance(t *testing.T) {
 // TestClient_GetTokenTransactions tests the GetTokenTransactions method
 func TestClient_GetTokenTransactions(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetTokenTransactions(context.Background(), "test_contract", "TEST")
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetTokenTransactions(context.Background(), "test_contract", "TEST")
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}
@@ -588,8 +614,11 @@ func TestClient_GetTokenTransactions(t *testing.T) {
 // TestClient_GetSTASStats tests the GetSTASStats method
 func TestClient_GetSTASStats(t *testing.T) {
 	// Test BSV chain requirement
-	btcClient := NewClientWithChain(ChainBTC, NetworkMain, nil, nil)
-	_, err := btcClient.GetSTASStats(context.Background())
+	btcClient, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = btcClient.GetSTASStats(context.Background())
 	if !errors.Is(err, ErrBSVChainRequired) {
 		t.Fatalf("expected BSV chain required error, got: %v", err)
 	}

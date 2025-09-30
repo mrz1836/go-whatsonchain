@@ -333,6 +333,23 @@ endobj
 	return resp, nil
 }
 
+// mockHTTPTransactionsNotFound for mocking not found responses
+type mockHTTPTransactionsNotFound struct{}
+
+// Do is a mock http request that returns 404/empty responses
+func (m *mockHTTPTransactionsNotFound) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusNotFound
+
+	// No req found
+	if req == nil {
+		return resp, errTxMissingRequest
+	}
+
+	resp.Body = io.NopCloser(bytes.NewBufferString(""))
+	return resp, nil
+}
+
 // mockHTTPBroadcast for mocking requests
 type mockHTTPBroadcast struct{}
 
@@ -1619,4 +1636,64 @@ func TestClient_BulkSpentOutputs(t *testing.T) {
 		require.Error(t, err)
 		assert.Nil(t, response)
 	})
+}
+
+// TestClient_GetUnconfirmedSpentOutput_EmptyResponse tests GetUnconfirmedSpentOutput with empty response
+func TestClient_GetUnconfirmedSpentOutput_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPTransactionsNotFound{})
+	ctx := context.Background()
+	output, err := client.GetUnconfirmedSpentOutput(ctx, "notFound", 0)
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrTransactionNotFound)
+	assert.Nil(t, output)
+}
+
+// TestClient_GetConfirmedSpentOutput_EmptyResponse tests GetConfirmedSpentOutput with empty response
+func TestClient_GetConfirmedSpentOutput_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPTransactionsNotFound{})
+	ctx := context.Background()
+	output, err := client.GetConfirmedSpentOutput(ctx, "notFound", 0)
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrTransactionNotFound)
+	assert.Nil(t, output)
+}
+
+// TestClient_GetSpentOutput_EmptyResponse tests GetSpentOutput with empty response
+func TestClient_GetSpentOutput_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPTransactionsNotFound{})
+	ctx := context.Background()
+	output, err := client.GetSpentOutput(ctx, "notFound", 0)
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrTransactionNotFound)
+	assert.Nil(t, output)
+}
+
+// TestClient_GetTransactionPropagationStatus_EmptyResponse tests GetTransactionPropagationStatus with empty response
+func TestClient_GetTransactionPropagationStatus_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPTransactionsNotFound{})
+	ctx := context.Background()
+	status, err := client.GetTransactionPropagationStatus(ctx, "notFound")
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrTransactionNotFound)
+	assert.Nil(t, status)
+}
+
+// TestClient_GetTransactionAsBinary_EmptyResponse tests GetTransactionAsBinary with empty response
+func TestClient_GetTransactionAsBinary_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPTransactionsNotFound{})
+	ctx := context.Background()
+	binary, err := client.GetTransactionAsBinary(ctx, "notFound")
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrTransactionNotFound)
+	assert.Nil(t, binary)
 }
