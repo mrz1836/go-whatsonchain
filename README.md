@@ -102,28 +102,78 @@ go get github.com/mrz1836/go-whatsonchain
 
 ## 💡 Usage
 
-### Quick Start (BSV - Default)
+### Quick Start
 
 ```go
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/mrz1836/go-whatsonchain"
 )
 
 func main() {
-	// Create options (add your api key)
-	opts := whatsonchain.ClientDefaultOptions()
-	opts.APIKey = "your-secret-key"
+	// Create a client with default options (BSV mainnet)
+	client, err := whatsonchain.NewClient(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// Create a client (defaults to BSV for backward compatibility)
-	client := whatsonchain.NewClient(whatsonchain.NetworkMain, opts, nil)
-	log.Println("BSV client loaded", client.UserAgent())
+	log.Println("client loaded", client.UserAgent())
 	log.Println("Chain:", client.Chain(), "Network:", client.Network())
 }
 ```
+
+### Configuration Options
+
+The library uses functional options for clean and flexible configuration:
+
+```go
+package main
+
+import (
+	"context"
+	"log"
+	"time"
+
+	"github.com/mrz1836/go-whatsonchain"
+)
+
+func main() {
+	// Create a client with custom options
+	client, err := whatsonchain.NewClient(
+		context.Background(),
+		whatsonchain.WithChain(whatsonchain.ChainBSV),
+		whatsonchain.WithNetwork(whatsonchain.NetworkMain),
+		whatsonchain.WithAPIKey("your-secret-key"),
+		whatsonchain.WithUserAgent("my-app/1.0"),
+		whatsonchain.WithRateLimit(10),
+		whatsonchain.WithRequestTimeout(60*time.Second),
+		whatsonchain.WithRequestRetryCount(3),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("client loaded with custom options")
+}
+```
+
+### Available Options
+
+- `WithChain(chain)` - Set blockchain (ChainBSV or ChainBTC)
+- `WithNetwork(network)` - Set network (NetworkMain, NetworkTest, NetworkStn)
+- `WithAPIKey(key)` - Set API key for authenticated requests
+- `WithUserAgent(agent)` - Set custom user agent
+- `WithRateLimit(limit)` - Set rate limit per second
+- `WithHTTPClient(client)` - Use custom HTTP client
+- `WithRequestTimeout(timeout)` - Set request timeout
+- `WithRequestRetryCount(count)` - Set retry count for failed requests
+- `WithBackoff(initial, max, factor, jitter)` - Configure exponential backoff
+- `WithDialer(keepAlive, timeout)` - Configure dialer settings
+- `WithTransport(idle, tls, expect, maxIdle)` - Configure transport settings
 
 ### Multi-Chain Support
 
@@ -140,13 +190,15 @@ import (
 )
 
 func main() {
-	// Create BSV client explicitly
-	client := whatsonchain.NewClientWithChain(
-		whatsonchain.ChainBSV,
-		whatsonchain.NetworkMain,
-		nil, // options
-		nil, // custom HTTP client
+	// Create BSV client
+	client, err := whatsonchain.NewClient(
+		context.Background(),
+		whatsonchain.WithChain(whatsonchain.ChainBSV),
+		whatsonchain.WithNetwork(whatsonchain.NetworkMain),
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Use BSV-specific methods
 	opReturnData, err := client.GetOpReturnData(context.Background(), "your-tx-hash")
@@ -178,12 +230,14 @@ import (
 
 func main() {
 	// Create BTC client
-	client := whatsonchain.NewClientWithChain(
-		whatsonchain.ChainBTC,
-		whatsonchain.NetworkMain,
-		nil, // options
-		nil, // custom HTTP client
+	client, err := whatsonchain.NewClient(
+		context.Background(),
+		whatsonchain.WithChain(whatsonchain.ChainBTC),
+		whatsonchain.WithNetwork(whatsonchain.NetworkMain),
 	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Use BTC-specific methods
 	blockStats, err := client.GetBlockStats(context.Background(), 700000)
@@ -206,33 +260,6 @@ func main() {
 	}
 	log.Printf("BTC Chain Info: %+v", chainInfo)
 }
-```
-
-### Backward Compatibility
-
-Existing code continues to work without changes - `NewClient()` defaults to BSV:
-
-```go
-// This still works and defaults to BSV
-client := whatsonchain.NewClient(whatsonchain.NetworkMain, opts, nil)
-// Equivalent to:
-client := whatsonchain.NewClientWithChain(whatsonchain.ChainBSV, whatsonchain.NetworkMain, opts, nil)
-```
-
-### Chain-Specific Method Restrictions
-
-The client enforces chain-specific method usage:
-
-```go
-// BSV client trying to use BTC-only method
-bsvClient := whatsonchain.NewClientWithChain(whatsonchain.ChainBSV, whatsonchain.NetworkMain, nil, nil)
-_, err := bsvClient.GetBlockStats(context.Background(), 700000)
-// Returns error: "GetBlockStats is only available for BTC chain"
-
-// BTC client trying to use BSV-only method
-btcClient := whatsonchain.NewClientWithChain(whatsonchain.ChainBTC, whatsonchain.NetworkMain, nil, nil)
-_, err = btcClient.GetOpReturnData(context.Background(), "tx-hash")
-// Returns error: "GetOpReturnData is only available for BSV chain"
 ```
 
 <br/>
