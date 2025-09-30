@@ -9,6 +9,7 @@ import (
 // BSVService is the interface for BSV-specific endpoints
 type BSVService interface {
 	GetOpReturnData(ctx context.Context, txHash string) (string, error)
+	TokenService
 }
 
 // GetOpReturnData gets OP_RETURN data by transaction hash (BSV-only endpoint)
