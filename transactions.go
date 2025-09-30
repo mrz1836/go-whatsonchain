@@ -11,7 +11,7 @@ import (
 
 // GetTxByHash this endpoint retrieves transaction details with given transaction hash
 //
-// For more information: https://docs/#get-by-tx-hash
+// For more information: https://docs.whatsonchain.com/#get-by-tx-hash
 func (c *Client) GetTxByHash(ctx context.Context, hash string) (*TxInfo, error) {
 	url := c.buildURL("/tx/hash/%s", hash)
 	return requestAndUnmarshal[TxInfo](ctx, c, url, http.MethodGet, nil, ErrTransactionNotFound)
@@ -20,7 +20,7 @@ func (c *Client) GetTxByHash(ctx context.Context, hash string) (*TxInfo, error) 
 // BulkTransactionDetails this fetches details for multiple transactions in single request
 // Max 20 transactions per request
 //
-// For more information: https://docs/#bulk-transaction-details
+// For more information: https://docs.whatsonchain.com/#bulk-transaction-details
 func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (TxList, error) {
 	if len(hashes.TxIDs) > MaxTransactionsUTXO {
 		return nil, fmt.Errorf("%w: %d UTXOs requested, max is %d", ErrMaxUTXOsExceeded, len(hashes.TxIDs), MaxTransactionsUTXO)
@@ -87,7 +87,7 @@ func (c *Client) BulkTransactionDetailsProcessor(ctx context.Context, hashes *Tx
 
 // GetMerkleProof this endpoint returns merkle branch to a confirmed transaction
 //
-// For more information: https://docs/#get-merkle-proof
+// For more information: https://docs.whatsonchain.com/#get-merkle-proof
 func (c *Client) GetMerkleProof(ctx context.Context, hash string) (MerkleResults, error) {
 	url := c.buildURL("/tx/%s/proof", hash)
 	return requestAndUnmarshalSlice[*MerkleInfo](ctx, c, url, http.MethodGet, nil, ErrTransactionNotFound)
@@ -103,7 +103,7 @@ func (c *Client) GetMerkleProofTSC(ctx context.Context, hash string) (MerkleTSCR
 
 // GetRawTransactionData this endpoint returns raw hex for the transaction with given hash
 //
-// For more information: https://docs/#get-raw-transaction-data
+// For more information: https://docs.whatsonchain.com/#get-raw-transaction-data
 func (c *Client) GetRawTransactionData(ctx context.Context, hash string) (string, error) {
 	url := c.buildURL("/tx/%s/hex", hash)
 	return requestString(ctx, c, url)
@@ -113,7 +113,7 @@ func (c *Client) GetRawTransactionData(ctx context.Context, hash string) (string
 // transactions in single request
 // Max 20 transactions per request
 //
-// For more information: https://docs/#bulk-raw-transaction-data
+// For more information: https://docs.whatsonchain.com/#bulk-raw-transaction-data
 func (c *Client) BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (TxList, error) {
 	if len(hashes.TxIDs) > MaxTransactionsRaw {
 		return nil, fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxRawTransactionsExceeded, len(hashes.TxIDs), MaxTransactionsRaw)
@@ -132,7 +132,7 @@ func (c *Client) BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (
 // multiple transactions in single request and handles chunking
 // Max 20 transactions per request
 //
-// For more information: https://docs/#bulk-raw-transaction-data
+// For more information: https://docs.whatsonchain.com/#bulk-raw-transaction-data
 func (c *Client) BulkRawTransactionDataProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
 	// Break up the transactions into batches
 	var batches [][]string
@@ -182,7 +182,7 @@ func (c *Client) BulkRawTransactionDataProcessor(ctx context.Context, hashes *Tx
 
 // GetRawTransactionOutputData this endpoint returns raw hex for the transaction output with given hash and index
 //
-// For more information: https://docs/#get-raw-transaction-output-data
+// For more information: https://docs.whatsonchain.com/#get-raw-transaction-output-data
 func (c *Client) GetRawTransactionOutputData(ctx context.Context, hash string, vOutIndex int) (string, error) {
 	url := c.buildURL("/tx/%s/out/%d/hex", hash, vOutIndex)
 	return requestString(ctx, c, url)
@@ -191,7 +191,7 @@ func (c *Client) GetRawTransactionOutputData(ctx context.Context, hash string, v
 // BroadcastTx will broadcast transaction using this endpoint.
 // Get tx_id in response or error msg from node.
 //
-// For more information: https://docs/#broadcast-transaction
+// For more information: https://docs.whatsonchain.com/#broadcast-transaction
 func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, err error) {
 	// Start the post data
 	postData := []byte(fmt.Sprintf(`{"txhex":"%s"}`, txHex))
@@ -233,7 +233,7 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 // url until all transactions are marked as 'PROCESSED'. Progress of the transactions are tracked on this unique url
 // for up to 5 hours.
 //
-// For more information: https://docs/#bulk-broadcast
+// For more information: https://docs.whatsonchain.com/#bulk-broadcast
 func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 	feedback bool,
 ) (response *BulkBroadcastResponse, err error) {
@@ -291,7 +291,7 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 
 // DecodeTransaction this endpoint decodes raw transaction
 //
-// For more information: https://docs/#decode-transaction
+// For more information: https://docs.whatsonchain.com/#decode-transaction
 func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (*TxInfo, error) {
 	postData := []byte(fmt.Sprintf(`{"txhex":"%s"}`, txHex))
 	url := c.buildURL("/tx/decode")
@@ -301,7 +301,7 @@ func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (*TxInfo, 
 // DownloadReceipt this endpoint downloads a transaction receipt (PDF)
 // The contents will be returned in plain-text and need to be converted to a file.pdf
 //
-// For more information: https://docs/#download-receipt
+// For more information: https://docs.whatsonchain.com/#download-receipt
 func (c *Client) DownloadReceipt(ctx context.Context, hash string) (string, error) {
 	// This endpoint does not follow the convention of the WOC API v1
 	url := fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network(), hash)
@@ -310,7 +310,7 @@ func (c *Client) DownloadReceipt(ctx context.Context, hash string) (string, erro
 
 // GetTransactionPropagationStatus this endpoint retrieves transaction propagation status (BSV only)
 //
-// For more information: https://docs/#get-tx-propagation
+// For more information: https://docs.whatsonchain.com/#get-tx-propagation
 func (c *Client) GetTransactionPropagationStatus(ctx context.Context, hash string) (*PropagationStatus, error) {
 	if c.Chain() != ChainBSV {
 		return nil, ErrBSVChainRequired
@@ -323,7 +323,7 @@ func (c *Client) GetTransactionPropagationStatus(ctx context.Context, hash strin
 // BulkTransactionStatus this endpoint fetches status for multiple transactions in single request
 // Max 20 transactions per request
 //
-// For more information: https://docs/#bulk-transaction-status
+// For more information: https://docs.whatsonchain.com/#bulk-transaction-status
 func (c *Client) BulkTransactionStatus(ctx context.Context, hashes *TxHashes) (TxStatusList, error) {
 	if len(hashes.TxIDs) > MaxTransactionsUTXO {
 		return nil, fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxUTXOsExceeded, len(hashes.TxIDs), MaxTransactionsUTXO)
@@ -340,7 +340,7 @@ func (c *Client) BulkTransactionStatus(ctx context.Context, hashes *TxHashes) (T
 
 // GetTransactionAsBinary this endpoint retrieves transaction data as binary
 //
-// For more information: https://docs/#get-tx-binary
+// For more information: https://docs.whatsonchain.com/#get-tx-binary
 func (c *Client) GetTransactionAsBinary(ctx context.Context, hash string) ([]byte, error) {
 	url := c.buildURL("/tx/%s/bin", hash)
 	resp, err := requestString(ctx, c, url)
@@ -356,7 +356,7 @@ func (c *Client) GetTransactionAsBinary(ctx context.Context, hash string) ([]byt
 // BulkRawTransactionOutputData this endpoint fetches raw output data for multiple transactions in single request
 // Max 20 transactions per request
 //
-// For more information: https://docs/#bulk-raw-tx-output
+// For more information: https://docs.whatsonchain.com/#bulk-raw-tx-output
 func (c *Client) BulkRawTransactionOutputData(ctx context.Context, request *BulkRawOutputRequest) ([]*BulkRawOutputResponse, error) {
 	if len(request.TxIDs) > MaxTransactionsUTXO {
 		return nil, fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxUTXOsExceeded, len(request.TxIDs), MaxTransactionsUTXO)
@@ -373,7 +373,7 @@ func (c *Client) BulkRawTransactionOutputData(ctx context.Context, request *Bulk
 
 // GetUnconfirmedSpentOutput this endpoint retrieves unconfirmed spent transaction output details
 //
-// For more information: https://docs/#get-unconfirmed-spent
+// For more information: https://docs.whatsonchain.com/#get-unconfirmed-spent
 func (c *Client) GetUnconfirmedSpentOutput(ctx context.Context, txHash string, index int) (*SpentOutput, error) {
 	url := c.buildURL("/tx/%s/%d/unconfirmed/spent", txHash, index)
 	return requestAndUnmarshal[SpentOutput](ctx, c, url, http.MethodGet, nil, ErrTransactionNotFound)
@@ -381,7 +381,7 @@ func (c *Client) GetUnconfirmedSpentOutput(ctx context.Context, txHash string, i
 
 // GetConfirmedSpentOutput this endpoint retrieves confirmed spent transaction output details
 //
-// For more information: https://docs/#get-confirmed-spent
+// For more information: https://docs.whatsonchain.com/#get-confirmed-spent
 func (c *Client) GetConfirmedSpentOutput(ctx context.Context, txHash string, index int) (*SpentOutput, error) {
 	url := c.buildURL("/tx/%s/%d/confirmed/spent", txHash, index)
 	return requestAndUnmarshal[SpentOutput](ctx, c, url, http.MethodGet, nil, ErrTransactionNotFound)
@@ -389,7 +389,7 @@ func (c *Client) GetConfirmedSpentOutput(ctx context.Context, txHash string, ind
 
 // GetSpentOutput this endpoint retrieves spent transaction output details (both confirmed and unconfirmed)
 //
-// For more information: https://docs/#get-spent-output
+// For more information: https://docs.whatsonchain.com/#get-spent-output
 func (c *Client) GetSpentOutput(ctx context.Context, txHash string, index int) (*SpentOutput, error) {
 	url := c.buildURL("/tx/%s/%d/spent", txHash, index)
 	return requestAndUnmarshal[SpentOutput](ctx, c, url, http.MethodGet, nil, ErrTransactionNotFound)
@@ -398,7 +398,7 @@ func (c *Client) GetSpentOutput(ctx context.Context, txHash string, index int) (
 // BulkSpentOutputs this endpoint retrieves spent output details for multiple UTXOs
 // Max 20 UTXOs per request
 //
-// For more information: https://docs/#bulk-spent-outputs
+// For more information: https://docs.whatsonchain.com/#bulk-spent-outputs
 func (c *Client) BulkSpentOutputs(ctx context.Context, request *BulkSpentOutputRequest) (BulkSpentOutputResponse, error) {
 	if len(request.UTXOs) > MaxTransactionsUTXO {
 		return nil, fmt.Errorf("%w: %d UTXOs requested, max is %d", ErrMaxUTXOsExceeded, len(request.UTXOs), MaxTransactionsUTXO)

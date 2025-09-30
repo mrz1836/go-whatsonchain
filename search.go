@@ -9,7 +9,7 @@ import (
 // GetExplorerLinks this endpoint identifies whether the posted query text is a block hash, txid or address and
 // responds with WoC links. Ideal for extending customized search in apps.
 //
-// For more information: https://docs/#get-history
+// For more information: https://docs.whatsonchain.com/#get-history
 func (c *Client) GetExplorerLinks(ctx context.Context, query string) (SearchResults, error) {
 	postData := []byte(fmt.Sprintf(`{"query":"%s"}`, query))
 	url := c.buildURL("/search/links")

@@ -10,7 +10,7 @@ import (
 
 // AddressInfo this endpoint retrieves various address info.
 //
-// For more information: https://docs/#address
+// For more information: https://docs.whatsonchain.com/#address
 func (c *Client) AddressInfo(ctx context.Context, address string) (*AddressInfo, error) {
 	url := c.buildURL("/address/%s/info", address)
 	return requestAndUnmarshal[AddressInfo](ctx, c, url, http.MethodGet, nil, ErrAddressNotFound)
@@ -18,7 +18,7 @@ func (c *Client) AddressInfo(ctx context.Context, address string) (*AddressInfo,
 
 // AddressBalance this endpoint retrieves confirmed and unconfirmed address balance.
 //
-// For more information: https://docs/#get-balance
+// For more information: https://docs.whatsonchain.com/#get-balance
 func (c *Client) AddressBalance(ctx context.Context, address string) (*AddressBalance, error) {
 	url := c.buildURL("/address/%s/balance", address)
 	return requestAndUnmarshal[AddressBalance](ctx, c, url, http.MethodGet, nil, ErrAddressNotFound)
@@ -26,7 +26,7 @@ func (c *Client) AddressBalance(ctx context.Context, address string) (*AddressBa
 
 // AddressHistory this endpoint retrieves confirmed and unconfirmed address transactions.
 //
-// For more information: https://docs/#get-history
+// For more information: https://docs.whatsonchain.com/#get-history
 func (c *Client) AddressHistory(ctx context.Context, address string) (AddressHistory, error) {
 	url := c.buildURL("/address/%s/history", address)
 	return requestAndUnmarshalSlice[*HistoryRecord](ctx, c, url, http.MethodGet, nil, ErrAddressNotFound)
@@ -34,7 +34,7 @@ func (c *Client) AddressHistory(ctx context.Context, address string) (AddressHis
 
 // AddressUnspentTransactions this endpoint retrieves ordered list of UTXOs.
 //
-// For more information: https://docs/#get-unspent-transactions
+// For more information: https://docs.whatsonchain.com/#get-unspent-transactions
 func (c *Client) AddressUnspentTransactions(ctx context.Context, address string) (AddressHistory, error) {
 	url := c.buildURL("/address/%s/unspent/all", address)
 	return requestAndUnmarshalSlice[*HistoryRecord](ctx, c, url, http.MethodGet, nil, ErrAddressNotFound)
@@ -113,7 +113,7 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 // DownloadStatement this endpoint downloads an address statement (PDF)
 // The contents will be returned in plain-text and need to be converted to a file.pdf
 //
-// For more information: https://docs/#download-statement
+// For more information: https://docs.whatsonchain.com/#download-statement
 func (c *Client) DownloadStatement(ctx context.Context, address string) (string, error) {
 	// This endpoint does not follow the convention of the WOC API v1
 	url := fmt.Sprintf("https://%s.whatsonchain.com/statement/%s", c.Network(), address)
@@ -134,7 +134,7 @@ func bulkRequest(list *AddressList) ([]byte, error) {
 // BulkBalance this endpoint retrieves confirmed and unconfirmed address balances
 // Max of 20 addresses at a time
 //
-// For more information: https://docs/#bulk-balance
+// For more information: https://docs.whatsonchain.com/#bulk-balance
 func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (AddressBalances, error) {
 	postData, err := bulkRequest(list)
 	if err != nil {
@@ -148,7 +148,7 @@ func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (AddressBal
 // BulkUnspentTransactionsProcessor will fetch UTXOs for multiple addresses in a single request while automatically batching
 // Max of 20 addresses at a time
 //
-// For more information: https://docs/#bulk-unspent-transactions
+// For more information: https://docs.whatsonchain.com/#bulk-unspent-transactions
 func (c *Client) BulkUnspentTransactionsProcessor(ctx context.Context, list *AddressList) (responseList BulkUnspentResponse, err error) {
 	var batches [][]string
 	chunkSize := MaxTransactionsUTXO
@@ -180,7 +180,7 @@ func (c *Client) BulkUnspentTransactionsProcessor(ctx context.Context, list *Add
 // BulkUnspentTransactions will fetch UTXOs for multiple addresses in a single request
 // Max of 20 addresses at a time
 //
-// For more information: https://docs/#bulk-unspent-transactions
+// For more information: https://docs.whatsonchain.com/#bulk-unspent-transactions
 func (c *Client) BulkUnspentTransactions(ctx context.Context, list *AddressList) (BulkUnspentResponse, error) {
 	postData, err := bulkRequest(list)
 	if err != nil {
@@ -193,7 +193,7 @@ func (c *Client) BulkUnspentTransactions(ctx context.Context, list *AddressList)
 
 // AddressUnconfirmedUTXOs retrieves unconfirmed UTXOs for an address
 //
-// For more information: https://docs/#get-unconfirmed-utxos
+// For more information: https://docs.whatsonchain.com/#get-unconfirmed-utxos
 func (c *Client) AddressUnconfirmedUTXOs(ctx context.Context, address string) (AddressHistory, error) {
 	url := c.buildURL("/address/%s/unconfirmed/unspent", address)
 	return requestAndUnmarshalSlice[*HistoryRecord](ctx, c, url, http.MethodGet, nil, ErrAddressNotFound)
@@ -202,7 +202,7 @@ func (c *Client) AddressUnconfirmedUTXOs(ctx context.Context, address string) (A
 // BulkAddressUnconfirmedUTXOs retrieves unconfirmed UTXOs for multiple addresses
 // Max of 20 addresses at a time
 //
-// For more information: https://docs/#bulk-unconfirmed-utxos
+// For more information: https://docs.whatsonchain.com/#bulk-unconfirmed-utxos
 func (c *Client) BulkAddressUnconfirmedUTXOs(ctx context.Context, list *AddressList) (BulkUnspentResponse, error) {
 	postData, err := bulkRequest(list)
 	if err != nil {
@@ -215,7 +215,7 @@ func (c *Client) BulkAddressUnconfirmedUTXOs(ctx context.Context, list *AddressL
 
 // AddressConfirmedUTXOs retrieves confirmed UTXOs for an address
 //
-// For more information: https://docs/#get-confirmed-utxos
+// For more information: https://docs.whatsonchain.com/#get-confirmed-utxos
 func (c *Client) AddressConfirmedUTXOs(ctx context.Context, address string) (AddressHistory, error) {
 	url := c.buildURL("/address/%s/confirmed/unspent", address)
 	return requestAndUnmarshalSlice[*HistoryRecord](ctx, c, url, http.MethodGet, nil, ErrAddressNotFound)
@@ -224,7 +224,7 @@ func (c *Client) AddressConfirmedUTXOs(ctx context.Context, address string) (Add
 // BulkAddressConfirmedUTXOs retrieves confirmed UTXOs for multiple addresses
 // Max of 20 addresses at a time
 //
-// For more information: https://docs/#bulk-confirmed-utxos
+// For more information: https://docs.whatsonchain.com/#bulk-confirmed-utxos
 func (c *Client) BulkAddressConfirmedUTXOs(ctx context.Context, list *AddressList) (BulkUnspentResponse, error) {
 	postData, err := bulkRequest(list)
 	if err != nil {

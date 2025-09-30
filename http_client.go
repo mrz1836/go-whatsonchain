@@ -76,7 +76,7 @@ func NewRetryableHTTPClient(httpClient *http.Client, retryCount int, backoff *Ex
 	}
 }
 
-// Do executes an HTTP request with retry logic
+// Do will execute an HTTP request with retry logic
 func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	var lastResp *http.Response
 	var lastErr error
@@ -113,7 +113,7 @@ func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 				bytes.NewReader(bodyBytes),
 			)
 		} else {
-			// No body, just clone the request
+			// There is no "body", just clone the request
 			reqForAttempt, err = http.NewRequestWithContext(
 				req.Context(),
 				req.Method,
@@ -134,7 +134,8 @@ func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 		}
 
 		// Execute the request
-		resp, err := r.client.Do(reqForAttempt)
+		var resp *http.Response
+		resp, err = r.client.Do(reqForAttempt)
 
 		// If this is the last attempt, return whatever we got
 		if attempt == maxAttempts-1 {

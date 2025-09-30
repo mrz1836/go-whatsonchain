@@ -9,7 +9,7 @@ import (
 
 // GetScriptHistory this endpoint retrieves confirmed and unconfirmed script transactions
 //
-// For more information: https://docs/#get-script-history
+// For more information: https://docs.whatsonchain.com/#get-script-history
 func (c *Client) GetScriptHistory(ctx context.Context, scriptHash string) (ScriptList, error) {
 	url := c.buildURL("/script/%s/history", scriptHash)
 	return requestAndUnmarshalSlice[*ScriptRecord](ctx, c, url, http.MethodGet, nil, ErrScriptNotFound)
@@ -17,7 +17,7 @@ func (c *Client) GetScriptHistory(ctx context.Context, scriptHash string) (Scrip
 
 // GetScriptUnspentTransactions this endpoint retrieves ordered list of UTXOs
 //
-// For more information: https://docs/#get-script-unspent-transactions
+// For more information: https://docs.whatsonchain.com/#get-script-unspent-transactions
 func (c *Client) GetScriptUnspentTransactions(ctx context.Context, scriptHash string) (ScriptList, error) {
 	url := c.buildURL("/script/%s/unspent/all", scriptHash)
 	return requestAndUnmarshalSlice[*ScriptRecord](ctx, c, url, http.MethodGet, nil, ErrScriptNotFound)
@@ -26,7 +26,7 @@ func (c *Client) GetScriptUnspentTransactions(ctx context.Context, scriptHash st
 // BulkScriptUnspentTransactions will fetch UTXOs for multiple scripts in a single request
 // Max of 20 scripts at a time
 //
-// For more information: https://docs/#bulk-script-unspent-transactions
+// For more information: https://docs.whatsonchain.com/#bulk-script-unspent-transactions
 func (c *Client) BulkScriptUnspentTransactions(ctx context.Context, list *ScriptsList) (BulkScriptUnspentResponse, error) {
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
@@ -43,7 +43,7 @@ func (c *Client) BulkScriptUnspentTransactions(ctx context.Context, list *Script
 
 // ScriptUnconfirmedUTXOs retrieves unconfirmed UTXOs for a script
 //
-// For more information: https://docs/#get-unconfirmed-script-utxos
+// For more information: https://docs.whatsonchain.com/#get-unconfirmed-script-utxos
 func (c *Client) ScriptUnconfirmedUTXOs(ctx context.Context, scriptHash string) (ScriptList, error) {
 	url := c.buildURL("/script/%s/unconfirmed/unspent", scriptHash)
 	return requestAndUnmarshalSlice[*ScriptRecord](ctx, c, url, http.MethodGet, nil, ErrScriptNotFound)
@@ -52,7 +52,7 @@ func (c *Client) ScriptUnconfirmedUTXOs(ctx context.Context, scriptHash string) 
 // BulkScriptUnconfirmedUTXOs retrieves unconfirmed UTXOs for multiple scripts
 // Max of 20 scripts at a time
 //
-// For more information: https://docs/#bulk-unconfirmed-script-utxos
+// For more information: https://docs.whatsonchain.com/#bulk-unconfirmed-script-utxos
 func (c *Client) BulkScriptUnconfirmedUTXOs(ctx context.Context, list *ScriptsList) (BulkScriptUnspentResponse, error) {
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
@@ -69,7 +69,7 @@ func (c *Client) BulkScriptUnconfirmedUTXOs(ctx context.Context, list *ScriptsLi
 
 // ScriptConfirmedUTXOs retrieves confirmed UTXOs for a script
 //
-// For more information: https://docs/#get-confirmed-script-utxos
+// For more information: https://docs.whatsonchain.com/#get-confirmed-script-utxos
 func (c *Client) ScriptConfirmedUTXOs(ctx context.Context, scriptHash string) (ScriptList, error) {
 	url := c.buildURL("/script/%s/confirmed/unspent", scriptHash)
 	return requestAndUnmarshalSlice[*ScriptRecord](ctx, c, url, http.MethodGet, nil, ErrScriptNotFound)
@@ -78,7 +78,7 @@ func (c *Client) ScriptConfirmedUTXOs(ctx context.Context, scriptHash string) (S
 // BulkScriptConfirmedUTXOs retrieves confirmed UTXOs for multiple scripts
 // Max of 20 scripts at a time
 //
-// For more information: https://docs/#bulk-confirmed-script-utxos
+// For more information: https://docs.whatsonchain.com/#bulk-confirmed-script-utxos
 func (c *Client) BulkScriptConfirmedUTXOs(ctx context.Context, list *ScriptsList) (BulkScriptUnspentResponse, error) {
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)

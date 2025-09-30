@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 )
 
-// requestAndUnmarshal is a generic helper that performs a request and unmarshals the response
+// requestAndUnmarshal is a generic helper that performs a request and will unmarshal the response
 // into a pointer to the specified type T
 func requestAndUnmarshal[T any](ctx context.Context, c *Client, url, method string, payload []byte, emptyErr error) (*T, error) {
 	resp, err := c.request(ctx, url, method, payload)

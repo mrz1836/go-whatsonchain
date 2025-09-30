@@ -14,7 +14,7 @@ type BSVService interface {
 
 // GetOpReturnData gets OP_RETURN data by transaction hash (BSV-only endpoint)
 //
-// For more information: https://docs/#get-op_return-data-by-tx-hash
+// For more information: https://docs.whatsonchain.com/#get-op_return-data-by-tx-hash
 func (c *Client) GetOpReturnData(ctx context.Context, txHash string) (string, error) {
 	// Only available for BSV
 	if c.Chain() != ChainBSV {
