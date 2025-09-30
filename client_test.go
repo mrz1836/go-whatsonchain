@@ -73,7 +73,7 @@ func TestWithNetwork(t *testing.T) {
 func TestWithAPIKey(t *testing.T) {
 	t.Parallel()
 
-	apiKey := "test-api-key-12345"
+	apiKey := "12345"
 	client, err := NewClient(context.Background(), WithAPIKey(apiKey))
 	require.NoError(t, err)
 	assert.Equal(t, apiKey, client.APIKey())
@@ -239,6 +239,7 @@ func TestSetAPIKey(t *testing.T) {
 	assert.Equal(t, newKey, client.APIKey())
 }
 
+// TestSetUserAgent tests the SetUserAgent method
 func TestSetUserAgent(t *testing.T) {
 	t.Parallel()
 
@@ -250,6 +251,7 @@ func TestSetUserAgent(t *testing.T) {
 	assert.Equal(t, newAgent, client.UserAgent())
 }
 
+// TestSetRateLimit tests the SetRateLimit method
 func TestSetRateLimit(t *testing.T) {
 	t.Parallel()
 
@@ -261,6 +263,7 @@ func TestSetRateLimit(t *testing.T) {
 	assert.Equal(t, newLimit, client.RateLimit())
 }
 
+// TestSetChain tests the SetChain method
 func TestSetChain(t *testing.T) {
 	t.Parallel()
 
@@ -271,6 +274,7 @@ func TestSetChain(t *testing.T) {
 	assert.Equal(t, ChainBTC, client.Chain())
 }
 
+// TestSetNetwork tests the SetNetwork method
 func TestSetNetwork(t *testing.T) {
 	t.Parallel()
 
@@ -281,6 +285,7 @@ func TestSetNetwork(t *testing.T) {
 	assert.Equal(t, NetworkTest, client.Network())
 }
 
+// TestSetRequestTimeout tests the SetRequestTimeout method
 func TestSetRequestTimeout(t *testing.T) {
 	t.Parallel()
 
@@ -292,6 +297,7 @@ func TestSetRequestTimeout(t *testing.T) {
 	assert.Equal(t, newTimeout, client.RequestTimeout())
 }
 
+// TestSetRequestRetryCount tests the SetRequestRetryCount method
 func TestSetRequestRetryCount(t *testing.T) {
 	t.Parallel()
 
@@ -303,6 +309,7 @@ func TestSetRequestRetryCount(t *testing.T) {
 	assert.Equal(t, newCount, client.RequestRetryCount())
 }
 
+// TestSetBackoffConfig tests the SetBackoffConfig method
 func TestSetBackoffConfig(t *testing.T) {
 	t.Parallel()
 
@@ -323,6 +330,7 @@ func TestSetBackoffConfig(t *testing.T) {
 	assert.Equal(t, jitter, j)
 }
 
+// TestSetDialerConfig tests the SetDialerConfig method
 func TestSetDialerConfig(t *testing.T) {
 	t.Parallel()
 
@@ -339,6 +347,7 @@ func TestSetDialerConfig(t *testing.T) {
 	assert.Equal(t, timeout, to)
 }
 
+// TestSetTransportConfig tests the SetTransportConfig method
 func TestSetTransportConfig(t *testing.T) {
 	t.Parallel()
 
