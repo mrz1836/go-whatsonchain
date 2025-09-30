@@ -22,8 +22,13 @@ func (m *mockHTTPExchangeValid) Do(req *http.Request) (*http.Response, error) {
 		return resp, ErrMissingRequest
 	}
 
+	// Valid (historical exchange rate)
+	if strings.Contains(req.URL.String(), "/exchangerate/historical") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(bytes.NewBufferString(`[{"rate":38.542,"time":1660139745,"currency":"USD"},{"rate":39.123,"time":1660312545,"currency":"USD"}]`))
+	}
 	// Valid (exchange rate)
-	if strings.Contains(req.URL.String(), "/exchangerate") {
+	if strings.Contains(req.URL.String(), "/exchangerate") && !strings.Contains(req.URL.String(), "/historical") {
 		resp.StatusCode = http.StatusOK
 		resp.Body = io.NopCloser(bytes.NewBufferString(`{"rate":38.542,"time":1668439893,"currency":"USD"}`))
 	}
@@ -112,6 +117,53 @@ func TestClient_GetExchangeRate(t *testing.T) {
 
 	// Test invalid response
 	_, err = client.GetExchangeRate(ctx)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
+}
+
+// TestClient_GetHistoricalExchangeRate tests the GetHistoricalExchangeRate()
+func TestClient_GetHistoricalExchangeRate(t *testing.T) {
+	t.Parallel()
+
+	// New mock client
+	client := newMockClient(&mockHTTPExchangeValid{})
+	ctx := context.Background()
+	from := int64(1660139745)
+	to := int64(1660312545)
+
+	// Test the valid response
+	rates, err := client.GetHistoricalExchangeRate(ctx, from, to)
+	if err != nil {
+		t.Errorf("%s Failed: error [%s]", t.Name(), err.Error())
+	} else if rates == nil {
+		t.Errorf("%s Failed: rates was nil", t.Name())
+	} else if len(rates) != 2 {
+		t.Errorf("%s Failed: expected 2 rates, got [%d]", t.Name(), len(rates))
+	} else if rates[0].Currency != "USD" {
+		t.Errorf("%s Failed: first rate currency was [%s] expected [%s]", t.Name(), rates[0].Currency, "USD")
+	} else if rates[0].Rate != 38.542 {
+		t.Errorf("%s Failed: first rate was [%v] expected [%v]", t.Name(), rates[0].Rate, 38.542)
+	} else if rates[0].Time != 1660139745 {
+		t.Errorf("%s Failed: first rate time was [%d] expected [%d]", t.Name(), rates[0].Time, 1660139745)
+	} else if rates[1].Rate != 39.123 {
+		t.Errorf("%s Failed: second rate was [%v] expected [%v]", t.Name(), rates[1].Rate, 39.123)
+	}
+
+	// New invalid mock client
+	client = newMockClient(&mockHTTPExchangeInvalid{})
+
+	// Test invalid response
+	_, err = client.GetHistoricalExchangeRate(ctx, from, to)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
+
+	// New not found mock client
+	client = newMockClient(&mockHTTPExchangeNotFound{})
+
+	// Test invalid response
+	_, err = client.GetHistoricalExchangeRate(ctx, from, to)
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}
