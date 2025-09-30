@@ -119,26 +119,26 @@ func (m *mockHTTPAddresses) Do(req *http.Request) (*http.Response, error) {
 	// Address unspent
 	//
 
-	// Valid (unspent)
-	if strings.Contains(req.URL.String(), "/16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA/unspent") {
+	// Valid (unspent/all)
+	if strings.Contains(req.URL.String(), "/16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA/unspent/all") {
 		resp.StatusCode = http.StatusOK
 		resp.Body = io.NopCloser(strings.NewReader(`[{"height": 639302,"tx_pos": 3,"tx_hash": "33b9432a0ea203bbb6ec00592622cf6e90223849e4c9a76447a19a3ed43907d3","value": 2451680},{"height": 639601,"tx_pos": 3,"tx_hash": "4805041897a2ae59ffca85f0deb46e89d73d1ba4478bbd9c0fcd76ba0985ded2","value": 2744764},{"height": 640276,"tx_pos": 3,"tx_hash": "2493ff4cbca16b892ac641b7f2cb6d4388e75cb3f8963c291183f2bf0b27f415","value": 2568774}]`))
 	}
 
-	// Valid (unspent) (no results)
-	if strings.Contains(req.URL.String(), "/1NfHy82RqJVGEau9u5DwFRyGc6QKwDuQeT/unspent") {
+	// Valid (unspent/all) (no results)
+	if strings.Contains(req.URL.String(), "/1NfHy82RqJVGEau9u5DwFRyGc6QKwDuQeT/unspent/all") {
 		resp.StatusCode = http.StatusOK
 		resp.Body = io.NopCloser(strings.NewReader(`[]`))
 	}
 
-	// Invalid (unspent) return an error
-	if strings.Contains(req.URL.String(), "/16ZqP5invalid/unspent") {
+	// Invalid (unspent/all) return an error
+	if strings.Contains(req.URL.String(), "/16ZqP5invalid/unspent/all") {
 		resp.Body = io.NopCloser(strings.NewReader(``))
 		return resp, errBadRequest
 	}
 
 	// Not found
-	if strings.Contains(req.URL.String(), "/16ZqP5notFound/unspent") {
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/unspent/all") {
 		resp.StatusCode = http.StatusNotFound
 		resp.Body = io.NopCloser(strings.NewReader(``))
 		return resp, nil
@@ -158,8 +158,8 @@ func (m *mockHTTPAddresses) Do(req *http.Request) (*http.Response, error) {
 	// Address bulk utxo
 	//
 
-	// Valid (unspent)
-	if strings.Contains(req.URL.String(), "/addresses/unspent") {
+	// Valid (unspent/all)
+	if strings.Contains(req.URL.String(), "/addresses/unspent/all") {
 		resp.StatusCode = http.StatusOK
 		resp.Body = io.NopCloser(strings.NewReader(`[{"address":"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP","unspent":[],"error":""},{"address":"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob","unspent":[{"height":658677,"tx_pos":1,"tx_hash":"be97e63bf79a961c69bc09d73cbef18232c7962fdced58244ed4014ba7e342b9","value":39799008},{"height":658726,"tx_pos":1,"tx_hash":"e5a7bc2338287fc0f3e38dff696b9ba41b3950c12bd8b7b1d92f3b0c056b4255","value":19110368},{"height":661623,"tx_pos":1,"tx_hash":"adea0a707c16f712f7a8faacfc8759d0b9d148693545c83511be1e2ed7fab4aa","value":19599008},{"height":661746,"tx_pos":1,"tx_hash":"afd619887ba5de9eb0e6076b7a37e96625227791520092fe142366c5c631c79e","value":44764416},{"height":661989,"tx_pos":1,"tx_hash":"15dcf82c9c461f3cb430e5ada855483c9e6c01bf4bc6fe667f3b798bd9f44acb","value":16658528},{"height":662494,"tx_pos":1,"tx_hash":"db8872fb1315e7f62013657d68db1871859624991a3ed77265aa85b8fdc768e5","value":32237986},{"height":662783,"tx_pos":4,"tx_hash":"2fa2686c61b6df1796717ca6d5f1934f0c39a5f8d2e42a6f213e76cb2ae66b54","value":10000000},{"height":662789,"tx_pos":4,"tx_hash":"c868a0616836bb017f956ce846ca6f3c56a985955742bd0fea22840a9d0168df","value":10000000},{"height":662791,"tx_pos":2,"tx_hash":"95c69649798b1d66e37318f2d65374095f6e0cd1675d1214402bd8e6002bf424","value":10000000},{"height":662794,"tx_pos":4,"tx_hash":"69720b7e41ca113d5fa988f5f4fd635d398459ba8e6ebb5d0a3a8f42097f1dcd","value":10000000},{"height":662853,"tx_pos":1,"tx_hash":"c42a4752f2551c195b27d016f8e522e724ad99b81d7e2459630b53e5a06178f3","value":5045746},{"height":662897,"tx_pos":1,"tx_hash":"2ca9c744b857a46266e4c0ac827db254eef54fa19530d3f21e460fe8d9445844","value":11405228},{"height":662992,"tx_pos":1,"tx_hash":"01c33159e9e00a7cb07248926e1ff8ed2d6a2450565fc0c27c30600457b2e572","value":47748859},{"height":663033,"tx_pos":1,"tx_hash":"09c5c72f807e572a5ac96e809d1c10b5bf27d63099cb4a6d871b74d459778bde","value":13629728},{"height":663034,"tx_pos":1,"tx_hash":"c8d3137f13ce2a4b8bfd919210c233a14a565c87e7c1ef4a693e6576adcc0419","value":7393008},{"height":663095,"tx_pos":1,"tx_hash":"58f416f323ae5b4d104b6246fca84ec4b1a6bb5a26174a732801e48008d02bbc","value":4603748}],"error":""}]`))
 	}
@@ -225,6 +225,158 @@ invalid
 		}
 	}
 
+	//
+	// Address Used
+	//
+
+	// Valid (used)
+	if strings.Contains(req.URL.String(), "/16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA/used") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`{"used": true}`))
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/used") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = io.NopCloser(strings.NewReader(``))
+		return resp, nil
+	}
+
+	//
+	// Address Scripts
+	//
+
+	// Valid (scripts)
+	if strings.Contains(req.URL.String(), "/16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA/scripts") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`{"scripts": ["76a9143d0e5368bdadddca108a0fe44739919274c726c788ac"]}`))
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/scripts") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = io.NopCloser(strings.NewReader(``))
+		return resp, nil
+	}
+
+	//
+	// Address Unconfirmed Balance
+	//
+
+	// Valid (unconfirmed/balance)
+	if strings.Contains(req.URL.String(), "/16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA/unconfirmed/balance") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`{"balance": 123}`))
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/unconfirmed/balance") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = io.NopCloser(strings.NewReader(``))
+		return resp, nil
+	}
+
+	//
+	// Address Confirmed Balance
+	//
+
+	// Valid (confirmed/balance)
+	if strings.Contains(req.URL.String(), "/16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA/confirmed/balance") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`{"balance": 10102050381}`))
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/confirmed/balance") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = io.NopCloser(strings.NewReader(``))
+		return resp, nil
+	}
+
+	//
+	// Address Unconfirmed History
+	//
+
+	// Valid (unconfirmed/history)
+	if strings.Contains(req.URL.String(), "/16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA/unconfirmed/history") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"tx_hash": "unconfirmed123","height": 0}]`))
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/unconfirmed/history") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = io.NopCloser(strings.NewReader(``))
+		return resp, nil
+	}
+
+	//
+	// Address Confirmed History
+	//
+
+	// Valid (confirmed/history)
+	if strings.Contains(req.URL.String(), "/16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA/confirmed/history") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"tx_hash": "6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1","height": 563052}]`))
+	}
+
+	// Not found
+	if strings.Contains(req.URL.String(), "/16ZqP5notFound/confirmed/history") {
+		resp.StatusCode = http.StatusNotFound
+		resp.Body = io.NopCloser(strings.NewReader(``))
+		return resp, nil
+	}
+
+	//
+	// Bulk Addresses Unconfirmed Balance
+	//
+
+	// Valid (addresses/unconfirmed/balance)
+	if strings.Contains(req.URL.String(), "/addresses/unconfirmed/balance") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"address":"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP","balance":{"confirmed":12812324,"unconfirmed":7340}},{"address":"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob","balance":{"confirmed":140041,"unconfirmed":0}}]`))
+	}
+
+	//
+	// Bulk Addresses Confirmed Balance
+	//
+
+	// Valid (addresses/confirmed/balance)
+	if strings.Contains(req.URL.String(), "/addresses/confirmed/balance") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"address":"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP","balance":{"confirmed":12812324,"unconfirmed":0}},{"address":"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob","balance":{"confirmed":140041,"unconfirmed":0}}]`))
+	}
+
+	//
+	// Bulk Addresses Unconfirmed History
+	//
+
+	// Valid (addresses/unconfirmed/history)
+	if strings.Contains(req.URL.String(), "/addresses/unconfirmed/history") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"address":"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP","history":[{"tx_hash":"unconfirmed123","height":0}]},{"address":"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob","history":[]}]`))
+	}
+
+	//
+	// Bulk Addresses Confirmed History
+	//
+
+	// Valid (addresses/confirmed/history)
+	if strings.Contains(req.URL.String(), "/addresses/confirmed/history") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"address":"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP","history":[{"tx_hash":"6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1","height":563052}]},{"address":"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob","history":[]}]`))
+	}
+
+	//
+	// Bulk Addresses History All
+	//
+
+	// Valid (addresses/history/all)
+	if strings.Contains(req.URL.String(), "/addresses/history/all") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(strings.NewReader(`[{"address":"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP","history":[{"tx_hash":"6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1","height":563052},{"tx_hash":"unconfirmed123","height":0}]},{"address":"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob","history":[]}]`))
+	}
+
 	// Default is valid
 	return resp, nil
 }
@@ -250,7 +402,7 @@ func (m *mockHTTPAddressesErrors) Do(req *http.Request) (*http.Response, error) 
 	}
 
 	// Invalid (info) return an error
-	if strings.Contains(req.URL.String(), "/addresses/unspent") {
+	if strings.Contains(req.URL.String(), "/addresses/unspent/all") {
 		resp.StatusCode = http.StatusInternalServerError
 		resp.Body = io.NopCloser(strings.NewReader(``))
 		return resp, errMissingRequest
@@ -279,7 +431,7 @@ func (m *mockHTTPAddressesNotFound) Do(req *http.Request) (*http.Response, error
 	}
 
 	// Not found
-	if strings.Contains(req.URL.String(), "/addresses/unspent") {
+	if strings.Contains(req.URL.String(), "/addresses/unspent/all") {
 		resp.Body = io.NopCloser(strings.NewReader(``))
 		return resp, nil
 	}
@@ -765,5 +917,279 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 		}})
 		require.Error(t, err)
 		assert.Nil(t, balances)
+	})
+}
+
+// TestClient_AddressUsed tests the AddressUsed()
+func TestClient_AddressUsed(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		used, err := client.AddressUsed(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		require.NoError(t, err)
+		assert.NotNil(t, used)
+		assert.True(t, used.Used)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		used, err := client.AddressUsed(ctx, "16ZqP5notFound")
+		require.Error(t, err)
+		assert.Nil(t, used)
+	})
+}
+
+// TestClient_AddressScripts tests the AddressScripts()
+func TestClient_AddressScripts(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		scripts, err := client.AddressScripts(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		require.NoError(t, err)
+		assert.NotNil(t, scripts)
+		assert.Len(t, scripts.Scripts, 1)
+		assert.Equal(t, "76a9143d0e5368bdadddca108a0fe44739919274c726c788ac", scripts.Scripts[0])
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		scripts, err := client.AddressScripts(ctx, "16ZqP5notFound")
+		require.Error(t, err)
+		assert.Nil(t, scripts)
+	})
+}
+
+// TestClient_AddressUnconfirmedBalance tests the AddressUnconfirmedBalance()
+func TestClient_AddressUnconfirmedBalance(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		balance, err := client.AddressUnconfirmedBalance(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		require.NoError(t, err)
+		assert.NotNil(t, balance)
+		assert.Equal(t, int64(123), balance.Balance)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		balance, err := client.AddressUnconfirmedBalance(ctx, "16ZqP5notFound")
+		require.Error(t, err)
+		assert.Nil(t, balance)
+	})
+}
+
+// TestClient_AddressConfirmedBalance tests the AddressConfirmedBalance()
+func TestClient_AddressConfirmedBalance(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		balance, err := client.AddressConfirmedBalance(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		require.NoError(t, err)
+		assert.NotNil(t, balance)
+		assert.Equal(t, int64(10102050381), balance.Balance)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		balance, err := client.AddressConfirmedBalance(ctx, "16ZqP5notFound")
+		require.Error(t, err)
+		assert.Nil(t, balance)
+	})
+}
+
+// TestClient_AddressUnconfirmedHistory tests the AddressUnconfirmedHistory()
+func TestClient_AddressUnconfirmedHistory(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		history, err := client.AddressUnconfirmedHistory(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		require.NoError(t, err)
+		assert.NotNil(t, history)
+		assert.Len(t, history, 1)
+		assert.Equal(t, "unconfirmed123", history[0].TxHash)
+		assert.Equal(t, int64(0), history[0].Height)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		history, err := client.AddressUnconfirmedHistory(ctx, "16ZqP5notFound")
+		require.Error(t, err)
+		assert.Nil(t, history)
+	})
+}
+
+// TestClient_AddressConfirmedHistory tests the AddressConfirmedHistory()
+func TestClient_AddressConfirmedHistory(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		history, err := client.AddressConfirmedHistory(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		require.NoError(t, err)
+		assert.NotNil(t, history)
+		assert.Len(t, history, 1)
+		assert.Equal(t, "6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1", history[0].TxHash)
+		assert.Equal(t, int64(563052), history[0].Height)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		history, err := client.AddressConfirmedHistory(ctx, "16ZqP5notFound")
+		require.Error(t, err)
+		assert.Nil(t, history)
+	})
+}
+
+// TestClient_BulkAddressUnconfirmedBalance tests the BulkAddressUnconfirmedBalance()
+func TestClient_BulkAddressUnconfirmedBalance(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		balances, err := client.BulkAddressUnconfirmedBalance(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		require.NoError(t, err)
+		assert.NotNil(t, balances)
+		assert.Len(t, balances, 2)
+		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", balances[0].Address)
+	})
+
+	t.Run("max addresses (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		balances, err := client.BulkAddressUnconfirmedBalance(ctx, &AddressList{Addresses: []string{
+			"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+			"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21",
+		}})
+		require.Error(t, err)
+		assert.Nil(t, balances)
+	})
+}
+
+// TestClient_BulkAddressConfirmedBalance tests the BulkAddressConfirmedBalance()
+func TestClient_BulkAddressConfirmedBalance(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		balances, err := client.BulkAddressConfirmedBalance(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		require.NoError(t, err)
+		assert.NotNil(t, balances)
+		assert.Len(t, balances, 2)
+		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", balances[0].Address)
+	})
+
+	t.Run("max addresses (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		balances, err := client.BulkAddressConfirmedBalance(ctx, &AddressList{Addresses: []string{
+			"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+			"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21",
+		}})
+		require.Error(t, err)
+		assert.Nil(t, balances)
+	})
+}
+
+// TestClient_BulkAddressUnconfirmedHistory tests the BulkAddressUnconfirmedHistory()
+func TestClient_BulkAddressUnconfirmedHistory(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		history, err := client.BulkAddressUnconfirmedHistory(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		require.NoError(t, err)
+		assert.NotNil(t, history)
+		assert.Len(t, history, 2)
+		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", history[0].Address)
+		assert.Len(t, history[0].History, 1)
+		assert.Equal(t, "unconfirmed123", history[0].History[0].TxHash)
+	})
+
+	t.Run("max addresses (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		history, err := client.BulkAddressUnconfirmedHistory(ctx, &AddressList{Addresses: []string{
+			"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+			"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21",
+		}})
+		require.Error(t, err)
+		assert.Nil(t, history)
+	})
+}
+
+// TestClient_BulkAddressConfirmedHistory tests the BulkAddressConfirmedHistory()
+func TestClient_BulkAddressConfirmedHistory(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		history, err := client.BulkAddressConfirmedHistory(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		require.NoError(t, err)
+		assert.NotNil(t, history)
+		assert.Len(t, history, 2)
+		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", history[0].Address)
+		assert.Len(t, history[0].History, 1)
+		assert.Equal(t, "6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1", history[0].History[0].TxHash)
+	})
+
+	t.Run("max addresses (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		history, err := client.BulkAddressConfirmedHistory(ctx, &AddressList{Addresses: []string{
+			"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+			"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21",
+		}})
+		require.Error(t, err)
+		assert.Nil(t, history)
+	})
+}
+
+// TestClient_BulkAddressHistory tests the BulkAddressHistory()
+func TestClient_BulkAddressHistory(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid response", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		history, err := client.BulkAddressHistory(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		require.NoError(t, err)
+		assert.NotNil(t, history)
+		assert.Len(t, history, 2)
+		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", history[0].Address)
+		assert.Len(t, history[0].History, 2) // Should have both confirmed and unconfirmed
+		assert.Equal(t, "6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1", history[0].History[0].TxHash)
+		assert.Equal(t, "unconfirmed123", history[0].History[1].TxHash)
+	})
+
+	t.Run("max addresses (error)", func(t *testing.T) {
+		client := newMockClient(&mockHTTPAddresses{})
+		ctx := context.Background()
+		history, err := client.BulkAddressHistory(ctx, &AddressList{Addresses: []string{
+			"1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+			"11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21",
+		}})
+		require.Error(t, err)
+		assert.Nil(t, history)
 	})
 }

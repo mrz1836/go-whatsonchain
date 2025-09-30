@@ -77,10 +77,10 @@ func (c *Client) AddressHistory(ctx context.Context, address string) (history Ad
 // For more information: https://developers.whatsonchain.com/#get-unspent-transactions
 func (c *Client) AddressUnspentTransactions(ctx context.Context, address string) (history AddressHistory, err error) {
 	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/unspent
+	// https://api.whatsonchain.com/v1/bsv/<network>/address/<address>/unspent/all
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/%s/address/%s/unspent", apiEndpointBase, c.Chain(), c.Network(), address),
+		fmt.Sprintf("%s%s/%s/address/%s/unspent/all", apiEndpointBase, c.Chain(), c.Network(), address),
 		http.MethodGet, nil,
 	); err != nil {
 		return history, err
@@ -258,10 +258,10 @@ func (c *Client) BulkUnspentTransactions(ctx context.Context, list *AddressList)
 	}
 
 	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/addresses/unspent
+	// https://api.whatsonchain.com/v1/bsv/<network>/addresses/unspent/all
 	if resp, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/%s/addresses/unspent", apiEndpointBase, c.Chain(), c.Network()),
+		fmt.Sprintf("%s%s/%s/addresses/unspent/all", apiEndpointBase, c.Chain(), c.Network()),
 		http.MethodPost, postData,
 	); err != nil {
 		return response, err
@@ -271,4 +271,353 @@ func (c *Client) BulkUnspentTransactions(ctx context.Context, list *AddressList)
 	}
 	err = json.Unmarshal([]byte(resp), &response)
 	return response, err
+}
+
+// AddressUnconfirmedUTXOs retrieves unconfirmed UTXOs for an address
+//
+// For more information: https://developers.whatsonchain.com/#get-unconfirmed-utxos
+func (c *Client) AddressUnconfirmedUTXOs(ctx context.Context, address string) (history AddressHistory, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/address/<address>/unconfirmed/unspent
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/address/%s/unconfirmed/unspent", apiEndpointBase, c.Chain(), c.Network(), address),
+		http.MethodGet, nil,
+	); err != nil {
+		return history, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &history)
+	return history, err
+}
+
+// BulkAddressUnconfirmedUTXOs retrieves unconfirmed UTXOs for multiple addresses
+// Max of 20 addresses at a time
+//
+// For more information: https://developers.whatsonchain.com/#bulk-unconfirmed-utxos
+func (c *Client) BulkAddressUnconfirmedUTXOs(ctx context.Context, list *AddressList) (response BulkUnspentResponse, err error) {
+	// Get the JSON
+	var postData []byte
+	if postData, err = bulkRequest(list); err != nil {
+		return response, err
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/addresses/unconfirmed/unspent
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/addresses/unconfirmed/unspent", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodPost, postData,
+	); err != nil {
+		return response, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &response)
+	return response, err
+}
+
+// AddressConfirmedUTXOs retrieves confirmed UTXOs for an address
+//
+// For more information: https://developers.whatsonchain.com/#get-confirmed-utxos
+func (c *Client) AddressConfirmedUTXOs(ctx context.Context, address string) (history AddressHistory, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/address/<address>/confirmed/unspent
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/address/%s/confirmed/unspent", apiEndpointBase, c.Chain(), c.Network(), address),
+		http.MethodGet, nil,
+	); err != nil {
+		return history, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &history)
+	return history, err
+}
+
+// BulkAddressConfirmedUTXOs retrieves confirmed UTXOs for multiple addresses
+// Max of 20 addresses at a time
+//
+// For more information: https://developers.whatsonchain.com/#bulk-confirmed-utxos
+func (c *Client) BulkAddressConfirmedUTXOs(ctx context.Context, list *AddressList) (response BulkUnspentResponse, err error) {
+	// Get the JSON
+	var postData []byte
+	if postData, err = bulkRequest(list); err != nil {
+		return response, err
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/addresses/confirmed/unspent
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/addresses/confirmed/unspent", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodPost, postData,
+	); err != nil {
+		return response, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &response)
+	return response, err
+}
+
+// AddressUsed retrieves whether an address has been used
+//
+// For more information: https://docs.whatsonchain.com/api/address#get-address-usage
+func (c *Client) AddressUsed(ctx context.Context, address string) (used *AddressUsed, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/address/<address>/used
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/address/%s/used", apiEndpointBase, c.Chain(), c.Network(), address),
+		http.MethodGet, nil,
+	); err != nil {
+		return used, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &used)
+	return used, err
+}
+
+// AddressScripts retrieves associated scripthashes for an address
+//
+// For more information: https://docs.whatsonchain.com/api/address#get-associated-scripthashes
+func (c *Client) AddressScripts(ctx context.Context, address string) (scripts *AddressScripts, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/address/<address>/scripts
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/address/%s/scripts", apiEndpointBase, c.Chain(), c.Network(), address),
+		http.MethodGet, nil,
+	); err != nil {
+		return scripts, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &scripts)
+	return scripts, err
+}
+
+// AddressUnconfirmedBalance retrieves unconfirmed balance for an address
+//
+// For more information: https://docs.whatsonchain.com/api/address#get-unconfirmed-balance
+func (c *Client) AddressUnconfirmedBalance(ctx context.Context, address string) (balance *AddressUnconfirmedBalance, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/address/<address>/unconfirmed/balance
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/address/%s/unconfirmed/balance", apiEndpointBase, c.Chain(), c.Network(), address),
+		http.MethodGet, nil,
+	); err != nil {
+		return balance, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &balance)
+	return balance, err
+}
+
+// AddressConfirmedBalance retrieves confirmed balance for an address
+//
+// For more information: https://docs.whatsonchain.com/api/address#get-confirmed-balance
+func (c *Client) AddressConfirmedBalance(ctx context.Context, address string) (balance *AddressConfirmedBalance, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/address/<address>/confirmed/balance
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/address/%s/confirmed/balance", apiEndpointBase, c.Chain(), c.Network(), address),
+		http.MethodGet, nil,
+	); err != nil {
+		return balance, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &balance)
+	return balance, err
+}
+
+// AddressUnconfirmedHistory retrieves unconfirmed transaction history for an address
+//
+// For more information: https://docs.whatsonchain.com/api/address#get-unconfirmed-history
+func (c *Client) AddressUnconfirmedHistory(ctx context.Context, address string) (history AddressHistory, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/address/<address>/unconfirmed/history
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/address/%s/unconfirmed/history", apiEndpointBase, c.Chain(), c.Network(), address),
+		http.MethodGet, nil,
+	); err != nil {
+		return history, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &history)
+	return history, err
+}
+
+// AddressConfirmedHistory retrieves confirmed transaction history for an address
+//
+// For more information: https://docs.whatsonchain.com/api/address#get-confirmed-history
+func (c *Client) AddressConfirmedHistory(ctx context.Context, address string) (history AddressHistory, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/address/<address>/confirmed/history
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/address/%s/confirmed/history", apiEndpointBase, c.Chain(), c.Network(), address),
+		http.MethodGet, nil,
+	); err != nil {
+		return history, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &history)
+	return history, err
+}
+
+// BulkAddressUnconfirmedBalance retrieves unconfirmed balances for multiple addresses
+// Max of 20 addresses at a time
+//
+// For more information: https://docs.whatsonchain.com/api/address#bulk-unconfirmed-balance
+func (c *Client) BulkAddressUnconfirmedBalance(ctx context.Context, list *AddressList) (balances AddressBalances, err error) {
+	// Get the JSON
+	var postData []byte
+	if postData, err = bulkRequest(list); err != nil {
+		return balances, err
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/addresses/unconfirmed/balance
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/addresses/unconfirmed/balance", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodPost, postData,
+	); err != nil {
+		return balances, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &balances)
+	return balances, err
+}
+
+// BulkAddressConfirmedBalance retrieves confirmed balances for multiple addresses
+// Max of 20 addresses at a time
+//
+// For more information: https://docs.whatsonchain.com/api/address#bulk-confirmed-balance
+func (c *Client) BulkAddressConfirmedBalance(ctx context.Context, list *AddressList) (balances AddressBalances, err error) {
+	// Get the JSON
+	var postData []byte
+	if postData, err = bulkRequest(list); err != nil {
+		return balances, err
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/addresses/confirmed/balance
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/addresses/confirmed/balance", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodPost, postData,
+	); err != nil {
+		return balances, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &balances)
+	return balances, err
+}
+
+// BulkAddressUnconfirmedHistory retrieves unconfirmed transaction history for multiple addresses
+// Max of 20 addresses at a time
+//
+// For more information: https://docs.whatsonchain.com/api/address#bulk-unconfirmed-history
+func (c *Client) BulkAddressUnconfirmedHistory(ctx context.Context, list *AddressList) (history BulkAddressHistoryResponse, err error) {
+	// Get the JSON
+	var postData []byte
+	if postData, err = bulkRequest(list); err != nil {
+		return history, err
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/addresses/unconfirmed/history
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/addresses/unconfirmed/history", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodPost, postData,
+	); err != nil {
+		return history, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &history)
+	return history, err
+}
+
+// BulkAddressConfirmedHistory retrieves confirmed transaction history for multiple addresses
+// Max of 20 addresses at a time
+//
+// For more information: https://docs.whatsonchain.com/api/address#bulk-confirmed-history
+func (c *Client) BulkAddressConfirmedHistory(ctx context.Context, list *AddressList) (history BulkAddressHistoryResponse, err error) {
+	// Get the JSON
+	var postData []byte
+	if postData, err = bulkRequest(list); err != nil {
+		return history, err
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/addresses/confirmed/history
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/addresses/confirmed/history", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodPost, postData,
+	); err != nil {
+		return history, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &history)
+	return history, err
+}
+
+// BulkAddressHistory retrieves all transaction history for multiple addresses
+// Max of 20 addresses at a time
+//
+// For more information: https://docs.whatsonchain.com/api/address#bulk-history
+func (c *Client) BulkAddressHistory(ctx context.Context, list *AddressList) (history BulkAddressHistoryResponse, err error) {
+	// Get the JSON
+	var postData []byte
+	if postData, err = bulkRequest(list); err != nil {
+		return history, err
+	}
+
+	var resp string
+	// https://api.whatsonchain.com/v1/<chain>/<network>/addresses/history/all
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/addresses/history/all", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodPost, postData,
+	); err != nil {
+		return history, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrAddressNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &history)
+	return history, err
 }
