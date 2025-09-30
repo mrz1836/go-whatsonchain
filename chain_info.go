@@ -47,3 +47,47 @@ func (c *Client) GetCirculatingSupply(ctx context.Context) (supply float64, err 
 
 	return strconv.ParseFloat(strings.TrimSpace(resp), 64)
 }
+
+// GetChainTips this endpoint retrieves the chain tips
+//
+// For more information: https://developers.whatsonchain.com/#get-chain-tips
+func (c *Client) GetChainTips(ctx context.Context) (chainTips []*ChainTip, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/chain/tips
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/chain/tips", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodGet,
+		nil,
+	); err != nil {
+		return chainTips, err
+	}
+
+	if len(resp) == 0 {
+		return nil, ErrChainTipsNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &chainTips)
+	return chainTips, err
+}
+
+// GetPeerInfo this endpoint retrieves information about peers connected to the node
+//
+// For more information: https://developers.whatsonchain.com/#get-peer-info
+func (c *Client) GetPeerInfo(ctx context.Context) (peerInfo []*PeerInfo, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/peer/info
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/peer/info", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodGet,
+		nil,
+	); err != nil {
+		return peerInfo, err
+	}
+
+	if len(resp) == 0 {
+		return nil, ErrPeerInfoNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &peerInfo)
+	return peerInfo, err
+}
