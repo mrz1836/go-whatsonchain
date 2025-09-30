@@ -21,7 +21,13 @@ func (m *mockHTTPAddressesBenchmark) Do(req *http.Request) (*http.Response, erro
 		return resp, nil
 	}
 
-	// Address Balance
+	// Bulk operations - must be checked before single address endpoints
+	if strings.Contains(req.URL.String(), "/addresses/") {
+		resp.Body = io.NopCloser(strings.NewReader(`[{"address":"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA","error":"","balance":{"confirmed":10102050381,"unconfirmed":123}}]`))
+		return resp, nil
+	}
+
+	// Address Balance (single address)
 	if strings.Contains(req.URL.String(), "/balance") {
 		resp.Body = io.NopCloser(strings.NewReader(`{"confirmed": 10102050381,"unconfirmed": 123}`))
 		return resp, nil
@@ -36,12 +42,6 @@ func (m *mockHTTPAddressesBenchmark) Do(req *http.Request) (*http.Response, erro
 	// Address Unspent
 	if strings.Contains(req.URL.String(), "/unspent") {
 		resp.Body = io.NopCloser(strings.NewReader(`[{"height": 639302,"tx_pos": 3,"tx_hash": "33b9432a0ea203bbb6ec00592622cf6e90223849e4c9a76447a19a3ed43907d3","value": 2451680},{"height": 639601,"tx_pos": 3,"tx_hash": "4805041897a2ae59ffca85f0deb46e89d73d1ba4478bbd9c0fcd76ba0985ded2","value": 2744764},{"height": 640276,"tx_pos": 3,"tx_hash": "2493ff4cbca16b892ac641b7f2cb6d4388e75cb3f8963c291183f2bf0b27f415","value": 2568774}]`))
-		return resp, nil
-	}
-
-	// Bulk operations - return array of balance records
-	if strings.Contains(req.URL.String(), "/addresses/") {
-		resp.Body = io.NopCloser(strings.NewReader(`[{"address":"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA","error":"","balance":{"confirmed":10102050381,"unconfirmed":123}}]`))
 		return resp, nil
 	}
 
