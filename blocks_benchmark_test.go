@@ -35,18 +35,17 @@ func (m *mockHTTPBlocksBenchmark) Do(req *http.Request) (*http.Response, error) 
 		return resp, nil
 	}
 
-	// Header by hash
-	if strings.Contains(req.URL.String(), "/header") {
-		resp.Body = io.NopCloser(strings.NewReader(blockResponse))
+	// Headers (last 10) - return array of block headers (check before /header to avoid false match)
+	if strings.Contains(req.URL.String(), "/block/headers") && !strings.Contains(req.URL.String(), "/resources") && !strings.Contains(req.URL.String(), "/latest") {
+		// Return a properly formatted block header array matching the API structure
+		headersResponse := `[{"hash":"0000000000000000008605a63392a85ebc7e055af19334b2a2f3952e1fdeb3b2","confirmations":1,"height":700000,"version":536870912,"versionHex":"20000000","merkleroot":"abc123def456","time":1609459200,"mediantime":1609456000,"nonce":123456789,"bits":"1a012345","difficulty":1234567.89,"chainwork":"00000000000000000000000000000000000000000000000000000000000000ff","previousblockhash":"00000000000000000373d17e4f4f8e0f0f3f3e3d3c3b3a39383736353433322","nextblockhash":""}]`
+		resp.Body = io.NopCloser(strings.NewReader(headersResponse))
 		return resp, nil
 	}
 
-	// Headers (last 10) - return array of block headers
-	if strings.Contains(req.URL.String(), "/block/headers") && !strings.Contains(req.URL.String(), "/resources") && !strings.Contains(req.URL.String(), "/latest") {
-		// Return a simpler block header array
-		simpleBlock := `{"hash":"00000000000000000373d17e4f4f8e0f0f3f3e3d3c3b3a39383736353433323","height":700000,"version":536870912,"merkleroot":"abc123","time":1609459200,"nonce":123456789,"bits":"1a012345","difficulty":1234567.89,"chainwork":"00000000000000000000000000000000000000000000000000000000000000ff"}`
-		headersResponse := `[` + simpleBlock + `]`
-		resp.Body = io.NopCloser(strings.NewReader(headersResponse))
+	// Header by hash
+	if strings.Contains(req.URL.String(), "/header") {
+		resp.Body = io.NopCloser(strings.NewReader(blockResponse))
 		return resp, nil
 	}
 
@@ -174,8 +173,7 @@ func BenchmarkGetHeaderByHash(b *testing.B) {
 }
 
 // BenchmarkGetHeaders benchmarks getting the last 10 block headers
-// Currently disabled due to mock response format issue
-func BenchmarkGetHeadersDisabled(b *testing.B) {
+func BenchmarkGetHeaders(b *testing.B) {
 	client, _ := NewClient(context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
