@@ -110,3 +110,47 @@ func (c *Client) GetHeaders(ctx context.Context) (blockHeaders []*BlockInfo, err
 	err = json.Unmarshal([]byte(resp), &blockHeaders)
 	return blockHeaders, err
 }
+
+// GetHeaderBytesFileLinks this endpoint retrieves header bytes file links.
+//
+// For more information: https://developers.whatsonchain.com/#get-header-bytes
+func (c *Client) GetHeaderBytesFileLinks(ctx context.Context) (resource *HeaderBytesResource, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/block/headers/resources
+	if resp, err = c.request(
+		ctx,
+		fmt.Sprintf("%s%s/%s/block/headers/resources", apiEndpointBase, c.Chain(), c.Network()),
+		http.MethodGet, nil,
+	); err != nil {
+		return resource, err
+	}
+	if len(resp) == 0 {
+		return nil, ErrHeadersNotFound
+	}
+	err = json.Unmarshal([]byte(resp), &resource)
+	return resource, err
+}
+
+// GetLatestHeaderBytes this endpoint retrieves latest header bytes.
+//
+// For more information: https://developers.whatsonchain.com/#get-latest-headers
+func (c *Client) GetLatestHeaderBytes(ctx context.Context, count int) (headerBytes string, err error) {
+	var resp string
+	// https://api.whatsonchain.com/v1/bsv/<network>/block/headers/latest?count=<count>
+	url := fmt.Sprintf("%s%s/%s/block/headers/latest", apiEndpointBase, c.Chain(), c.Network())
+	if count > 0 {
+		url = fmt.Sprintf("%s?count=%d", url, count)
+	}
+
+	if resp, err = c.request(
+		ctx,
+		url,
+		http.MethodGet, nil,
+	); err != nil {
+		return headerBytes, err
+	}
+	if len(resp) == 0 {
+		return "", ErrHeadersNotFound
+	}
+	return resp, nil
+}

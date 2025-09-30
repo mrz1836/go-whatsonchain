@@ -130,10 +130,26 @@ func (m *mockHTTPBlocks) Do(req *http.Request) (*http.Response, error) {
 	// Block headers
 	//
 
-	// Valid (by headers)
-	if strings.Contains(req.URL.String(), "block/headers") {
+	// Valid (by headers) - exclude specific subpaths
+	if strings.Contains(req.URL.String(), "block/headers") && !strings.Contains(req.URL.String(), "resources") && !strings.Contains(req.URL.String(), "latest") {
 		resp.StatusCode = http.StatusOK
 		resp.Body = io.NopCloser(bytes.NewBufferString(`[{"hash":"0000000000000000008605a63392a85ebc7e055af19334b2a2f3952e1fdeb3b2","confirmations":1,"height":649878,"version":545259520,"versionHex":"20800000","merkleroot":"4a15fc52ee2ebf9685e9025e1e52e96221f0eee12977befcbde54781588ba7db","time":1598479741,"mediantime":1598477040,"nonce":640093571,"bits":"1803ef5b","difficulty":279415450131.6495,"chainwork":"00000000000000000000000000000000000000000117de0c9389224f32148db4","previousblockhash":"000000000000000003320fe7920e176751ce1b1962fdef262da57b93a60243c0","nextblockhash":""},{"hash":"000000000000000003320fe7920e176751ce1b1962fdef262da57b93a60243c0","confirmations":2,"height":649877,"version":541065216,"versionHex":"20400000","merkleroot":"322e0848cb2100fc77020538fa2ef011f2bbf5b5705a2aa9c4377bb33cd6d7f8","time":1598478943,"mediantime":1598477000,"nonce":2995059344,"bits":"1803ef67","difficulty":279402448772.9509,"chainwork":"00000000000000000000000000000000000000000117ddcb84d2a9851306d5df","previousblockhash":"000000000000000002025ab704105bb6834f725ef8f8ca5e638b503f7ac07984","nextblockhash":"0000000000000000008605a63392a85ebc7e055af19334b2a2f3952e1fdeb3b2"},{"hash":"000000000000000002025ab704105bb6834f725ef8f8ca5e638b503f7ac07984","confirmations":3,"height":649876,"version":536870912,"versionHex":"20000000","merkleroot":"bfcb37442066aaac9567e3e90886bd76e244a862b3b8071397dadd03e3f3937b","time":1598477341,"mediantime":1598476911,"nonce":2215091378,"bits":"1803f0f7","difficulty":278969761421.2438,"chainwork":"00000000000000000000000000000000000000000117dd8a76e294100a26c215","previousblockhash":"0000000000000000001f3f632cd81bfa1a62b3f5b7385b2f20b93870a224cba6","nextblockhash":"000000000000000003320fe7920e176751ce1b1962fdef262da57b93a60243c0"},{"hash":"0000000000000000001f3f632cd81bfa1a62b3f5b7385b2f20b93870a224cba6","confirmations":4,"height":649875,"version":648306688,"versionHex":"26a46000","merkleroot":"1e7c00a491cdcc7128a18980a585abeaae75b56f3ad1fcda706c6c24908a50de","time":1598477113,"mediantime":1598476841,"nonce":3076864763,"bits":"1803f32c","difficulty":278360868910.995,"chainwork":"00000000000000000000000000000000000000000117dd4982bce15d190bff3f","previousblockhash":"00000000000000000112db120b70edfa8841f309c9eb4c0caa9f8ac049d8a48e","nextblockhash":"000000000000000002025ab704105bb6834f725ef8f8ca5e638b503f7ac07984"},{"hash":"00000000000000000112db120b70edfa8841f309c9eb4c0caa9f8ac049d8a48e","confirmations":5,"height":649874,"version":939515904,"versionHex":"37ffe000","merkleroot":"c5ed8d950ce413b245ceac513e6d4e5d67a867417fc29813a2f4b38907928c96","time":1598477072,"mediantime":1598476636,"nonce":3789963966,"bits":"1803f8ce","difficulty":276818827847.2703,"chainwork":"00000000000000000000000000000000000000000117dd08b2e24953824b8801","previousblockhash":"000000000000000003462ecb2453e69fac4924f6ea95292e8ba7bade08f99780","nextblockhash":"0000000000000000001f3f632cd81bfa1a62b3f5b7385b2f20b93870a224cba6"},{"hash":"000000000000000003462ecb2453e69fac4924f6ea95292e8ba7bade08f99780","confirmations":6,"height":649873,"version":939515904,"versionHex":"37ffe000","merkleroot":"3c050ff6be57f8a16283037545bef3ba6f51a445dac2d688aba0093bb605004d","time":1598477040,"mediantime":1598476525,"nonce":1944381551,"bits":"180444d5","difficulty":257560790400.1578,"chainwork":"00000000000000000000000000000000000000000117dcc83ef1bb1baedfb893","previousblockhash":"0000000000000000004a1e546d5351962454c2069daf0224f948439a21a05c69","nextblockhash":"00000000000000000112db120b70edfa8841f309c9eb4c0caa9f8ac049d8a48e"},{"hash":"0000000000000000004a1e546d5351962454c2069daf0224f948439a21a05c69","confirmations":7,"height":649872,"version":541065216,"versionHex":"20400000","merkleroot":"6ec1b1532a2f2e47956779aeb2faf0bb4b0a3dadf88fc23e486510d7f8b07c4f","time":1598477000,"mediantime":1598476132,"nonce":2938861584,"bits":"1804445d","difficulty":257671313723.829,"chainwork":"00000000000000000000000000000000000000000117dc8c46e3fd8dc8e92d5b","previousblockhash":"000000000000000002c8bc418f1a77bd4e489dd3e35f3654007cedcd71a4bb7a","nextblockhash":"000000000000000003462ecb2453e69fac4924f6ea95292e8ba7bade08f99780"},{"hash":"000000000000000002c8bc418f1a77bd4e489dd3e35f3654007cedcd71a4bb7a","confirmations":8,"height":649871,"version":545259520,"versionHex":"20800000","merkleroot":"aa60503d810f85a6f46fb38dc9b1f136ae731058c35c412c00f811b29d082b46","time":1598476911,"mediantime":1598475907,"nonce":3227578245,"bits":"180443b9","difficulty":257822515757.0645,"chainwork":"00000000000000000000000000000000000000000117dc50483fc5adbccff37e","previousblockhash":"0000000000000000034343ddebb66772ff79654462f254c76f33435ee31fe3a5","nextblockhash":"0000000000000000004a1e546d5351962454c2069daf0224f948439a21a05c69"},{"hash":"0000000000000000034343ddebb66772ff79654462f254c76f33435ee31fe3a5","confirmations":9,"height":649870,"version":536870912,"versionHex":"20000000","merkleroot":"67bfa15a591d451bad588c93b509f0398a3ddd11d995500303e47c6295642bfb","time":1598476841,"mediantime":1598475778,"nonce":571747829,"bits":"1804446a","difficulty":257659335782.6351,"chainwork":"00000000000000000000000000000000000000000117dc1440985bd9427489af","previousblockhash":"00000000000000000332cfba27b8ecb05bbf38cb5cbf71619deaab2f622ad443","nextblockhash":"000000000000000002c8bc418f1a77bd4e489dd3e35f3654007cedcd71a4bb7a"},{"hash":"00000000000000000332cfba27b8ecb05bbf38cb5cbf71619deaab2f622ad443","confirmations":10,"height":649869,"version":536870912,"versionHex":"20000000","merkleroot":"5a4bb20818123ca54ab725332f5f810981bcd94c7c4c5464cb81e2788f898318","time":1598476636,"mediantime":1598475677,"nonce":309962292,"bits":"18043fd4","difficulty":258745545619.4976,"chainwork":"00000000000000000000000000000000000000000117dbd842aae9852d8c2297","previousblockhash":"000000000000000003d70e22a79928ba7e1501a1bdeabc25489689cf4fdb2138","nextblockhash":"0000000000000000034343ddebb66772ff79654462f254c76f33435ee31fe3a5"}]`))
+	}
+
+	//
+	// Header bytes file links
+	//
+	if strings.Contains(req.URL.String(), "block/headers/resources") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"description":"Binary block header data","links":[{"format":"gz","uri":"https://headers.whatsonchain.com/headers.gz"},{"format":"tar.gz","uri":"https://headers.whatsonchain.com/headers.tar.gz"}]}`))
+	}
+
+	//
+	// Latest header bytes
+	//
+	if strings.Contains(req.URL.String(), "block/headers/latest") {
+		resp.StatusCode = http.StatusOK
+		resp.Body = io.NopCloser(bytes.NewBufferString(`20800000c0430362a25f1dc6b1ef2d26ef2d19621b1ece5167e720e97f80ac3280a02fd0012e96221f0eee12977befcbde54781588ba7db91ef5b1803e9ecdda5f47795b03f71605f73b8020800000033c01a5ae295262da57b93e60e7f9203c5afc4b618c14e489dd38fb81d774af1f28d62bbf5b5705a2aa9c4377bb33cd6d7f8c6720bb58b0a91ac6e8047715905f71605f73b8`))
 	}
 
 	// Default is valid
@@ -367,6 +383,106 @@ func TestClient_GetHeaders(t *testing.T) {
 
 	// Test response
 	_, err = client.GetHeaders(ctx)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
+}
+
+// TestClient_GetHeaderBytesFileLinks tests the GetHeaderBytesFileLinks()
+func TestClient_GetHeaderBytesFileLinks(t *testing.T) {
+	t.Parallel()
+
+	// New mock client
+	client := newMockClient(&mockHTTPBlocks{})
+	ctx := context.Background()
+
+	// Create the list of tests
+	tests := []struct {
+		expectedDescription string
+		expectedError       bool
+		statusCode          int
+	}{
+		{"Binary block header data", false, http.StatusOK},
+	}
+
+	// Test all
+	for _, test := range tests {
+		if output, err := client.GetHeaderBytesFileLinks(ctx); err == nil && test.expectedError {
+			t.Errorf("%s Failed: expected to throw an error, no error", t.Name())
+		} else if err != nil && !test.expectedError {
+			t.Errorf("%s Failed: received: [%v] error [%s]", t.Name(), output, err.Error())
+		} else if output != nil && output.Description != test.expectedDescription && !test.expectedError {
+			t.Errorf("%s Failed: [%s] expected, received: [%s]", t.Name(), test.expectedDescription, output.Description)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d", t.Name(), test.statusCode, client.LastRequest().StatusCode)
+		}
+	}
+
+	// New not found mock client
+	client = newMockClient(&mockHTTPHeadersNotFound{})
+
+	// Test response
+	_, err := client.GetHeaderBytesFileLinks(ctx)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
+
+	// New invalid mock client
+	client = newMockClient(&mockHTTPHeadersError{})
+
+	// Test response
+	_, err = client.GetHeaderBytesFileLinks(ctx)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
+}
+
+// TestClient_GetLatestHeaderBytes tests the GetLatestHeaderBytes()
+func TestClient_GetLatestHeaderBytes(t *testing.T) {
+	t.Parallel()
+
+	// New mock client
+	client := newMockClient(&mockHTTPBlocks{})
+	ctx := context.Background()
+
+	// Create the list of tests
+	tests := []struct {
+		inputCount    int
+		expectedBytes string
+		expectedError bool
+		statusCode    int
+	}{
+		{10, "20800000c0430362a25f1dc6b1ef2d26ef2d19621b1ece5167e720e97f80ac3280a02fd0012e96221f0eee12977befcbde54781588ba7db91ef5b1803e9ecdda5f47795b03f71605f73b8020800000033c01a5ae295262da57b93e60e7f9203c5afc4b618c14e489dd38fb81d774af1f28d62bbf5b5705a2aa9c4377bb33cd6d7f8c6720bb58b0a91ac6e8047715905f71605f73b8", false, http.StatusOK},
+		{0, "20800000c0430362a25f1dc6b1ef2d26ef2d19621b1ece5167e720e97f80ac3280a02fd0012e96221f0eee12977befcbde54781588ba7db91ef5b1803e9ecdda5f47795b03f71605f73b8020800000033c01a5ae295262da57b93e60e7f9203c5afc4b618c14e489dd38fb81d774af1f28d62bbf5b5705a2aa9c4377bb33cd6d7f8c6720bb58b0a91ac6e8047715905f71605f73b8", false, http.StatusOK},
+	}
+
+	// Test all
+	for _, test := range tests {
+		if output, err := client.GetLatestHeaderBytes(ctx, test.inputCount); err == nil && test.expectedError {
+			t.Errorf("%s Failed: expected to throw an error, no error [%d] inputted", t.Name(), test.inputCount)
+		} else if err != nil && !test.expectedError {
+			t.Errorf("%s Failed: [%d] inputted, received: [%v] error [%s]", t.Name(), test.inputCount, output, err.Error())
+		} else if output != test.expectedBytes && !test.expectedError {
+			t.Errorf("%s Failed: [%d] inputted and [%s] expected, received: [%s]", t.Name(), test.inputCount, test.expectedBytes, output)
+		} else if client.LastRequest().StatusCode != test.statusCode {
+			t.Errorf("%s Expected status code to be %d, got %d, [%d] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.inputCount)
+		}
+	}
+
+	// New not found mock client
+	client = newMockClient(&mockHTTPHeadersNotFound{})
+
+	// Test response
+	_, err := client.GetLatestHeaderBytes(ctx, 10)
+	if err == nil {
+		t.Errorf("%s Failed: error should have occurred", t.Name())
+	}
+
+	// New invalid mock client
+	client = newMockClient(&mockHTTPHeadersError{})
+
+	// Test response
+	_, err = client.GetLatestHeaderBytes(ctx, 10)
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}
