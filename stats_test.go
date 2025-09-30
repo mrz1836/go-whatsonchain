@@ -16,7 +16,10 @@ func TestClient_GetBlockStats(t *testing.T) {
 
 	t.Run("valid response", func(t *testing.T) {
 		mockClient := &mockHTTPValidChain{}
-		client := NewClientWithChain(ChainBSV, NetworkMain, nil, mockClient)
+		client, err := NewClient(context.Background(), WithChain(ChainBSV), WithNetwork(NetworkMain), WithHTTPClient(mockClient))
+		if err != nil {
+			t.Fatal(err)
+		}
 		mockClient.SetResponse(func(_ *http.Request) (*http.Response, error) {
 			resp := newHTTPResponse(`{"height":698730,"hash":"000000000000000002799ba826646d0060b06779e7bde9622145b410f114c1fb","version":536870912,"size":1234567,"weight":1234567,"merkleroot":"abcd1234","timestamp":1609459200,"mediantime":1609459100,"nonce":123456789,"bits":"207fffff","difficulty":1.0,"chainwork":"00000000000000000000000000000000000000000000000000000000deadbeef","tx_count":100,"total_size":1234567,"total_fees":50000,"subsidy_total":625000000,"subsidy_address":0,"subsidy_miner":625000000,"miner_name":"Test Miner","miner_address":"1TestMinerAddress","fee_rate_avg":10.5,"fee_rate_min":1.0,"fee_rate_max":50.0,"fee_rate_median":8.0,"fee_rate_stddev":5.2,"input_count":200,"output_count":150,"utxo_increase":50,"utxo_size_inc":2500}`)
 			resp.StatusCode = http.StatusOK
@@ -34,8 +37,11 @@ func TestClient_GetBlockStats(t *testing.T) {
 	})
 
 	t.Run("http error", func(t *testing.T) {
-		client := NewClientWithChain(ChainBTC, NetworkMain, nil, &mockHTTPError{})
-		_, err := client.GetBlockStats(context.Background(), 698730)
+		client, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain), WithHTTPClient(&mockHTTPError{}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = client.GetBlockStats(context.Background(), 698730)
 		if err == nil {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), "698730")
 		}
@@ -48,7 +54,10 @@ func TestClient_GetBlockStatsByHash(t *testing.T) {
 
 	t.Run("valid response", func(t *testing.T) {
 		mockClient := &mockHTTPValidChain{}
-		client := NewClientWithChain(ChainBTC, NetworkMain, nil, mockClient)
+		client, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain), WithHTTPClient(mockClient))
+		if err != nil {
+			t.Fatal(err)
+		}
 		mockClient.SetResponse(func(_ *http.Request) (*http.Response, error) {
 			resp := newHTTPResponse(`{"height":698730,"hash":"000000000000000002799ba826646d0060b06779e7bde9622145b410f114c1fb","version":536870912,"size":1234567,"weight":1234567,"merkleroot":"abcd1234","timestamp":1609459200,"mediantime":1609459100,"nonce":123456789,"bits":"207fffff","difficulty":1.0,"chainwork":"00000000000000000000000000000000000000000000000000000000deadbeef","tx_count":100,"total_size":1234567,"total_fees":50000,"subsidy_total":625000000,"subsidy_address":0,"subsidy_miner":625000000,"miner_name":"Test Miner","miner_address":"1TestMinerAddress","fee_rate_avg":10.5,"fee_rate_min":1.0,"fee_rate_max":50.0,"fee_rate_median":8.0,"fee_rate_stddev":5.2,"input_count":200,"output_count":150,"utxo_increase":50,"utxo_size_inc":2500}`)
 			resp.StatusCode = http.StatusOK
@@ -66,8 +75,11 @@ func TestClient_GetBlockStatsByHash(t *testing.T) {
 	})
 
 	t.Run("http error", func(t *testing.T) {
-		client := NewClientWithChain(ChainBSV, NetworkMain, nil, &mockHTTPError{})
-		_, err := client.GetBlockStatsByHash(context.Background(), "invalid-hash")
+		client, err := NewClient(context.Background(), WithChain(ChainBSV), WithNetwork(NetworkMain), WithHTTPClient(&mockHTTPError{}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = client.GetBlockStatsByHash(context.Background(), "invalid-hash")
 		if err == nil {
 			t.Errorf("%s Failed: expected to throw an error, no error inputted", t.Name())
 		}
@@ -80,7 +92,10 @@ func TestClient_GetMinerBlocksStats(t *testing.T) {
 
 	t.Run("valid response", func(t *testing.T) {
 		mockClient := &mockHTTPValidChain{}
-		client := NewClientWithChain(ChainBTC, NetworkMain, nil, mockClient)
+		client, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain), WithHTTPClient(mockClient))
+		if err != nil {
+			t.Fatal(err)
+		}
 		mockClient.SetResponse(func(_ *http.Request) (*http.Response, error) {
 			resp := newHTTPResponse(`[{"name":"Test Miner 1","address":"1TestMiner1Address","block_count":10,"percentage":50.0},{"name":"Test Miner 2","address":"1TestMiner2Address","block_count":8,"percentage":40.0}]`)
 			resp.StatusCode = http.StatusOK
@@ -100,8 +115,11 @@ func TestClient_GetMinerBlocksStats(t *testing.T) {
 	})
 
 	t.Run("http error", func(t *testing.T) {
-		client := NewClientWithChain(ChainBSV, NetworkMain, nil, &mockHTTPError{})
-		_, err := client.GetMinerBlocksStats(context.Background(), 1)
+		client, err := NewClient(context.Background(), WithChain(ChainBSV), WithNetwork(NetworkMain), WithHTTPClient(&mockHTTPError{}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = client.GetMinerBlocksStats(context.Background(), 1)
 		if err == nil {
 			t.Errorf("%s Failed: expected to throw an error, no error inputted", t.Name())
 		}
@@ -114,7 +132,10 @@ func TestClient_GetMinerFeesStats(t *testing.T) {
 
 	t.Run("valid response", func(t *testing.T) {
 		mockClient := &mockHTTPValidChain{}
-		client := NewClientWithChain(ChainBSV, NetworkMain, nil, mockClient)
+		client, err := NewClient(context.Background(), WithChain(ChainBSV), WithNetwork(NetworkMain), WithHTTPClient(mockClient))
+		if err != nil {
+			t.Fatal(err)
+		}
 		mockClient.SetResponse(func(_ *http.Request) (*http.Response, error) {
 			resp := newHTTPResponse(`[{"timestamp":1714608000,"name":"Test Miner","fee_rate":10.5}]`)
 			resp.StatusCode = http.StatusOK
@@ -134,8 +155,11 @@ func TestClient_GetMinerFeesStats(t *testing.T) {
 	})
 
 	t.Run("http error", func(t *testing.T) {
-		client := NewClientWithChain(ChainBTC, NetworkMain, nil, &mockHTTPError{})
-		_, err := client.GetMinerFeesStats(context.Background(), 1714608000, 1714653060)
+		client, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain), WithHTTPClient(&mockHTTPError{}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = client.GetMinerFeesStats(context.Background(), 1714608000, 1714653060)
 		if err == nil {
 			t.Errorf("%s Failed: expected to throw an error, no error inputted", t.Name())
 		}
@@ -148,7 +172,10 @@ func TestClient_GetMinerSummaryStats(t *testing.T) {
 
 	t.Run("valid response", func(t *testing.T) {
 		mockClient := &mockHTTPValidChain{}
-		client := NewClientWithChain(ChainBTC, NetworkMain, nil, mockClient)
+		client, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain), WithHTTPClient(mockClient))
+		if err != nil {
+			t.Fatal(err)
+		}
 		mockClient.SetResponse(func(_ *http.Request) (*http.Response, error) {
 			resp := newHTTPResponse(`{"days":90,"miners":[{"name":"Test Miner 1","address":"1TestMiner1Address","block_count":100,"percentage":60.0},{"name":"Test Miner 2","address":"1TestMiner2Address","block_count":66,"percentage":40.0}]}`)
 			resp.StatusCode = http.StatusOK
@@ -168,8 +195,11 @@ func TestClient_GetMinerSummaryStats(t *testing.T) {
 	})
 
 	t.Run("http error", func(t *testing.T) {
-		client := NewClientWithChain(ChainBSV, NetworkMain, nil, &mockHTTPError{})
-		_, err := client.GetMinerSummaryStats(context.Background(), 90)
+		client, err := NewClient(context.Background(), WithChain(ChainBSV), WithNetwork(NetworkMain), WithHTTPClient(&mockHTTPError{}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = client.GetMinerSummaryStats(context.Background(), 90)
 		if err == nil {
 			t.Errorf("%s Failed: expected to throw an error, no error inputted", t.Name())
 		}
@@ -182,7 +212,10 @@ func TestClient_GetTagCountByHeight(t *testing.T) {
 
 	t.Run("valid response", func(t *testing.T) {
 		mockClient := &mockHTTPValidChain{}
-		client := NewClientWithChain(ChainBSV, NetworkMain, nil, mockClient)
+		client, err := NewClient(context.Background(), WithChain(ChainBSV), WithNetwork(NetworkMain), WithHTTPClient(mockClient))
+		if err != nil {
+			t.Fatal(err)
+		}
 		mockClient.SetResponse(func(_ *http.Request) (*http.Response, error) {
 			resp := newHTTPResponse(`{"height":762291,"hash":"000000000000000000abcdef1234567890abcdef1234567890abcdef12345678","tag_counts":{"tag1":10,"tag2":5,"tag3":15}}`)
 			resp.StatusCode = http.StatusOK
@@ -204,8 +237,11 @@ func TestClient_GetTagCountByHeight(t *testing.T) {
 	})
 
 	t.Run("http error", func(t *testing.T) {
-		client := NewClientWithChain(ChainBTC, NetworkMain, nil, &mockHTTPError{})
-		_, err := client.GetTagCountByHeight(context.Background(), 762291)
+		client, err := NewClient(context.Background(), WithChain(ChainBTC), WithNetwork(NetworkMain), WithHTTPClient(&mockHTTPError{}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, err = client.GetTagCountByHeight(context.Background(), 762291)
 		if err == nil {
 			t.Errorf("%s Failed: expected to throw an error, no error inputted", t.Name())
 		}
@@ -225,7 +261,10 @@ func TestStatsEndpoints_ValidChains(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			mockClient := &mockHTTPValidChain{}
-			client := NewClientWithChain(tc.chain, NetworkMain, nil, mockClient)
+			client, err := NewClient(context.Background(), WithChain(tc.chain), WithNetwork(NetworkMain), WithHTTPClient(mockClient))
+			if err != nil {
+				t.Fatal(err)
+			}
 			mockClient.SetResponse(func(req *http.Request) (*http.Response, error) {
 				// Check if the URL contains the correct chain
 				expectedChain := string(tc.chain)
@@ -239,7 +278,7 @@ func TestStatsEndpoints_ValidChains(t *testing.T) {
 			})
 
 			// Test that the stats endpoints work for both chains
-			_, err := client.GetBlockStats(context.Background(), 698730)
+			_, err = client.GetBlockStats(context.Background(), 698730)
 			if err != nil {
 				t.Errorf("GetBlockStats failed for %s: %s", tc.chain, err.Error())
 			}

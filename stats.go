@@ -2,8 +2,6 @@ package whatsonchain
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -72,124 +70,46 @@ type TagCount struct {
 //
 // For more information: https://developers.whatsonchain.com/#block-stats
 func (c *Client) GetBlockStats(ctx context.Context, height int64) (*BlockStats, error) {
-	// https://api.whatsonchain.com/v1/<chain>/<network>/block/height/<height>/stats
-	resp, err := c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/block/height/%d/stats", apiEndpointBase, c.Chain(), c.Network(), height),
-		http.MethodGet, nil,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	var stats *BlockStats
-	if len(resp) > 0 {
-		err = json.Unmarshal([]byte(resp), &stats)
-	}
-	return stats, err
+	url := c.buildURL("/block/height/%d/stats", height)
+	return requestAndUnmarshal[BlockStats](ctx, c, url, http.MethodGet, nil, nil)
 }
 
 // GetBlockStatsByHash gets block statistics by hash
 //
 // For more information: https://developers.whatsonchain.com/#block-stats
 func (c *Client) GetBlockStatsByHash(ctx context.Context, hash string) (*BlockStats, error) {
-	// https://api.whatsonchain.com/v1/<chain>/<network>/block/hash/<hash>/stats
-	resp, err := c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/block/hash/%s/stats", apiEndpointBase, c.Chain(), c.Network(), hash),
-		http.MethodGet, nil,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	var stats *BlockStats
-	if len(resp) > 0 {
-		err = json.Unmarshal([]byte(resp), &stats)
-	}
-	return stats, err
+	url := c.buildURL("/block/hash/%s/stats", hash)
+	return requestAndUnmarshal[BlockStats](ctx, c, url, http.MethodGet, nil, nil)
 }
 
 // GetMinerBlocksStats gets miner blocks statistics
 //
 // For more information: https://developers.whatsonchain.com/#miner-stats
 func (c *Client) GetMinerBlocksStats(ctx context.Context, days int) ([]*MinerStats, error) {
-	// https://api.whatsonchain.com/v1/<chain>/<network>/miner/blocks/stats?days=<days>
-	resp, err := c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/miner/blocks/stats?days=%d", apiEndpointBase, c.Chain(), c.Network(), days),
-		http.MethodGet, nil,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	var stats []*MinerStats
-	if len(resp) > 0 {
-		err = json.Unmarshal([]byte(resp), &stats)
-	}
-	return stats, err
+	url := c.buildURL("/miner/blocks/stats?days=%d", days)
+	return requestAndUnmarshalSlice[*MinerStats](ctx, c, url, http.MethodGet, nil, nil)
 }
 
 // GetMinerFeesStats gets miner fees statistics
 //
 // For more information: https://developers.whatsonchain.com/#miner-stats
 func (c *Client) GetMinerFeesStats(ctx context.Context, from, to int64) ([]*MinerFeeStats, error) {
-	// https://api.whatsonchain.com/v1/<chain>/<network>/miner/fees?from=<from>&to=<to>
-	resp, err := c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/miner/fees?from=%d&to=%d", apiEndpointBase, c.Chain(), c.Network(), from, to),
-		http.MethodGet, nil,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	var stats []*MinerFeeStats
-	if len(resp) > 0 {
-		err = json.Unmarshal([]byte(resp), &stats)
-	}
-	return stats, err
+	url := c.buildURL("/miner/fees?from=%d&to=%d", from, to)
+	return requestAndUnmarshalSlice[*MinerFeeStats](ctx, c, url, http.MethodGet, nil, nil)
 }
 
 // GetMinerSummaryStats gets miner summary statistics
 //
 // For more information: https://developers.whatsonchain.com/#miner-stats
 func (c *Client) GetMinerSummaryStats(ctx context.Context, days int) (*MinerSummaryStats, error) {
-	// https://api.whatsonchain.com/v1/<chain>/<network>/miner/summary/stats?days=<days>
-	resp, err := c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/miner/summary/stats?days=%d", apiEndpointBase, c.Chain(), c.Network(), days),
-		http.MethodGet, nil,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	var stats *MinerSummaryStats
-	if len(resp) > 0 {
-		err = json.Unmarshal([]byte(resp), &stats)
-	}
-	return stats, err
+	url := c.buildURL("/miner/summary/stats?days=%d", days)
+	return requestAndUnmarshal[MinerSummaryStats](ctx, c, url, http.MethodGet, nil, nil)
 }
 
 // GetTagCountByHeight gets tag count statistics by height
 //
 // For more information: https://developers.whatsonchain.com/#tag-count-stats
 func (c *Client) GetTagCountByHeight(ctx context.Context, height int64) (*TagCount, error) {
-	// https://api.whatsonchain.com/v1/<chain>/<network>/block/tagcount/height/<height>/stats
-	resp, err := c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/block/tagcount/height/%d/stats", apiEndpointBase, c.Chain(), c.Network(), height),
-		http.MethodGet, nil,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	var tagCount *TagCount
-	if len(resp) > 0 {
-		err = json.Unmarshal([]byte(resp), &tagCount)
-	}
-	return tagCount, err
+	url := c.buildURL("/block/tagcount/height/%d/stats", height)
+	return requestAndUnmarshal[TagCount](ctx, c, url, http.MethodGet, nil, nil)
 }

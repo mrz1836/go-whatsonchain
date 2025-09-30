@@ -9,328 +9,154 @@ import (
 
 // GetScriptHistory this endpoint retrieves confirmed and unconfirmed script transactions
 //
-// For more information: https://developers.whatsonchain.com/#get-script-history
-func (c *Client) GetScriptHistory(ctx context.Context, scriptHash string) (history ScriptList, err error) {
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/script/<scriptHash>/history
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/script/%s/history", apiEndpointBase, c.Chain(), c.Network(), scriptHash),
-		http.MethodGet, nil,
-	); err != nil {
-		return history, err
-	}
-	if len(resp) == 0 {
-		return nil, ErrScriptNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &history)
-	return history, err
+// For more information: https://docs/#get-script-history
+func (c *Client) GetScriptHistory(ctx context.Context, scriptHash string) (ScriptList, error) {
+	url := c.buildURL("/script/%s/history", scriptHash)
+	return requestAndUnmarshalSlice[*ScriptRecord](ctx, c, url, http.MethodGet, nil, ErrScriptNotFound)
 }
 
 // GetScriptUnspentTransactions this endpoint retrieves ordered list of UTXOs
 //
-// For more information: https://developers.whatsonchain.com/#get-script-unspent-transactions
-func (c *Client) GetScriptUnspentTransactions(ctx context.Context,
-	scriptHash string,
-) (scriptList ScriptList, err error) {
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/script/<scriptHash>/unspent/all
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/script/%s/unspent/all", apiEndpointBase, c.Chain(), c.Network(), scriptHash),
-		http.MethodGet, nil,
-	); err != nil {
-		return scriptList, err
-	}
-	if len(resp) == 0 {
-		if c.LastRequest().StatusCode == http.StatusNotFound {
-			return nil, ErrScriptNotFound
-		}
-		return scriptList, nil
-	}
-	err = json.Unmarshal([]byte(resp), &scriptList)
-
-	return scriptList, err
+// For more information: https://docs/#get-script-unspent-transactions
+func (c *Client) GetScriptUnspentTransactions(ctx context.Context, scriptHash string) (ScriptList, error) {
+	url := c.buildURL("/script/%s/unspent/all", scriptHash)
+	return requestAndUnmarshalSlice[*ScriptRecord](ctx, c, url, http.MethodGet, nil, ErrScriptNotFound)
 }
 
 // BulkScriptUnspentTransactions will fetch UTXOs for multiple scripts in a single request
 // Max of 20 scripts at a time
 //
-// For more information: https://developers.whatsonchain.com/#bulk-script-unspent-transactions
-func (c *Client) BulkScriptUnspentTransactions(ctx context.Context,
-	list *ScriptsList,
-) (response BulkScriptUnspentResponse, err error) {
-	// The max limit by WOC
+// For more information: https://docs/#bulk-script-unspent-transactions
+func (c *Client) BulkScriptUnspentTransactions(ctx context.Context, list *ScriptsList) (BulkScriptUnspentResponse, error) {
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
 	}
 
-	// Get the JSON
-	var postData []byte
-	if postData, err = json.Marshal(list); err != nil {
-		return response, err
+	postData, err := json.Marshal(list)
+	if err != nil {
+		return nil, err
 	}
 
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/scripts/unspent/all
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/scripts/unspent/all", apiEndpointBase, c.Chain(), c.Network()),
-		http.MethodPost, postData,
-	); err != nil {
-		return response, err
-	}
-	if len(resp) == 0 {
-		return nil, ErrScriptNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &response)
-	return response, err
+	url := c.buildURL("/scripts/unspent/all")
+	return requestAndUnmarshalSlice[*BulkScriptResponseRecord](ctx, c, url, http.MethodPost, postData, ErrScriptNotFound)
 }
 
 // ScriptUnconfirmedUTXOs retrieves unconfirmed UTXOs for a script
 //
-// For more information: https://developers.whatsonchain.com/#get-unconfirmed-script-utxos
-func (c *Client) ScriptUnconfirmedUTXOs(ctx context.Context, scriptHash string) (scriptList ScriptList, err error) {
-	var resp string
-	// https://api.whatsonchain.com/v1/<chain>/<network>/script/<scriptHash>/unconfirmed/unspent
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/script/%s/unconfirmed/unspent", apiEndpointBase, c.Chain(), c.Network(), scriptHash),
-		http.MethodGet, nil,
-	); err != nil {
-		return scriptList, err
-	}
-	if len(resp) == 0 {
-		if c.LastRequest().StatusCode == http.StatusNotFound {
-			return nil, ErrScriptNotFound
-		}
-		return scriptList, nil
-	}
-	err = json.Unmarshal([]byte(resp), &scriptList)
-
-	return scriptList, err
+// For more information: https://docs/#get-unconfirmed-script-utxos
+func (c *Client) ScriptUnconfirmedUTXOs(ctx context.Context, scriptHash string) (ScriptList, error) {
+	url := c.buildURL("/script/%s/unconfirmed/unspent", scriptHash)
+	return requestAndUnmarshalSlice[*ScriptRecord](ctx, c, url, http.MethodGet, nil, ErrScriptNotFound)
 }
 
 // BulkScriptUnconfirmedUTXOs retrieves unconfirmed UTXOs for multiple scripts
 // Max of 20 scripts at a time
 //
-// For more information: https://developers.whatsonchain.com/#bulk-unconfirmed-script-utxos
-func (c *Client) BulkScriptUnconfirmedUTXOs(ctx context.Context, list *ScriptsList) (response BulkScriptUnspentResponse, err error) {
-	// The max limit by WOC
+// For more information: https://docs/#bulk-unconfirmed-script-utxos
+func (c *Client) BulkScriptUnconfirmedUTXOs(ctx context.Context, list *ScriptsList) (BulkScriptUnspentResponse, error) {
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
 	}
 
-	// Get the JSON
-	var postData []byte
-	if postData, err = json.Marshal(list); err != nil {
-		return response, err
+	postData, err := json.Marshal(list)
+	if err != nil {
+		return nil, err
 	}
 
-	var resp string
-	// https://api.whatsonchain.com/v1/<chain>/<network>/scripts/unconfirmed/unspent
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/scripts/unconfirmed/unspent", apiEndpointBase, c.Chain(), c.Network()),
-		http.MethodPost, postData,
-	); err != nil {
-		return response, err
-	}
-	if len(resp) == 0 {
-		return nil, ErrScriptNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &response)
-	return response, err
+	url := c.buildURL("/scripts/unconfirmed/unspent")
+	return requestAndUnmarshalSlice[*BulkScriptResponseRecord](ctx, c, url, http.MethodPost, postData, ErrScriptNotFound)
 }
 
 // ScriptConfirmedUTXOs retrieves confirmed UTXOs for a script
 //
-// For more information: https://developers.whatsonchain.com/#get-confirmed-script-utxos
-func (c *Client) ScriptConfirmedUTXOs(ctx context.Context, scriptHash string) (scriptList ScriptList, err error) {
-	var resp string
-	// https://api.whatsonchain.com/v1/<chain>/<network>/script/<scriptHash>/confirmed/unspent
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/script/%s/confirmed/unspent", apiEndpointBase, c.Chain(), c.Network(), scriptHash),
-		http.MethodGet, nil,
-	); err != nil {
-		return scriptList, err
-	}
-	if len(resp) == 0 {
-		if c.LastRequest().StatusCode == http.StatusNotFound {
-			return nil, ErrScriptNotFound
-		}
-		return scriptList, nil
-	}
-	err = json.Unmarshal([]byte(resp), &scriptList)
-
-	return scriptList, err
+// For more information: https://docs/#get-confirmed-script-utxos
+func (c *Client) ScriptConfirmedUTXOs(ctx context.Context, scriptHash string) (ScriptList, error) {
+	url := c.buildURL("/script/%s/confirmed/unspent", scriptHash)
+	return requestAndUnmarshalSlice[*ScriptRecord](ctx, c, url, http.MethodGet, nil, ErrScriptNotFound)
 }
 
 // BulkScriptConfirmedUTXOs retrieves confirmed UTXOs for multiple scripts
 // Max of 20 scripts at a time
 //
-// For more information: https://developers.whatsonchain.com/#bulk-confirmed-script-utxos
-func (c *Client) BulkScriptConfirmedUTXOs(ctx context.Context, list *ScriptsList) (response BulkScriptUnspentResponse, err error) {
-	// The max limit by WOC
+// For more information: https://docs/#bulk-confirmed-script-utxos
+func (c *Client) BulkScriptConfirmedUTXOs(ctx context.Context, list *ScriptsList) (BulkScriptUnspentResponse, error) {
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
 	}
 
-	// Get the JSON
-	var postData []byte
-	if postData, err = json.Marshal(list); err != nil {
-		return response, err
+	postData, err := json.Marshal(list)
+	if err != nil {
+		return nil, err
 	}
 
-	var resp string
-	// https://api.whatsonchain.com/v1/<chain>/<network>/scripts/confirmed/unspent
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/scripts/confirmed/unspent", apiEndpointBase, c.Chain(), c.Network()),
-		http.MethodPost, postData,
-	); err != nil {
-		return response, err
-	}
-	if len(resp) == 0 {
-		return nil, ErrScriptNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &response)
-	return response, err
+	url := c.buildURL("/scripts/confirmed/unspent")
+	return requestAndUnmarshalSlice[*BulkScriptResponseRecord](ctx, c, url, http.MethodPost, postData, ErrScriptNotFound)
 }
 
 // GetScriptUsed this endpoint determines if a script has been used in any transaction
 //
 // For more information: https://docs.whatsonchain.com/api/script#get-script-usage
-func (c *Client) GetScriptUsed(ctx context.Context, scriptHash string) (used bool, err error) {
-	var resp string
-	// https://api.whatsonchain.com/v1/<chain>/<network>/script/<scriptHash>/used
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/script/%s/used", apiEndpointBase, c.Chain(), c.Network(), scriptHash),
-		http.MethodGet, nil,
-	); err != nil {
-		return used, err
+func (c *Client) GetScriptUsed(ctx context.Context, scriptHash string) (bool, error) {
+	url := c.buildURL("/script/%s/used", scriptHash)
+	resp, err := requestString(ctx, c, url)
+	if err != nil {
+		return false, err
 	}
 	if len(resp) == 0 {
-		if c.LastRequest().StatusCode == http.StatusNotFound {
-			return false, ErrScriptNotFound
-		}
-		return false, nil
+		return false, ErrScriptNotFound
 	}
 	// The response is a simple boolean string "true" or "false"
-	if resp == "true" {
-		return true, nil
-	}
-	return false, nil
+	return resp == "true", nil
 }
 
 // GetScriptUnconfirmedHistory this endpoint retrieves unconfirmed script transactions
 //
 // For more information: https://docs.whatsonchain.com/api/script#get-unconfirmed-script-history
-func (c *Client) GetScriptUnconfirmedHistory(ctx context.Context, scriptHash string) (history ScriptList, err error) {
-	var resp string
-	// https://api.whatsonchain.com/v1/<chain>/<network>/script/<scriptHash>/unconfirmed/history
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/script/%s/unconfirmed/history", apiEndpointBase, c.Chain(), c.Network(), scriptHash),
-		http.MethodGet, nil,
-	); err != nil {
-		return history, err
-	}
-	if len(resp) == 0 {
-		if c.LastRequest().StatusCode == http.StatusNotFound {
-			return nil, ErrScriptNotFound
-		}
-		return history, nil
-	}
-	err = json.Unmarshal([]byte(resp), &history)
-	return history, err
+func (c *Client) GetScriptUnconfirmedHistory(ctx context.Context, scriptHash string) (ScriptList, error) {
+	url := c.buildURL("/script/%s/unconfirmed/history", scriptHash)
+	return requestAndUnmarshalSlice[*ScriptRecord](ctx, c, url, http.MethodGet, nil, ErrScriptNotFound)
 }
 
 // BulkScriptUnconfirmedHistory will fetch unconfirmed history for multiple scripts in a single request
 // Max of 20 scripts at a time
 //
 // For more information: https://docs.whatsonchain.com/api/script#bulk-unconfirmed-script-history
-func (c *Client) BulkScriptUnconfirmedHistory(ctx context.Context, list *ScriptsList) (response BulkScriptHistoryResponse, err error) {
-	// The max limit by WOC
+func (c *Client) BulkScriptUnconfirmedHistory(ctx context.Context, list *ScriptsList) (BulkScriptHistoryResponse, error) {
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
 	}
 
-	// Get the JSON
-	var postData []byte
-	if postData, err = json.Marshal(list); err != nil {
-		return response, err
+	postData, err := json.Marshal(list)
+	if err != nil {
+		return nil, err
 	}
 
-	var resp string
-	// https://api.whatsonchain.com/v1/<chain>/<network>/scripts/unconfirmed/history
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/scripts/unconfirmed/history", apiEndpointBase, c.Chain(), c.Network()),
-		http.MethodPost, postData,
-	); err != nil {
-		return response, err
-	}
-	if len(resp) == 0 {
-		return nil, ErrScriptNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &response)
-	return response, err
+	url := c.buildURL("/scripts/unconfirmed/history")
+	return requestAndUnmarshalSlice[*BulkScriptHistoryRecord](ctx, c, url, http.MethodPost, postData, ErrScriptNotFound)
 }
 
 // GetScriptConfirmedHistory this endpoint retrieves confirmed script transactions
 //
 // For more information: https://docs.whatsonchain.com/api/script#get-confirmed-script-history
-func (c *Client) GetScriptConfirmedHistory(ctx context.Context, scriptHash string) (history ScriptList, err error) {
-	var resp string
-	// https://api.whatsonchain.com/v1/<chain>/<network>/script/<scriptHash>/confirmed/history
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/script/%s/confirmed/history", apiEndpointBase, c.Chain(), c.Network(), scriptHash),
-		http.MethodGet, nil,
-	); err != nil {
-		return history, err
-	}
-	if len(resp) == 0 {
-		if c.LastRequest().StatusCode == http.StatusNotFound {
-			return nil, ErrScriptNotFound
-		}
-		return history, nil
-	}
-	err = json.Unmarshal([]byte(resp), &history)
-	return history, err
+func (c *Client) GetScriptConfirmedHistory(ctx context.Context, scriptHash string) (ScriptList, error) {
+	url := c.buildURL("/script/%s/confirmed/history", scriptHash)
+	return requestAndUnmarshalSlice[*ScriptRecord](ctx, c, url, http.MethodGet, nil, ErrScriptNotFound)
 }
 
 // BulkScriptConfirmedHistory will fetch confirmed history for multiple scripts in a single request
 // Max of 20 scripts at a time
 //
 // For more information: https://docs.whatsonchain.com/api/script#bulk-confirmed-script-history
-func (c *Client) BulkScriptConfirmedHistory(ctx context.Context, list *ScriptsList) (response BulkScriptHistoryResponse, err error) {
-	// The max limit by WOC
+func (c *Client) BulkScriptConfirmedHistory(ctx context.Context, list *ScriptsList) (BulkScriptHistoryResponse, error) {
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
 	}
 
-	// Get the JSON
-	var postData []byte
-	if postData, err = json.Marshal(list); err != nil {
-		return response, err
+	postData, err := json.Marshal(list)
+	if err != nil {
+		return nil, err
 	}
 
-	var resp string
-	// https://api.whatsonchain.com/v1/<chain>/<network>/scripts/confirmed/history
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/scripts/confirmed/history", apiEndpointBase, c.Chain(), c.Network()),
-		http.MethodPost, postData,
-	); err != nil {
-		return response, err
-	}
-	if len(resp) == 0 {
-		return nil, ErrScriptNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &response)
-	return response, err
+	url := c.buildURL("/scripts/confirmed/history")
+	return requestAndUnmarshalSlice[*BulkScriptHistoryRecord](ctx, c, url, http.MethodPost, postData, ErrScriptNotFound)
 }

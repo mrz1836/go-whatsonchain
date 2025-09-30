@@ -199,12 +199,8 @@ func (m *mockHTTPScriptNotFound) Do(req *http.Request) (*http.Response, error) {
 		return resp, errScriptMissingRequest
 	}
 
-	// Invalid (info) return an error
-	if strings.Contains(req.URL.String(), "/scripts/unspent/all") {
-		resp.Body = io.NopCloser(bytes.NewBufferString(""))
-		return resp, nil
-	}
-
+	// Always return empty body for not found
+	resp.Body = io.NopCloser(bytes.NewBufferString(""))
 	return resp, nil
 }
 
@@ -276,7 +272,7 @@ func TestClient_GetScriptUnspentTransactions(t *testing.T) {
 		statusCode    int
 	}{
 		{"92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb", 640558, "5c6ac3a685be0791aa6e6eedb03d48cbf76046ea499e0a9cefbdc0fb3969ad13", false, http.StatusOK},
-		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 0, "", false, http.StatusOK},
+		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 0, "", true, http.StatusOK}, // Empty response should error
 		{"invalidTx", 0, "", true, http.StatusBadRequest},
 		{"notFound", 0, "", true, http.StatusNotFound},
 	}
@@ -623,7 +619,7 @@ func TestClient_ScriptUnconfirmedUTXOs(t *testing.T) {
 		statusCode    int
 	}{
 		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 0, "abc123", false, http.StatusOK},
-		{"92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb", 0, "", false, http.StatusOK},
+		{"92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb", 0, "", true, http.StatusOK}, // Empty response should error
 		{"invalidTx", 0, "", true, http.StatusBadRequest},
 		{"notFound", 0, "", true, http.StatusNotFound},
 	}
@@ -716,7 +712,7 @@ func TestClient_ScriptConfirmedUTXOs(t *testing.T) {
 		statusCode    int
 	}{
 		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 620539, "def456", false, http.StatusOK},
-		{"92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb", 0, "", false, http.StatusOK},
+		{"92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb", 0, "", true, http.StatusOK}, // Empty response should error
 		{"invalidTx", 0, "", true, http.StatusBadRequest},
 		{"notFound", 0, "", true, http.StatusNotFound},
 	}
@@ -790,4 +786,16 @@ func TestClient_BulkScriptConfirmedUTXOs(t *testing.T) {
 		require.Error(t, err)
 		assert.Nil(t, unspentList)
 	})
+}
+
+// TestClient_GetScriptUsed_EmptyResponse tests GetScriptUsed with empty response
+func TestClient_GetScriptUsed_EmptyResponse(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPScriptNotFound{})
+	ctx := context.Background()
+	used, err := client.GetScriptUsed(ctx, "notFound")
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrScriptNotFound)
+	assert.False(t, used)
 }
