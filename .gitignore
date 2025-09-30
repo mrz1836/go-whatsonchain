@@ -29,3 +29,6 @@ dist
 
 # Docs
 postman
+
+# Fuzzing
+testdata
