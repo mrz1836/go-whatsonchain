@@ -2,17 +2,22 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/mrz1836/go-whatsonchain"
 )
 
 func main() {
-	// Create options (add your api key)
-	opts := whatsonchain.ClientDefaultOptions()
-	opts.APIKey = "your-secret-key"
+	// Create a client with API key
+	client, err := whatsonchain.NewClient(
+		context.Background(),
+		whatsonchain.WithNetwork(whatsonchain.NetworkMain),
+		whatsonchain.WithAPIKey("your-secret-key"),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// Create a client
-	client := whatsonchain.NewClient(whatsonchain.NetworkMain, opts, nil)
 	log.Println("client loaded", client.UserAgent())
 }

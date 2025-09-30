@@ -10,7 +10,13 @@ import (
 
 func main() {
 	// Create a client
-	client := whatsonchain.NewClient(whatsonchain.NetworkMain, nil, nil)
+	client, err := whatsonchain.NewClient(
+		context.Background(),
+		whatsonchain.WithNetwork(whatsonchain.NetworkMain),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Get UTXOs for an address
 	history, err := client.AddressUnspentTransactionDetails(
