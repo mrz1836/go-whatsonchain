@@ -2,113 +2,74 @@ package whatsonchain
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
 // GetBlockByHash this endpoint retrieves block details with given hash.
 //
-// For more information: https://developers.whatsonchain.com/#get-by-hash
-func (c *Client) GetBlockByHash(ctx context.Context, hash string) (blockInfo *BlockInfo, err error) {
-
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/block/hash/%s", apiEndpoint, c.Network(), hash),
-		http.MethodGet, nil,
-	); err != nil {
-		return
-	}
-	if len(resp) == 0 {
-		return nil, ErrBlockNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &blockInfo)
-	return
+// For more information: https://docs.whatsonchain.com/#get-by-hash
+func (c *Client) GetBlockByHash(ctx context.Context, hash string) (*BlockInfo, error) {
+	url := c.buildURL("/block/hash/%s", hash)
+	return requestAndUnmarshal[BlockInfo](ctx, c, url, http.MethodGet, nil, ErrBlockNotFound)
 }
 
 // GetBlockByHeight this endpoint retrieves block details with given block height.
 //
-// For more information: https://developers.whatsonchain.com/#get-by-height
-func (c *Client) GetBlockByHeight(ctx context.Context, height int64) (blockInfo *BlockInfo, err error) {
-
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/block/height/<height>
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/block/height/%d", apiEndpoint, c.Network(), height),
-		http.MethodGet, nil,
-	); err != nil {
-		return
-	}
-	if len(resp) == 0 {
-		return nil, ErrBlockNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &blockInfo)
-	return
+// For more information: https://docs.whatsonchain.com/#get-by-height
+func (c *Client) GetBlockByHeight(ctx context.Context, height int64) (*BlockInfo, error) {
+	url := c.buildURL("/block/height/%d", height)
+	return requestAndUnmarshal[BlockInfo](ctx, c, url, http.MethodGet, nil, ErrBlockNotFound)
 }
 
 // GetBlockPages if the block has more than 1000 transactions the page URIs will
 // be provided in the "pages element" when getting a block by hash or height.
 //
-// For more information: https://developers.whatsonchain.com/#get-block-pages
-func (c *Client) GetBlockPages(ctx context.Context, hash string, page int) (txList BlockPagesInfo, err error) {
-
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/block/hash/<hash>/page/1
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/block/hash/%s/page/%d", apiEndpoint, c.Network(), hash, page),
-		http.MethodGet, nil,
-	); err != nil {
-		return
-	}
-	if len(resp) == 0 {
-		return nil, ErrBlockNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &txList)
-	return
+// For more information: https://docs.whatsonchain.com/#get-block-pages
+func (c *Client) GetBlockPages(ctx context.Context, hash string, page int) (BlockPagesInfo, error) {
+	url := c.buildURL("/block/hash/%s/page/%d", hash, page)
+	return requestAndUnmarshalSlice[string](ctx, c, url, http.MethodGet, nil, ErrBlockNotFound)
 }
 
 // GetHeaderByHash this endpoint retrieves block header details with given hash.
 //
-// For more information: https://developers.whatsonchain.com/#get-header-by-hash
-func (c *Client) GetHeaderByHash(ctx context.Context, hash string) (headerInfo *BlockInfo, err error) {
-
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/block/<hash>/header
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/block/%s/header", apiEndpoint, c.Network(), hash),
-		http.MethodGet, nil,
-	); err != nil {
-		return
-	}
-	if len(resp) == 0 {
-		return nil, ErrBlockNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &headerInfo)
-	return
+// For more information: https://docs.whatsonchain.com/#get-header-by-hash
+func (c *Client) GetHeaderByHash(ctx context.Context, hash string) (*BlockInfo, error) {
+	url := c.buildURL("/block/%s/header", hash)
+	return requestAndUnmarshal[BlockInfo](ctx, c, url, http.MethodGet, nil, ErrBlockNotFound)
 }
 
 // GetHeaders this endpoint retrieves last 10 block headers.
 //
-// For more information: https://developers.whatsonchain.com/#get-headers
-func (c *Client) GetHeaders(ctx context.Context) (blockHeaders []*BlockInfo, err error) {
+// For more information: https://docs.whatsonchain.com/#get-headers
+func (c *Client) GetHeaders(ctx context.Context) ([]*BlockInfo, error) {
+	url := c.buildURL("/block/headers")
+	return requestAndUnmarshalSlice[*BlockInfo](ctx, c, url, http.MethodGet, nil, ErrHeadersNotFound)
+}
 
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/block/headers
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/block/headers", apiEndpoint, c.Network()),
-		http.MethodGet, nil,
-	); err != nil {
-		return
+// GetHeaderBytesFileLinks this endpoint retrieves header bytes file links.
+//
+// For more information: https://docs.whatsonchain.com/#get-header-bytes
+func (c *Client) GetHeaderBytesFileLinks(ctx context.Context) (*HeaderBytesResource, error) {
+	url := c.buildURL("/block/headers/resources")
+	return requestAndUnmarshal[HeaderBytesResource](ctx, c, url, http.MethodGet, nil, ErrHeadersNotFound)
+}
+
+// GetLatestHeaderBytes this endpoint retrieves latest header bytes.
+//
+// For more information: https://docs.whatsonchain.com/#get-latest-headers
+func (c *Client) GetLatestHeaderBytes(ctx context.Context, count int) (string, error) {
+	path := "/block/headers/latest"
+	if count > 0 {
+		path = fmt.Sprintf("%s?count=%d", path, count)
+	}
+	url := c.buildURL(path)
+	resp, err := requestString(ctx, c, url)
+	if err != nil {
+		return "", err
 	}
 	if len(resp) == 0 {
-		return nil, ErrHeadersNotFound
+		return "", ErrHeadersNotFound
 	}
-	err = json.Unmarshal([]byte(resp), &blockHeaders)
-	return
+	return resp, nil
 }

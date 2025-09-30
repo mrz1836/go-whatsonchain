@@ -2,28 +2,22 @@ package whatsonchain
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
-// GetExchangeRate this endpoint provides exchange rate for BSV
+// GetExchangeRate this endpoint provides exchange rate for BSV/BTC
 //
-// For more information: https://developers.whatsonchain.com/#get-exchange-rate
-func (c *Client) GetExchangeRate(ctx context.Context) (rate *ExchangeRate, err error) {
+// For more information: https://docs.whatsonchain.com/#get-exchange-rate
+func (c *Client) GetExchangeRate(ctx context.Context) (*ExchangeRate, error) {
+	url := c.buildURL("/exchangerate")
+	return requestAndUnmarshal[ExchangeRate](ctx, c, url, http.MethodGet, nil, ErrExchangeRateNotFound)
+}
 
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/exchangerate
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/exchangerate", apiEndpoint, c.Network()),
-		http.MethodGet, nil,
-	); err != nil {
-		return
-	}
-	if len(resp) == 0 {
-		return nil, ErrExchangeRateNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &rate)
-	return
+// GetHistoricalExchangeRate this endpoint provides historical exchange rates for BSV/BTC
+// within a specified time range
+//
+// For more information: https://docs.whatsonchain.com/#get-historical-exchange-rate
+func (c *Client) GetHistoricalExchangeRate(ctx context.Context, from, to int64) ([]*HistoricalExchangeRate, error) {
+	url := c.buildURL("/exchangerate/historical?from=%d&to=%d", from, to)
+	return requestAndUnmarshalSlice[*HistoricalExchangeRate](ctx, c, url, http.MethodGet, nil, ErrExchangeRateNotFound)
 }

@@ -1,16 +1,22 @@
+// Package main demonstrates bulk script UTXO lookup functionality.
 package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	"github.com/mrz1836/go-whatsonchain"
 )
 
 func main() {
-
 	// Create a client
-	client := whatsonchain.NewClient(whatsonchain.NetworkMain, nil, nil)
+	client, err := whatsonchain.NewClient(
+		context.Background(),
+		whatsonchain.WithNetwork(whatsonchain.NetworkMain),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Get the balance for multiple addresses
 	balances, _ := client.BulkScriptUnspentTransactions(
@@ -24,7 +30,7 @@ func main() {
 	)
 
 	for _, record := range balances {
-		fmt.Printf(
+		log.Printf(
 			"script: %s utxos: %d \n",
 			record.Script,
 			len(record.Utxos),

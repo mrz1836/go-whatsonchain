@@ -3,8 +3,7 @@ package whatsonchain
 import (
 	"bytes"
 	"context"
-	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -20,19 +19,19 @@ func (m *mockHTTPMempoolValid) Do(req *http.Request) (*http.Response, error) {
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, ErrMissingRequest
 	}
 
 	// Valid
 	if strings.Contains(req.URL.String(), "/mempool/info") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`{"size": 520,"bytes": 108095,"usage": 549776,"maxmempool": 64000000000,"mempoolminfee": 0}`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"size": 520,"bytes": 108095,"usage": 549776,"maxmempool": 64000000000,"mempoolminfee": 0}`))
 	}
 
 	// Valid
 	if strings.Contains(req.URL.String(), "/mempool/raw") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`["86806b3587956552ea0e3f09dfd14f485fc870fa319ab37e98289a5043234644","bd9e6c83f8fdcaa3b66b214a4fbf910976bd16ec926ab983a2367edfa3e2bbd9","9cf4450a20f91419623d9b461d4e47647ce3812f0fd2e2d2904c5f5a24e45bba"]`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`["86806b3587956552ea0e3f09dfd14f485fc870fa319ab37e98289a5043234644","bd9e6c83f8fdcaa3b66b214a4fbf910976bd16ec926ab983a2367edfa3e2bbd9","9cf4450a20f91419623d9b461d4e47647ce3812f0fd2e2d2904c5f5a24e45bba"]`))
 	}
 
 	// Default is valid
@@ -49,19 +48,19 @@ func (m *mockHTTPMempoolInvalid) Do(req *http.Request) (*http.Response, error) {
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, ErrMissingRequest
 	}
 
 	// Invalid
 	if strings.Contains(req.URL.String(), "/mempool/info") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
+		return resp, ErrBadRequest
 	}
 
 	// Invalid
 	if strings.Contains(req.URL.String(), "/mempool/raw") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
+		return resp, ErrBadRequest
 	}
 
 	// Default is valid
@@ -78,18 +77,18 @@ func (m *mockHTTPMempoolNotFound) Do(req *http.Request) (*http.Response, error) 
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, ErrMissingRequest
 	}
 
 	// Not found
 	if strings.Contains(req.URL.String(), "/mempool/info") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
 	// Not found
 	if strings.Contains(req.URL.String(), "/mempool/raw") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
@@ -109,13 +108,23 @@ func TestClient_GetMempoolInfo(t *testing.T) {
 	info, err := client.GetMempoolInfo(ctx)
 	if err != nil {
 		t.Errorf("%s Failed: error [%s]", t.Name(), err.Error())
-	} else if info == nil {
+		return
+	}
+
+	if info == nil {
 		t.Errorf("%s Failed: info was nil", t.Name())
-	} else if info.Size != 520 {
+		return
+	}
+
+	if info.Size != 520 {
 		t.Errorf("%s Failed: size was [%d] expected [%d]", t.Name(), info.Size, 520)
-	} else if info.Bytes != 108095 {
+	}
+
+	if info.Bytes != 108095 {
 		t.Errorf("%s Failed: bytes was [%d] expected [%d]", t.Name(), info.Bytes, 108095)
-	} else if info.MaxMempool != 64000000000 {
+	}
+
+	if info.MaxMempool != 64000000000 {
 		t.Errorf("%s Failed: max mempool was [%d] expected [%d]", t.Name(), info.MaxMempool, 64000000000)
 	}
 

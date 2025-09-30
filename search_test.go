@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -26,7 +25,7 @@ func (m *mockHTTPSearchValid) Do(req *http.Request) (*http.Response, error) {
 
 	// No req found
 	if req == nil {
-		return resp, fmt.Errorf("missing request")
+		return resp, ErrMissingRequest
 	}
 
 	decoder := json.NewDecoder(req.Body)
@@ -39,37 +38,37 @@ func (m *mockHTTPSearchValid) Do(req *http.Request) (*http.Response, error) {
 	// Valid (address)
 	if strings.Contains(data.Query, "1GJ3x5bcEnKMnzNFPPELDfXUCwKEaLHM5H") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`{"results":[{"type":"address","url":"https://whatsonchain.com/address/1GJ3x5bcEnKMnzNFPPELDfXUCwKEaLHM5H"}]}`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"results":[{"type":"address","url":"https://whatsonchain.com/address/1GJ3x5bcEnKMnzNFPPELDfXUCwKEaLHM5H"}]}`))
 	}
 
 	// Valid (tx)
 	if strings.Contains(data.Query, "6a7c821fd13c5cec773f7e221479651804197866469e92a4d6d47e1fd34d090d") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`{"results":[{"type":"tx","url":"https://whatsonchain.com/tx/6a7c821fd13c5cec773f7e221479651804197866469e92a4d6d47e1fd34d090d"}]}`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"results":[{"type":"tx","url":"https://whatsonchain.com/tx/6a7c821fd13c5cec773f7e221479651804197866469e92a4d6d47e1fd34d090d"}]}`))
 	}
 
 	// Valid (block)
 	if strings.Contains(data.Query, "000000000000000002080d0ad78d08691d956d08fb8556339b6dd84fbbfdf1bc") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`{"results":[{"type":"block","url":"https://whatsonchain.com/block/000000000000000002080d0ad78d08691d956d08fb8556339b6dd84fbbfdf1bc"}]}`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"results":[{"type":"block","url":"https://whatsonchain.com/block/000000000000000002080d0ad78d08691d956d08fb8556339b6dd84fbbfdf1bc"}]}`))
 	}
 
 	// Valid (op_return)
 	if strings.Contains(data.Query, "unknown") {
 		resp.StatusCode = http.StatusOK
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(`{"results":[{"type":"op_return","url":"https://whatsonchain.com/opreturn-query?term=unknown\u0026size=10\u0026offset=0"}]}`)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(`{"results":[{"type":"op_return","url":"https://whatsonchain.com/opreturn-query?term=unknown\u0026size=10\u0026offset=0"}]}`))
 	}
 
 	// Invalid
 	if strings.Contains(data.Query, "error") {
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
-		return resp, fmt.Errorf("bad request")
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
+		return resp, ErrBadRequest
 	}
 
 	// Not found
 	if strings.Contains(data.Query, "notFound") {
 		resp.StatusCode = http.StatusNotFound
-		resp.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(``)))
+		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
 	}
 
@@ -86,7 +85,7 @@ func TestClient_GetExplorerLinks(t *testing.T) {
 	ctx := context.Background()
 
 	// Create the list of tests
-	var tests = []struct {
+	tests := []struct {
 		input         string
 		typeName      string
 		url           string
@@ -103,16 +102,30 @@ func TestClient_GetExplorerLinks(t *testing.T) {
 
 	// Test all
 	for _, test := range tests {
-		if output, err := client.GetExplorerLinks(ctx, test.input); err == nil && test.expectedError {
+		output, err := client.GetExplorerLinks(ctx, test.input)
+
+		if err == nil && test.expectedError {
 			t.Errorf("%s Failed: expected to throw an error, no error [%s] inputted", t.Name(), test.input)
-		} else if err != nil && !test.expectedError {
+			continue
+		}
+
+		if err != nil && !test.expectedError {
 			t.Errorf("%s Failed: [%s] inputted, received: [%v] error [%s]", t.Name(), test.input, output, err.Error())
-		} else if err == nil && output.Results != nil && output.Results[0].Type != test.typeName && !test.expectedError {
-			t.Errorf("%s Failed: [%s] inputted and [%s] type expected, received: [%s]", t.Name(), test.input, test.typeName, output.Results[0].Type)
-		} else if err == nil && output.Results != nil && output.Results[0].URL != test.url && !test.expectedError {
-			t.Errorf("%s Failed: [%s] inputted and [%s] url expected, received: [%s]", t.Name(), test.input, test.url, output.Results[0].URL)
-		} else if client.LastRequest().StatusCode != test.statusCode {
+			continue
+		}
+
+		if client.LastRequest().StatusCode != test.statusCode {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
+			continue
+		}
+
+		if !test.expectedError && err == nil && output.Results != nil {
+			if output.Results[0].Type != test.typeName {
+				t.Errorf("%s Failed: [%s] inputted and [%s] type expected, received: [%s]", t.Name(), test.input, test.typeName, output.Results[0].Type)
+			}
+			if output.Results[0].URL != test.url {
+				t.Errorf("%s Failed: [%s] inputted and [%s] url expected, received: [%s]", t.Name(), test.input, test.url, output.Results[0].URL)
+			}
 		}
 	}
 }

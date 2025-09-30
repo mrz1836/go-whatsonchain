@@ -3,14 +3,15 @@ Package whatsonchain is the unofficial golang implementation for the whatsonchai
 
 Example:
 
-```
-// Create a new client:
-client := whatsonchain.NewClient(whatsonchain.NetworkMain, nil, nil)
+	// Create a new client:
+	client, _ := whatsonchain.NewClient(
+		context.Background(),
+		whatsonchain.WithNetwork(whatsonchain.NetworkMain),
+	)
 
-// Get a balance for an address:
-balance, _ := client.AddressBalance("16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
-fmt.Println("confirmed balance", balance.Confirmed)
-```
+	// Get a balance for an address:
+	balance, _ := client.AddressBalance(context.Background(), "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+	fmt.Println("confirmed balance", balance.Confirmed)
 */
 package whatsonchain
 
@@ -18,20 +19,34 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"io/ioutil"
 	"net/http"
+	"time"
 )
 
-// NewClient creates a new client for WOC requests
-func NewClient(network NetworkType, clientOptions *Options, customHTTPClient HTTPInterface) ClientInterface {
+// NewClient creates a new WhatsOnChain client with functional options
+//
+// Example usage:
+//
+//	client, err := whatsonchain.NewClient(
+//	    context.Background(),
+//	    whatsonchain.WithNetwork(whatsonchain.NetworkMain),
+//	    whatsonchain.WithAPIKey("your-api-key"),
+//	)
+func NewClient(_ context.Context, opts ...ClientOption) (ClientInterface, error) {
+	// Start with defaults
+	options := defaultClientOptions()
 
-	// Sets the network, options and custom HTTP client
-	return createClient(network, clientOptions, customHTTPClient)
+	// Apply all provided options
+	for _, opt := range opts {
+		opt(options)
+	}
+
+	// Create and return the client
+	return newClientFromOptions(options), nil
 }
 
 // request is a generic request wrapper that can be used without constraints
-func (c *Client) request(ctx context.Context, url string, method string, payload []byte) (response string, err error) {
-
+func (c *Client) request(ctx context.Context, url, method string, payload []byte) (response string, err error) {
 	// Set reader
 	var bodyReader io.Reader
 
@@ -50,7 +65,7 @@ func (c *Client) request(ctx context.Context, url string, method string, payload
 	if request, err = http.NewRequestWithContext(
 		ctx, method, url, bodyReader,
 	); err != nil {
-		return
+		return response, err
 	}
 
 	// Change the header (user agent is in case they block default Go user agents)
@@ -72,7 +87,7 @@ func (c *Client) request(ctx context.Context, url string, method string, payload
 		if resp != nil {
 			c.LastRequest().StatusCode = resp.StatusCode
 		}
-		return
+		return response, err
 	}
 
 	// Close the response body
@@ -85,13 +100,13 @@ func (c *Client) request(ctx context.Context, url string, method string, payload
 
 	// Read the body
 	var body []byte
-	if body, err = ioutil.ReadAll(resp.Body); err != nil {
-		return
+	if body, err = io.ReadAll(resp.Body); err != nil {
+		return response, err
 	}
 
 	// Return the raw JSON response
 	response = string(body)
-	return
+	return response, err
 }
 
 // UserAgent will return the current user agent
@@ -102,6 +117,11 @@ func (c *Client) UserAgent() string {
 // RateLimit will return the current configured rate limit
 func (c *Client) RateLimit() int {
 	return c.rateLimit
+}
+
+// Chain will return the chain
+func (c *Client) Chain() ChainType {
+	return c.chain
 }
 
 // Network will return the network
@@ -117,4 +137,133 @@ func (c *Client) LastRequest() *LastRequest {
 // HTTPClient will return the current HTTP client
 func (c *Client) HTTPClient() HTTPInterface {
 	return c.httpClient
+}
+
+// APIKey returns the current API key
+func (c *Client) APIKey() string {
+	return c.apiKey
+}
+
+// SetAPIKey sets the API key
+func (c *Client) SetAPIKey(apiKey string) {
+	c.apiKey = apiKey
+	if c.options != nil {
+		c.options.apiKey = apiKey
+	}
+}
+
+// SetUserAgent sets the user agent
+func (c *Client) SetUserAgent(userAgent string) {
+	c.userAgent = userAgent
+	if c.options != nil {
+		c.options.userAgent = userAgent
+	}
+}
+
+// SetRateLimit sets the rate limit
+func (c *Client) SetRateLimit(rateLimit int) {
+	c.rateLimit = rateLimit
+	if c.options != nil {
+		c.options.rateLimit = rateLimit
+	}
+}
+
+// SetChain sets the blockchain type
+func (c *Client) SetChain(chain ChainType) {
+	c.chain = chain
+	if c.options != nil {
+		c.options.chain = chain
+	}
+}
+
+// SetNetwork sets the network type
+func (c *Client) SetNetwork(network NetworkType) {
+	c.network = network
+	if c.options != nil {
+		c.options.network = network
+	}
+}
+
+// RequestTimeout returns the request timeout
+func (c *Client) RequestTimeout() time.Duration {
+	if c.options != nil {
+		return c.options.requestTimeout
+	}
+	return 0
+}
+
+// SetRequestTimeout sets the request timeout
+func (c *Client) SetRequestTimeout(timeout time.Duration) {
+	if c.options != nil {
+		c.options.requestTimeout = timeout
+	}
+}
+
+// RequestRetryCount returns the retry count
+func (c *Client) RequestRetryCount() int {
+	if c.options != nil {
+		return c.options.requestRetryCount
+	}
+	return 0
+}
+
+// SetRequestRetryCount sets the retry count
+func (c *Client) SetRequestRetryCount(count int) {
+	if c.options != nil {
+		c.options.requestRetryCount = count
+	}
+}
+
+// BackoffConfig returns the backoff configuration
+func (c *Client) BackoffConfig() (initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration) {
+	if c.options != nil {
+		return c.options.backOffInitialTimeout, c.options.backOffMaxTimeout,
+			c.options.backOffExponentFactor, c.options.backOffMaximumJitterInterval
+	}
+	return 0, 0, 0, 0
+}
+
+// SetBackoffConfig sets the backoff configuration
+func (c *Client) SetBackoffConfig(initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration) {
+	if c.options != nil {
+		c.options.backOffInitialTimeout = initialTimeout
+		c.options.backOffMaxTimeout = maxTimeout
+		c.options.backOffExponentFactor = exponentFactor
+		c.options.backOffMaximumJitterInterval = maxJitter
+	}
+}
+
+// DialerConfig returns the dialer configuration
+func (c *Client) DialerConfig() (keepAlive, timeout time.Duration) {
+	if c.options != nil {
+		return c.options.dialerKeepAlive, c.options.dialerTimeout
+	}
+	return 0, 0
+}
+
+// SetDialerConfig sets the dialer configuration
+func (c *Client) SetDialerConfig(keepAlive, timeout time.Duration) {
+	if c.options != nil {
+		c.options.dialerKeepAlive = keepAlive
+		c.options.dialerTimeout = timeout
+	}
+}
+
+// TransportConfig returns the transport configuration
+func (c *Client) TransportConfig() (idleTimeout, tlsTimeout, expectContinueTimeout time.Duration, maxIdleConnections int) {
+	if c.options != nil {
+		return c.options.transportIdleTimeout, c.options.transportTLSHandshakeTimeout,
+			c.options.transportExpectContinueTimeout, c.options.transportMaxIdleConnections
+	}
+	return 0, 0, 0, 0
+}
+
+// SetTransportConfig sets the transport configuration
+func (c *Client) SetTransportConfig(idleTimeout, tlsTimeout, expectContinueTimeout time.Duration, maxIdleConnections int) {
+	if c.options != nil {
+		c.options.transportIdleTimeout = idleTimeout
+		c.options.transportTLSHandshakeTimeout = tlsTimeout
+		c.options.transportExpectContinueTimeout = expectContinueTimeout
+		c.options.transportMaxIdleConnections = maxIdleConnections
+	}
 }

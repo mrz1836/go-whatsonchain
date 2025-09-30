@@ -4,15 +4,12 @@ import (
 	"net"
 	"net/http"
 	"time"
-
-	"github.com/gojektech/heimdall/v6"
-	"github.com/gojektech/heimdall/v6/httpclient"
 )
 
 const (
 
 	// version is the current version
-	version = "v0.13.0"
+	version = "v1.0.0"
 
 	// defaultUserAgent is the default user agent for all requests
 	defaultUserAgent string = "go-whatsonchain: " + version
@@ -20,48 +17,159 @@ const (
 	// defaultRateLimit is the default rate limit for API requests
 	defaultRateLimit int = 3
 
-	// apiEndpoint is where we fire requests
-	apiEndpoint string = "https://api.whatsonchain.com/v1/bsv/"
-
-	// socketEndpoint is where we connect to websockets
-	socketEndpoint string = "wss://socket.whatsonchain.com/"
+	// apiEndpointBase is where we fire requests (without chain specification)
+	apiEndpointBase string = "https://api.whatsonchain.com/v1/"
 
 	// apiHeaderKey is the header key for the API key
 	apiHeaderKey string = "woc-api-key"
 )
 
-// HTTPInterface is used for the http client (mocking heimdall)
+// HTTPInterface is used for the http client
 type HTTPInterface interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-// Client is the parent struct that wraps the heimdall client
+// Client is the parent struct that contains the HTTP client
 type Client struct {
-	apiKey      string        // optional for requests that require an API Key
-	httpClient  HTTPInterface // carries out the http operations (heimdall client)
-	lastRequest *LastRequest  // is the raw information from the last request
-	network     NetworkType   // is the BitcoinSV network to use
-	rateLimit   int           // configured rate limit per second
-	userAgent   string        // optional for changing user agents
+	apiKey      string         // optional for requests that require an API Key
+	chain       ChainType      // is the blockchain type to use (BSV or BTC)
+	httpClient  HTTPInterface  // carries out the http operations
+	lastRequest *LastRequest   // is the raw information from the last request
+	network     NetworkType    // is the BitcoinSV network to use
+	rateLimit   int            // configured rate limit per second
+	userAgent   string         // optional for changing user agents
+	options     *clientOptions // internal options configuration
 }
 
-// Options holds all the configuration for connection, dialer and transport
-type Options struct {
-	APIKey                         string        `json:"api_key"`
-	BackOffExponentFactor          float64       `json:"back_off_exponent_factor"`
-	BackOffInitialTimeout          time.Duration `json:"back_off_initial_timeout"`
-	BackOffMaximumJitterInterval   time.Duration `json:"back_off_maximum_jitter_interval"`
-	BackOffMaxTimeout              time.Duration `json:"back_off_max_timeout"`
-	DialerKeepAlive                time.Duration `json:"dialer_keep_alive"`
-	DialerTimeout                  time.Duration `json:"dialer_timeout"`
-	RateLimit                      int           `json:"rate_limit"`
-	RequestRetryCount              int           `json:"request_retry_count"`
-	RequestTimeout                 time.Duration `json:"request_timeout"`
-	TransportExpectContinueTimeout time.Duration `json:"transport_expect_continue_timeout"`
-	TransportIdleTimeout           time.Duration `json:"transport_idle_timeout"`
-	TransportMaxIdleConnections    int           `json:"transport_max_idle_connections"`
-	TransportTLSHandshakeTimeout   time.Duration `json:"transport_tls_handshake_timeout"`
-	UserAgent                      string        `json:"user_agent"`
+// clientOptions holds all configuration for the client
+type clientOptions struct {
+	apiKey                         string
+	backOffExponentFactor          float64
+	backOffInitialTimeout          time.Duration
+	backOffMaximumJitterInterval   time.Duration
+	backOffMaxTimeout              time.Duration
+	chain                          ChainType
+	customHTTPClient               HTTPInterface
+	dialerKeepAlive                time.Duration
+	dialerTimeout                  time.Duration
+	network                        NetworkType
+	rateLimit                      int
+	requestRetryCount              int
+	requestTimeout                 time.Duration
+	transportExpectContinueTimeout time.Duration
+	transportIdleTimeout           time.Duration
+	transportMaxIdleConnections    int
+	transportTLSHandshakeTimeout   time.Duration
+	userAgent                      string
+}
+
+// ClientOption is a function that modifies client options
+type ClientOption func(*clientOptions)
+
+// defaultClientOptions returns the default client options
+func defaultClientOptions() *clientOptions {
+	return &clientOptions{
+		backOffExponentFactor:          2.0,
+		backOffInitialTimeout:          2 * time.Millisecond,
+		backOffMaximumJitterInterval:   2 * time.Millisecond,
+		backOffMaxTimeout:              10 * time.Millisecond,
+		chain:                          ChainBSV, // Default to BSV for backward compatibility
+		dialerKeepAlive:                20 * time.Second,
+		dialerTimeout:                  5 * time.Second,
+		network:                        NetworkMain, // Default to main network
+		rateLimit:                      defaultRateLimit,
+		requestRetryCount:              2,
+		requestTimeout:                 30 * time.Second,
+		transportExpectContinueTimeout: 3 * time.Second,
+		transportIdleTimeout:           20 * time.Second,
+		transportMaxIdleConnections:    10,
+		transportTLSHandshakeTimeout:   5 * time.Second,
+		userAgent:                      defaultUserAgent,
+	}
+}
+
+// WithChain sets the blockchain type (BSV or BTC)
+func WithChain(chain ChainType) ClientOption {
+	return func(c *clientOptions) {
+		c.chain = chain
+	}
+}
+
+// WithNetwork sets the network type (main, test, stn)
+func WithNetwork(network NetworkType) ClientOption {
+	return func(c *clientOptions) {
+		c.network = network
+	}
+}
+
+// WithAPIKey sets the API key for authenticated requests
+func WithAPIKey(apiKey string) ClientOption {
+	return func(c *clientOptions) {
+		c.apiKey = apiKey
+	}
+}
+
+// WithUserAgent sets a custom user agent string
+func WithUserAgent(userAgent string) ClientOption {
+	return func(c *clientOptions) {
+		c.userAgent = userAgent
+	}
+}
+
+// WithRateLimit sets the rate limit per second
+func WithRateLimit(rateLimit int) ClientOption {
+	return func(c *clientOptions) {
+		c.rateLimit = rateLimit
+	}
+}
+
+// WithHTTPClient sets a custom HTTP client
+func WithHTTPClient(httpClient HTTPInterface) ClientOption {
+	return func(c *clientOptions) {
+		c.customHTTPClient = httpClient
+	}
+}
+
+// WithRequestTimeout sets the request timeout duration
+func WithRequestTimeout(timeout time.Duration) ClientOption {
+	return func(c *clientOptions) {
+		c.requestTimeout = timeout
+	}
+}
+
+// WithRequestRetryCount sets the number of retry attempts for failed requests
+func WithRequestRetryCount(count int) ClientOption {
+	return func(c *clientOptions) {
+		c.requestRetryCount = count
+	}
+}
+
+// WithBackoff sets the exponential backoff parameters
+func WithBackoff(initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration) ClientOption {
+	return func(c *clientOptions) {
+		c.backOffInitialTimeout = initialTimeout
+		c.backOffMaxTimeout = maxTimeout
+		c.backOffExponentFactor = exponentFactor
+		c.backOffMaximumJitterInterval = maxJitter
+	}
+}
+
+// WithDialer sets the dialer configuration
+func WithDialer(keepAlive, timeout time.Duration) ClientOption {
+	return func(c *clientOptions) {
+		c.dialerKeepAlive = keepAlive
+		c.dialerTimeout = timeout
+	}
+}
+
+// WithTransport sets the transport configuration
+func WithTransport(idleTimeout, tlsTimeout, expectContinueTimeout time.Duration, maxIdleConnections int) ClientOption {
+	return func(c *clientOptions) {
+		c.transportIdleTimeout = idleTimeout
+		c.transportTLSHandshakeTimeout = tlsTimeout
+		c.transportExpectContinueTimeout = expectContinueTimeout
+		c.transportMaxIdleConnections = maxIdleConnections
+	}
 }
 
 // LastRequest is used to track what was submitted via the request()
@@ -72,93 +180,60 @@ type LastRequest struct {
 	URL        string `json:"url"`         // url is the url used for the request
 }
 
-// ClientDefaultOptions will return an "Options" struct with the default settings
-// Useful for starting with the default and then modifying as needed
-func ClientDefaultOptions() (clientOptions *Options) {
-	return &Options{
-		BackOffExponentFactor:          2.0,
-		BackOffInitialTimeout:          2 * time.Millisecond,
-		BackOffMaximumJitterInterval:   2 * time.Millisecond,
-		BackOffMaxTimeout:              10 * time.Millisecond,
-		DialerKeepAlive:                20 * time.Second,
-		DialerTimeout:                  5 * time.Second,
-		RequestRetryCount:              2,
-		RequestTimeout:                 30 * time.Second,
-		TransportExpectContinueTimeout: 3 * time.Second,
-		TransportIdleTimeout:           20 * time.Second,
-		TransportMaxIdleConnections:    10,
-		TransportTLSHandshakeTimeout:   5 * time.Second,
-		UserAgent:                      defaultUserAgent,
-		RateLimit:                      defaultRateLimit,
-	}
-}
-
-// createClient will make a new http client based on the options provided
-func createClient(network NetworkType, options *Options, customHTTPClient HTTPInterface) (c *Client) {
-
+// newClientFromOptions creates a client from clientOptions
+func newClientFromOptions(opts *clientOptions) *Client {
 	// Create a client
-	c = &Client{
+	c := &Client{
+		chain:       opts.chain,
 		lastRequest: &LastRequest{},
-		network:     network,
-	}
-
-	// Set options (either default or user modified)
-	if options == nil {
-		options = ClientDefaultOptions()
+		network:     opts.network,
+		options:     opts,
 	}
 
 	// Set values on the client from the given options
-	c.apiKey = options.APIKey
-	c.rateLimit = options.RateLimit
-	c.userAgent = options.UserAgent
+	c.apiKey = opts.apiKey
+	c.rateLimit = opts.rateLimit
+	c.userAgent = opts.userAgent
 
 	// Is there a custom HTTP client to use?
-	if customHTTPClient != nil {
-		c.httpClient = customHTTPClient
-		return
+	if opts.customHTTPClient != nil {
+		c.httpClient = opts.customHTTPClient
+		return c
 	}
 
 	// dial is the net dialer for clientDefaultTransport
-	dial := &net.Dialer{KeepAlive: options.DialerKeepAlive, Timeout: options.DialerTimeout}
+	dial := &net.Dialer{KeepAlive: opts.dialerKeepAlive, Timeout: opts.dialerTimeout}
 
 	// clientDefaultTransport is the default transport struct for the HTTP client
 	clientDefaultTransport := &http.Transport{
 		DialContext:           dial.DialContext,
-		ExpectContinueTimeout: options.TransportExpectContinueTimeout,
-		IdleConnTimeout:       options.TransportIdleTimeout,
-		MaxIdleConns:          options.TransportMaxIdleConnections,
+		ExpectContinueTimeout: opts.transportExpectContinueTimeout,
+		IdleConnTimeout:       opts.transportIdleTimeout,
+		MaxIdleConns:          opts.transportMaxIdleConnections,
 		Proxy:                 http.ProxyFromEnvironment,
-		TLSHandshakeTimeout:   options.TransportTLSHandshakeTimeout,
+		TLSHandshakeTimeout:   opts.transportTLSHandshakeTimeout,
+	}
+
+	// Create the base HTTP client with custom transport
+	baseHTTPClient := &http.Client{
+		Transport: clientDefaultTransport,
+		Timeout:   opts.requestTimeout,
 	}
 
 	// Determine the strategy for the http client (no retry enabled)
-	if options.RequestRetryCount <= 0 {
-		c.httpClient = httpclient.NewClient(
-			httpclient.WithHTTPTimeout(options.RequestTimeout),
-			httpclient.WithHTTPClient(&http.Client{
-				Transport: clientDefaultTransport,
-				Timeout:   options.RequestTimeout,
-			}),
-		)
+	if opts.requestRetryCount <= 0 {
+		c.httpClient = NewSimpleHTTPClient(baseHTTPClient)
 	} else { // Retry enabled
 		// Create exponential back-off
-		backOff := heimdall.NewExponentialBackoff(
-			options.BackOffInitialTimeout,
-			options.BackOffMaxTimeout,
-			options.BackOffExponentFactor,
-			options.BackOffMaximumJitterInterval,
+		backOff := NewExponentialBackoff(
+			opts.backOffInitialTimeout,
+			opts.backOffMaxTimeout,
+			opts.backOffExponentFactor,
+			opts.backOffMaximumJitterInterval,
 		)
 
-		c.httpClient = httpclient.NewClient(
-			httpclient.WithHTTPTimeout(options.RequestTimeout),
-			httpclient.WithRetrier(heimdall.NewRetrier(backOff)),
-			httpclient.WithRetryCount(options.RequestRetryCount),
-			httpclient.WithHTTPClient(&http.Client{
-				Transport: clientDefaultTransport,
-				Timeout:   options.RequestTimeout,
-			}),
-		)
+		c.httpClient = NewRetryableHTTPClient(baseHTTPClient, opts.requestRetryCount, backOff)
 	}
 
-	return
+	return c
 }
