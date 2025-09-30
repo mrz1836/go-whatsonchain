@@ -475,3 +475,71 @@ func TestSimpleHTTPClient(t *testing.T) {
 	client2 := NewSimpleHTTPClient(customClient)
 	assert.Equal(t, customClient, client2.client)
 }
+
+// errReadError is a static error for testing
+var errReadError = errors.New("read error")
+
+// errorReader always returns an error when read
+type errorReader struct{}
+
+func (e *errorReader) Read(_ []byte) (n int, err error) {
+	return 0, errReadError
+}
+
+// TestRetryableHTTPClient_Do_BodyReadError tests that body read errors are handled properly
+func TestRetryableHTTPClient_Do_BodyReadError(t *testing.T) {
+	t.Parallel()
+
+	backoff := NewExponentialBackoff(1*time.Millisecond, 100*time.Millisecond, 2.0, 0)
+	client := NewRetryableHTTPClient(nil, 2, backoff)
+
+	// Create a request with an error reader body
+	req, err := http.NewRequestWithContext(context.Background(), "POST", "http://example.com", &errorReader{})
+	require.NoError(t, err)
+
+	// This should fail when trying to read the body for retries
+	resp, err := client.Do(req)
+	if resp != nil && resp.Body != nil {
+		defer func() {
+			_ = resp.Body.Close()
+		}()
+	}
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "read error")
+}
+
+// TestRetryableHTTPClient_Do_DefaultBackoff tests that default backoff works when no backoff is provided
+func TestRetryableHTTPClient_Do_DefaultBackoff(t *testing.T) {
+	t.Parallel()
+
+	requestCount := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		requestCount++
+		if requestCount < 2 {
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.WriteHeader(http.StatusOK)
+			_, _ = fmt.Fprintln(w, "success")
+		}
+	}))
+	defer server.Close()
+
+	// Create client without backoff (will use default)
+	client := NewRetryableHTTPClient(nil, 3, nil)
+
+	req, err := http.NewRequestWithContext(context.Background(), "GET", server.URL, nil)
+	require.NoError(t, err)
+
+	start := time.Now()
+	resp, err := client.Do(req)
+	duration := time.Since(start)
+
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Equal(t, 2, requestCount)
+
+	// Should have some delay due to default backoff
+	assert.Greater(t, duration, 50*time.Millisecond)
+
+	defer func() { _ = resp.Body.Close() }()
+}

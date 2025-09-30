@@ -2,48 +2,22 @@ package whatsonchain
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
 // GetMempoolInfo this endpoint retrieves various info about the node's mempool for the selected network
 //
-// For more information: https://developers.whatsonchain.com/#get-mempool-info
-func (c *Client) GetMempoolInfo(ctx context.Context) (info *MempoolInfo, err error) {
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/mempool/info
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/mempool/info", apiEndpointBase, c.Chain(), c.Network()),
-		http.MethodGet, nil,
-	); err != nil {
-		return info, err
-	}
-	if len(resp) == 0 {
-		return nil, ErrMempoolInfoNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &info)
-	return info, err
+// For more information: https://docs/#get-mempool-info
+func (c *Client) GetMempoolInfo(ctx context.Context) (*MempoolInfo, error) {
+	url := c.buildURL("/mempool/info")
+	return requestAndUnmarshal[MempoolInfo](ctx, c, url, http.MethodGet, nil, ErrMempoolInfoNotFound)
 }
 
 // GetMempoolTransactions this endpoint will retrieve a list of transaction ids from the node's mempool
 // for the selected network
 //
-// For more information: https://developers.whatsonchain.com/#get-mempool-transactions
-func (c *Client) GetMempoolTransactions(ctx context.Context) (transactions []string, err error) {
-	var resp string
-	// https://api.whatsonchain.com/v1/bsv/<network>/mempool/raw
-	if resp, err = c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/mempool/raw", apiEndpointBase, c.Chain(), c.Network()),
-		http.MethodGet, nil,
-	); err != nil {
-		return transactions, err
-	}
-	if len(resp) == 0 {
-		return nil, ErrMempoolInfoNotFound
-	}
-	err = json.Unmarshal([]byte(resp), &transactions)
-	return transactions, err
+// For more information: https://docs/#get-mempool-transactions
+func (c *Client) GetMempoolTransactions(ctx context.Context) ([]string, error) {
+	url := c.buildURL("/mempool/raw")
+	return requestAndUnmarshalSlice[string](ctx, c, url, http.MethodGet, nil, ErrMempoolInfoNotFound)
 }

@@ -2,6 +2,7 @@ package whatsonchain
 
 import (
 	"context"
+	"time"
 )
 
 // AddressService is the WhatsOnChain address related requests
@@ -154,10 +155,30 @@ type ClientInterface interface {
 	TransactionService
 	BSVService
 	BTCService
+
+	// Getters
+	APIKey() string
+	BackoffConfig() (initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration)
 	Chain() ChainType
+	DialerConfig() (keepAlive, timeout time.Duration)
 	HTTPClient() HTTPInterface
 	LastRequest() *LastRequest
 	Network() NetworkType
 	RateLimit() int
+	RequestRetryCount() int
+	RequestTimeout() time.Duration
+	TransportConfig() (idleTimeout, tlsTimeout, expectContinueTimeout time.Duration, maxIdleConnections int)
 	UserAgent() string
+
+	// Setters
+	SetAPIKey(apiKey string)
+	SetBackoffConfig(initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration)
+	SetChain(chain ChainType)
+	SetDialerConfig(keepAlive, timeout time.Duration)
+	SetNetwork(network NetworkType)
+	SetRateLimit(rateLimit int)
+	SetRequestRetryCount(count int)
+	SetRequestTimeout(timeout time.Duration)
+	SetTransportConfig(idleTimeout, tlsTimeout, expectContinueTimeout time.Duration, maxIdleConnections int)
+	SetUserAgent(userAgent string)
 }
