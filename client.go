@@ -17,8 +17,8 @@ const (
 	// defaultRateLimit is the default rate limit for API requests
 	defaultRateLimit int = 3
 
-	// apiEndpoint is where we fire requests
-	apiEndpoint string = "https://api.whatsonchain.com/v1/bsv/"
+	// apiEndpointBase is where we fire requests (without chain specification)
+	apiEndpointBase string = "https://api.whatsonchain.com/v1/"
 
 	// apiHeaderKey is the header key for the API key
 	apiHeaderKey string = "woc-api-key"
@@ -32,6 +32,7 @@ type HTTPInterface interface {
 // Client is the parent struct that contains the HTTP client
 type Client struct {
 	apiKey      string        // optional for requests that require an API Key
+	chain       ChainType     // is the blockchain type to use (BSV or BTC)
 	httpClient  HTTPInterface // carries out the http operations
 	lastRequest *LastRequest  // is the raw information from the last request
 	network     NetworkType   // is the BitcoinSV network to use
@@ -88,9 +89,10 @@ func ClientDefaultOptions() (clientOptions *Options) {
 }
 
 // createClient will make a new http client based on the options provided
-func createClient(network NetworkType, options *Options, customHTTPClient HTTPInterface) (c *Client) {
+func createClient(chain ChainType, network NetworkType, options *Options, customHTTPClient HTTPInterface) (c *Client) {
 	// Create a client
 	c = &Client{
+		chain:       chain,
 		lastRequest: &LastRequest{},
 		network:     network,
 	}

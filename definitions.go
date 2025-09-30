@@ -1,10 +1,20 @@
 package whatsonchain
 
+// ChainType is used internally to represent the blockchain type
+// for queries to be submitted: {"bsv", "btc"}
+type ChainType string
+
 // NetworkType is used internally to represent the possible values
 // for network in queries to be submitted: {"main", "test", "stn"}
 type NetworkType string
 
 const (
+
+	// ChainBSV is for Bitcoin SV
+	ChainBSV ChainType = "bsv"
+
+	// ChainBTC is for Bitcoin Core
+	ChainBTC ChainType = "btc"
 
 	// NetworkMain is for main-net
 	NetworkMain NetworkType = "main"

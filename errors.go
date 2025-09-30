@@ -55,3 +55,9 @@ var ErrMissingRequest = errors.New("missing request")
 
 // ErrBadRequest is when a request is invalid
 var ErrBadRequest = errors.New("bad request")
+
+// ErrBSVChainRequired is when a BSV-only operation is attempted on a non-BSV chain
+var ErrBSVChainRequired = errors.New("operation is only available for BSV chain")
+
+// ErrBTCChainRequired is when a BTC-only operation is attempted on a non-BTC chain
+var ErrBTCChainRequired = errors.New("operation is only available for BTC chain")
