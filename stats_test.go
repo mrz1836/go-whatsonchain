@@ -137,7 +137,7 @@ func TestClient_GetMinerFeesStats(t *testing.T) {
 			t.Fatal(err)
 		}
 		mockClient.SetResponse(func(_ *http.Request) (*http.Response, error) {
-			resp := newHTTPResponse(`[{"timestamp":1714608000,"name":"Test Miner","fee_rate":10.5}]`)
+			resp := newHTTPResponse(`[{"miner":"Test Miner","min_fee_rate":10.5}]`)
 			resp.StatusCode = http.StatusOK
 			return resp, nil
 		})
@@ -149,8 +149,10 @@ func TestClient_GetMinerFeesStats(t *testing.T) {
 			t.Errorf("%s Failed: feeStats was nil", t.Name())
 		} else if len(feeStats) != 1 {
 			t.Errorf("%s Failed: expected 1 fee stat, got [%d]", t.Name(), len(feeStats))
-		} else if feeStats[0].FeeRate != 10.5 {
-			t.Errorf("%s Failed: expected fee rate [%f] got [%f]", t.Name(), 10.5, feeStats[0].FeeRate)
+		} else if feeStats[0].Miner != "Test Miner" {
+			t.Errorf("%s Failed: expected miner [%s] got [%s]", t.Name(), "Test Miner", feeStats[0].Miner)
+		} else if feeStats[0].MinFeeRate != 10.5 {
+			t.Errorf("%s Failed: expected min fee rate [%f] got [%f]", t.Name(), 10.5, feeStats[0].MinFeeRate)
 		}
 	})
 

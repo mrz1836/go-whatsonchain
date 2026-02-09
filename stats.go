@@ -46,11 +46,10 @@ type MinerStats struct {
 	Percentage float64 `json:"percentage"`
 }
 
-// MinerFeeStats represents miner fee statistics
+// MinerFeeStats represents miner fee statistics from the /miner/fees endpoint.
 type MinerFeeStats struct {
-	Timestamp int64   `json:"timestamp"`
-	Name      string  `json:"name"`
-	FeeRate   float64 `json:"fee_rate"`
+	Miner      string  `json:"miner"`
+	MinFeeRate float64 `json:"min_fee_rate"`
 }
 
 // MinerSummaryStats represents miner summary statistics
