@@ -20,7 +20,15 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"os"
 	"time"
+)
+
+const (
+	// EnvAPIKey is the environment variable name for the WhatsOnChain API key.
+	// When set, the SDK will automatically use this key for authenticated requests
+	// unless an explicit key is provided via WithAPIKey().
+	EnvAPIKey = "WHATS_ON_CHAIN_API_KEY" // #nosec G101 -- env var name, not a credential
 )
 
 // NewClient creates a new WhatsOnChain client with functional options
@@ -39,6 +47,13 @@ func NewClient(_ context.Context, opts ...ClientOption) (ClientInterface, error)
 	// Apply all provided options
 	for _, opt := range opts {
 		opt(options)
+	}
+
+	// Auto-load API key from environment if not explicitly provided
+	if options.apiKey == "" {
+		if envKey := os.Getenv(EnvAPIKey); envKey != "" {
+			options.apiKey = envKey
+		}
 	}
 
 	// Create and return the client

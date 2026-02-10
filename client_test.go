@@ -450,6 +450,31 @@ func TestSettersWithNilOptions(t *testing.T) {
 	assert.Equal(t, 0, maxIdle)
 }
 
+// TestNewClient_EnvAPIKey tests that WHATS_ON_CHAIN_API_KEY env var is auto-loaded
+func TestNewClient_EnvAPIKey(t *testing.T) {
+	t.Setenv(EnvAPIKey, "env-api-key-123")
+
+	client, err := NewClient(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, "env-api-key-123", client.APIKey())
+}
+
+// TestNewClient_EnvAPIKey_ExplicitOverrides tests that WithAPIKey takes precedence over env var
+func TestNewClient_EnvAPIKey_ExplicitOverrides(t *testing.T) {
+	t.Setenv(EnvAPIKey, "env-api-key-123")
+
+	client, err := NewClient(context.Background(), WithAPIKey("explicit-key"))
+	require.NoError(t, err)
+	assert.Equal(t, "explicit-key", client.APIKey())
+}
+
+// TestNewClient_EnvAPIKey_NotSet tests that no API key is set when env var is absent
+func TestNewClient_EnvAPIKey_NotSet(t *testing.T) {
+	client, err := NewClient(context.Background())
+	require.NoError(t, err)
+	assert.Empty(t, client.APIKey())
+}
+
 // BenchmarkNewClient benchmarks the NewClient method
 func BenchmarkNewClient(b *testing.B) {
 	for i := 0; i < b.N; i++ {
