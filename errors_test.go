@@ -40,6 +40,8 @@ func TestErrorConstants(t *testing.T) {
 		{"ErrBSVChainRequired", ErrBSVChainRequired, "operation is only available for BSV chain"},
 		{"ErrBTCChainRequired", ErrBTCChainRequired, "operation is only available for BTC chain"},
 		{"ErrTokenNotFound", ErrTokenNotFound, "token not found"},
+		{"ErrInvalidChain", ErrInvalidChain, "invalid chain type: must be one of: bsv, btc"},
+		{"ErrInvalidNetwork", ErrInvalidNetwork, "invalid network type: must be one of: main, test, stn"},
 	}
 
 	for _, tc := range testCases {

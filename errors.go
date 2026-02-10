@@ -73,3 +73,9 @@ var ErrTokenNotFound = errors.New("token not found")
 
 // ErrRequestFailed is when an API request returns a non-200 HTTP status code
 var ErrRequestFailed = errors.New("API request failed")
+
+// ErrInvalidChain is when an invalid chain type is provided
+var ErrInvalidChain = errors.New("invalid chain type: must be one of: bsv, btc")
+
+// ErrInvalidNetwork is when an invalid network type is provided
+var ErrInvalidNetwork = errors.New("invalid network type: must be one of: main, test, stn")
