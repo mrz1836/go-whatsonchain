@@ -22,9 +22,10 @@ func (c *Client) GetOpReturnData(ctx context.Context, txHash string) (string, er
 	}
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<txHash>/opreturn
-	return c.request(
+	resp, _, err := c.request(
 		ctx,
 		fmt.Sprintf("%s%s/%s/tx/%s/opreturn", apiEndpointBase, c.Chain(), c.Network(), txHash),
 		http.MethodGet, nil,
 	)
+	return string(resp), err
 }

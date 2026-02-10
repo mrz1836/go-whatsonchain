@@ -3,6 +3,7 @@ package whatsonchain
 import (
 	"net"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -31,14 +32,15 @@ type HTTPInterface interface {
 
 // Client is the parent struct that contains the HTTP client
 type Client struct {
-	apiKey      string         // optional for requests that require an API Key
-	chain       ChainType      // is the blockchain type to use (BSV or BTC)
-	httpClient  HTTPInterface  // carries out the http operations
-	lastRequest *LastRequest   // is the raw information from the last request
-	network     NetworkType    // is the BitcoinSV network to use
-	rateLimit   int            // configured rate limit per second
-	userAgent   string         // optional for changing user agents
-	options     *clientOptions // internal options configuration
+	apiKey        string         // optional for requests that require an API Key
+	chain         ChainType      // is the blockchain type to use (BSV or BTC)
+	httpClient    HTTPInterface  // carries out the http operations
+	lastRequest   *LastRequest   // is the raw information from the last request
+	lastRequestMu sync.RWMutex   // protects lastRequest for concurrent access
+	network       NetworkType    // is the BitcoinSV network to use
+	rateLimit     int            // configured rate limit per second
+	userAgent     string         // optional for changing user agents
+	options       *clientOptions // internal options configuration
 }
 
 // clientOptions holds all configuration for the client
@@ -172,7 +174,10 @@ func WithTransport(idleTimeout, tlsTimeout, expectContinueTimeout time.Duration,
 	}
 }
 
-// LastRequest is used to track what was submitted via the request()
+// LastRequest is used to track what was submitted via the request().
+// The Client protects this struct with a sync.RWMutex internally.
+// The value returned by Client.LastRequest() is a copy; callers may read it freely
+// but should not attempt to write back to it expecting the Client to see the change.
 type LastRequest struct {
 	Method     string `json:"method"`      // method is the HTTP method used
 	PostData   string `json:"post_data"`   // postData is the post data submitted if POST/PUT request

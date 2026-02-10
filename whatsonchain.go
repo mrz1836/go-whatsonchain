@@ -60,27 +60,35 @@ func NewClient(_ context.Context, opts ...ClientOption) (ClientInterface, error)
 	return newClientFromOptions(options), nil
 }
 
-// request is a generic request wrapper that can be used without constraints
-func (c *Client) request(ctx context.Context, url, method string, payload []byte) (response string, err error) {
+const (
+	// maxResponseSize is the maximum response body size (50 MB).
+	// Prevents unbounded memory allocation from unexpected server responses.
+	maxResponseSize = 50 * 1024 * 1024
+)
+
+// request is a generic request wrapper that can be used without constraints.
+// It returns the raw response body, the HTTP status code, and any error.
+func (c *Client) request(ctx context.Context, url, method string, payload []byte) ([]byte, int, error) {
 	// Set reader
 	var bodyReader io.Reader
 
-	// Add post data if applicable
+	// Store debugging information under mutex
+	c.lastRequestMu.Lock()
 	if method == http.MethodPost || method == http.MethodPut {
 		bodyReader = bytes.NewBuffer(payload)
-		c.LastRequest().PostData = string(payload)
+		c.lastRequest.PostData = string(payload)
 	}
-
-	// Store for debugging purposes
-	c.LastRequest().Method = method
-	c.LastRequest().URL = url
+	c.lastRequest.Method = method
+	c.lastRequest.URL = url
+	c.lastRequestMu.Unlock()
 
 	// Start the request
 	var request *http.Request
+	var err error
 	if request, err = http.NewRequestWithContext(
 		ctx, method, url, bodyReader,
 	); err != nil {
-		return response, err
+		return nil, 0, err
 	}
 
 	// Change the header (user agent is in case they block default Go user agents)
@@ -99,10 +107,14 @@ func (c *Client) request(ctx context.Context, url, method string, payload []byte
 	// Fire the http request
 	var resp *http.Response
 	if resp, err = c.httpClient.Do(request); err != nil {
+		var statusCode int
 		if resp != nil {
-			c.LastRequest().StatusCode = resp.StatusCode
+			statusCode = resp.StatusCode
 		}
-		return response, err
+		c.lastRequestMu.Lock()
+		c.lastRequest.StatusCode = statusCode
+		c.lastRequestMu.Unlock()
+		return nil, statusCode, err
 	}
 
 	// Close the response body
@@ -110,18 +122,18 @@ func (c *Client) request(ctx context.Context, url, method string, payload []byte
 		_ = resp.Body.Close()
 	}()
 
-	// Set the status
-	c.LastRequest().StatusCode = resp.StatusCode
+	// Set the status under mutex
+	c.lastRequestMu.Lock()
+	c.lastRequest.StatusCode = resp.StatusCode
+	c.lastRequestMu.Unlock()
 
-	// Read the body
+	// Read the body with a size limit to prevent unbounded memory allocation
 	var body []byte
-	if body, err = io.ReadAll(resp.Body); err != nil {
-		return response, err
+	if body, err = io.ReadAll(io.LimitReader(resp.Body, maxResponseSize)); err != nil {
+		return nil, resp.StatusCode, err
 	}
 
-	// Return the raw JSON response
-	response = string(body)
-	return response, err
+	return body, resp.StatusCode, nil
 }
 
 // UserAgent will return the current user agent
@@ -144,9 +156,13 @@ func (c *Client) Network() NetworkType {
 	return c.network
 }
 
-// LastRequest will return the last request information
+// LastRequest will return a copy of the last request information.
+// The returned value is a snapshot; it is safe to read without synchronization.
 func (c *Client) LastRequest() *LastRequest {
-	return c.lastRequest
+	c.lastRequestMu.RLock()
+	defer c.lastRequestMu.RUnlock()
+	cp := *c.lastRequest
+	return &cp
 }
 
 // HTTPClient will return the current HTTP client
