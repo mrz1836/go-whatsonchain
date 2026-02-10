@@ -291,4 +291,3 @@ func (c *Client) TransportConfig() (idleTimeout, tlsTimeout, expectContinueTimeo
 	return c.options.transportIdleTimeout, c.options.transportTLSHandshakeTimeout,
 		c.options.transportExpectContinueTimeout, c.options.transportMaxIdleConnections
 }
-
