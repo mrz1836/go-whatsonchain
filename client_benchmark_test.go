@@ -101,8 +101,6 @@ func BenchmarkClientSetters(b *testing.B) {
 		{"SetAPIKey", func(c *Client) { c.SetAPIKey("test-key") }},
 		{"SetUserAgent", func(c *Client) { c.SetUserAgent("agent") }},
 		{"SetRateLimit", func(c *Client) { c.SetRateLimit(5) }},
-		{"SetRequestTimeout", func(c *Client) { c.SetRequestTimeout(30 * time.Second) }},
-		{"SetRequestRetryCount", func(c *Client) { c.SetRequestRetryCount(3) }},
 	}
 
 	for _, tt := range tests {
@@ -173,13 +171,6 @@ func BenchmarkBackoffConfig(b *testing.B) {
 			_, _, _, _ = c.BackoffConfig()
 		}
 	})
-
-	b.Run("Set", func(b *testing.B) {
-		b.ReportAllocs()
-		for i := 0; i < b.N; i++ {
-			c.SetBackoffConfig(2*time.Millisecond, 10*time.Millisecond, 2.0, 2*time.Millisecond)
-		}
-	})
 }
 
 // BenchmarkDialerConfig benchmarks dialer configuration operations
@@ -193,13 +184,6 @@ func BenchmarkDialerConfig(b *testing.B) {
 			_, _ = c.DialerConfig()
 		}
 	})
-
-	b.Run("Set", func(b *testing.B) {
-		b.ReportAllocs()
-		for i := 0; i < b.N; i++ {
-			c.SetDialerConfig(20*time.Second, 5*time.Second)
-		}
-	})
 }
 
 // BenchmarkTransportConfig benchmarks transport configuration operations
@@ -211,13 +195,6 @@ func BenchmarkTransportConfig(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
 			_, _, _, _ = c.TransportConfig()
-		}
-	})
-
-	b.Run("Set", func(b *testing.B) {
-		b.ReportAllocs()
-		for i := 0; i < b.N; i++ {
-			c.SetTransportConfig(20*time.Second, 5*time.Second, 3*time.Second, 10)
 		}
 	})
 }
