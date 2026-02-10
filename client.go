@@ -91,6 +91,19 @@ func defaultClientOptions() *clientOptions {
 	}
 }
 
+// validChains contains the set of valid chain types
+var validChains = map[ChainType]bool{ //nolint:gochecknoglobals // read-only lookup table
+	ChainBSV: true,
+	ChainBTC: true,
+}
+
+// validNetworks contains the set of valid network types
+var validNetworks = map[NetworkType]bool{ //nolint:gochecknoglobals // read-only lookup table
+	NetworkMain: true,
+	NetworkTest: true,
+	NetworkStn:  true,
+}
+
 // WithChain sets the blockchain type (BSV or BTC)
 func WithChain(chain ChainType) ClientOption {
 	return func(c *clientOptions) {
@@ -119,9 +132,13 @@ func WithUserAgent(userAgent string) ClientOption {
 	}
 }
 
-// WithRateLimit sets the rate limit per second
+// WithRateLimit sets the rate limit per second.
+// Values less than 1 are clamped to 1 to prevent panics in batch processors.
 func WithRateLimit(rateLimit int) ClientOption {
 	return func(c *clientOptions) {
+		if rateLimit < 1 {
+			rateLimit = 1
+		}
 		c.rateLimit = rateLimit
 	}
 }

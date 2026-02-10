@@ -181,7 +181,9 @@ func TestClient_ChainSetter(t *testing.T) {
 	}
 
 	// Change to BTC
-	client.SetChain(ChainBTC)
+	if err = client.SetChain(ChainBTC); err != nil {
+		t.Fatal(err)
+	}
 
 	if client.Chain() != ChainBTC {
 		t.Errorf("After SetChain, Chain() = %v, want %v", client.Chain(), ChainBTC)
@@ -205,7 +207,9 @@ func TestClient_NetworkSetter(t *testing.T) {
 	}
 
 	// Change to test network
-	client.SetNetwork(NetworkTest)
+	if err = client.SetNetwork(NetworkTest); err != nil {
+		t.Fatal(err)
+	}
 
 	if client.Network() != NetworkTest {
 		t.Errorf("After SetNetwork, Network() = %v, want %v", client.Network(), NetworkTest)

@@ -270,7 +270,7 @@ func TestSetChain(t *testing.T) {
 	client, err := NewClient(context.Background())
 	require.NoError(t, err)
 
-	client.SetChain(ChainBTC)
+	require.NoError(t, client.SetChain(ChainBTC))
 	assert.Equal(t, ChainBTC, client.Chain())
 }
 
@@ -281,7 +281,7 @@ func TestSetNetwork(t *testing.T) {
 	client, err := NewClient(context.Background())
 	require.NoError(t, err)
 
-	client.SetNetwork(NetworkTest)
+	require.NoError(t, client.SetNetwork(NetworkTest))
 	assert.Equal(t, NetworkTest, client.Network())
 }
 

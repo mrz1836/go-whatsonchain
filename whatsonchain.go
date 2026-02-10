@@ -56,6 +56,14 @@ func NewClient(_ context.Context, opts ...ClientOption) (ClientInterface, error)
 		}
 	}
 
+	// Validate chain and network
+	if !validChains[options.chain] {
+		return nil, ErrInvalidChain
+	}
+	if !validNetworks[options.network] {
+		return nil, ErrInvalidNetwork
+	}
+
 	// Create and return the client
 	return newClientFromOptions(options), nil
 }
@@ -179,7 +187,9 @@ func (c *Client) LastRequest() *LastRequest {
 	return &cp
 }
 
-// HTTPClient will return the current HTTP client
+// HTTPClient will return the current HTTP client.
+// No mutex is needed here: httpClient is set once during construction
+// (in newClientFromOptions) and is never modified afterward.
 func (c *Client) HTTPClient() HTTPInterface {
 	return c.httpClient
 }
@@ -208,27 +218,41 @@ func (c *Client) SetUserAgent(userAgent string) {
 }
 
 // SetRateLimit sets the rate limit.
+// Values less than 1 are clamped to 1 to prevent panics in batch processors.
 // This method is safe for concurrent use.
 func (c *Client) SetRateLimit(rateLimit int) {
+	if rateLimit < 1 {
+		rateLimit = 1
+	}
 	c.optionsMu.Lock()
 	defer c.optionsMu.Unlock()
 	c.options.rateLimit = rateLimit
 }
 
 // SetChain sets the blockchain type.
+// Returns an error if the chain type is invalid.
 // This method is safe for concurrent use.
-func (c *Client) SetChain(chain ChainType) {
+func (c *Client) SetChain(chain ChainType) error {
+	if !validChains[chain] {
+		return ErrInvalidChain
+	}
 	c.optionsMu.Lock()
 	defer c.optionsMu.Unlock()
 	c.options.chain = chain
+	return nil
 }
 
 // SetNetwork sets the network type.
+// Returns an error if the network type is invalid.
 // This method is safe for concurrent use.
-func (c *Client) SetNetwork(network NetworkType) {
+func (c *Client) SetNetwork(network NetworkType) error {
+	if !validNetworks[network] {
+		return ErrInvalidNetwork
+	}
 	c.optionsMu.Lock()
 	defer c.optionsMu.Unlock()
 	c.options.network = network
+	return nil
 }
 
 // RequestTimeout returns the request timeout

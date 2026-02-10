@@ -182,9 +182,9 @@ type ClientInterface interface {
 	// Setters
 	SetAPIKey(apiKey string)
 	SetBackoffConfig(initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration)
-	SetChain(chain ChainType)
+	SetChain(chain ChainType) error
 	SetDialerConfig(keepAlive, timeout time.Duration)
-	SetNetwork(network NetworkType)
+	SetNetwork(network NetworkType) error
 	SetRateLimit(rateLimit int)
 	SetRequestRetryCount(count int)
 	SetRequestTimeout(timeout time.Duration)

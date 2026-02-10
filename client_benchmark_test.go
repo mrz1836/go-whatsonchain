@@ -96,8 +96,8 @@ func BenchmarkClientSetters(b *testing.B) {
 		name string
 		fn   func(*Client)
 	}{
-		{"SetChain", func(c *Client) { c.SetChain(ChainBSV) }},
-		{"SetNetwork", func(c *Client) { c.SetNetwork(NetworkMain) }},
+		{"SetChain", func(c *Client) { _ = c.SetChain(ChainBSV) }},
+		{"SetNetwork", func(c *Client) { _ = c.SetNetwork(NetworkMain) }},
 		{"SetAPIKey", func(c *Client) { c.SetAPIKey("test-key") }},
 		{"SetUserAgent", func(c *Client) { c.SetUserAgent("agent") }},
 		{"SetRateLimit", func(c *Client) { c.SetRateLimit(5) }},
@@ -128,7 +128,7 @@ func BenchmarkBuildURL(b *testing.B) {
 	tests := []struct {
 		name string
 		path string
-		args []interface{}
+		args []any
 	}{
 		{
 			name: "Simple",
@@ -138,17 +138,17 @@ func BenchmarkBuildURL(b *testing.B) {
 		{
 			name: "WithOneArg",
 			path: "/tx/hash/%s",
-			args: []interface{}{"abc123def456"},
+			args: []any{"abc123def456"},
 		},
 		{
 			name: "WithTwoArgs",
 			path: "/block/hash/%s/page/%d",
-			args: []interface{}{"abc123def456", 1},
+			args: []any{"abc123def456", 1},
 		},
 		{
 			name: "LongAddress",
 			path: "/address/%s/balance",
-			args: []interface{}{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"},
+			args: []any{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"},
 		},
 	}
 

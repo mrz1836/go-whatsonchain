@@ -41,19 +41,7 @@ func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (
 // See: BulkTransactionDetails()
 func (c *Client) BulkTransactionDetailsProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
 	// Break up the transactions into batches
-	chunkSize := MaxTransactionsUTXO
-	numBatches := (len(hashes.TxIDs) + chunkSize - 1) / chunkSize
-	batches := make([][]string, 0, numBatches)
-
-	for i := 0; i < len(hashes.TxIDs); i += chunkSize {
-		end := i + chunkSize
-
-		if end > len(hashes.TxIDs) {
-			end = len(hashes.TxIDs)
-		}
-
-		batches = append(batches, hashes.TxIDs[i:end])
-	}
+	batches := chunkSlice(hashes.TxIDs, MaxTransactionsUTXO)
 
 	// Set up rate limiting with a ticker
 	ticker := time.NewTicker(time.Second / time.Duration(c.RateLimit()))
@@ -149,19 +137,7 @@ func (c *Client) BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (
 // For more information: https://docs.whatsonchain.com/#bulk-raw-transaction-data
 func (c *Client) BulkRawTransactionDataProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
 	// Break up the transactions into batches
-	chunkSize := MaxTransactionsRaw
-	numBatches := (len(hashes.TxIDs) + chunkSize - 1) / chunkSize
-	batches := make([][]string, 0, numBatches)
-
-	for i := 0; i < len(hashes.TxIDs); i += chunkSize {
-		end := i + chunkSize
-
-		if end > len(hashes.TxIDs) {
-			end = len(hashes.TxIDs)
-		}
-
-		batches = append(batches, hashes.TxIDs[i:end])
-	}
+	batches := chunkSlice(hashes.TxIDs, MaxTransactionsRaw)
 
 	// Set up rate limiting with a ticker
 	ticker := time.NewTicker(time.Second / time.Duration(c.RateLimit()))
@@ -303,10 +279,10 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 	var resp []byte
 	var statusCode int
 
-	// https://api.whatsonchain.com/v1/bsv/tx/broadcast?feedback=<feedback>
+	// https://api.whatsonchain.com/v1/bsv/<network>/tx/broadcast?feedback=<feedback>
 	if resp, statusCode, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/%s/tx/broadcast?feedback=%t", apiEndpointBase, c.Chain(), c.Network(), feedback),
+		c.buildURL("/tx/broadcast?feedback=%t", feedback),
 		http.MethodPost, postData,
 	); err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrBroadcastFailed, err)

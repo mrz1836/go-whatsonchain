@@ -76,19 +76,7 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 	}
 
 	// Break up the UTXOs into batches
-	chunkSize := MaxTransactionsUTXO
-	numBatches := (len(utxos) + chunkSize - 1) / chunkSize
-	batches := make([]AddressHistory, 0, numBatches)
-
-	for i := 0; i < len(utxos); i += chunkSize {
-		end := i + chunkSize
-
-		if end > len(utxos) {
-			end = len(utxos)
-		}
-
-		batches = append(batches, utxos[i:end])
-	}
+	batches := chunkSlice(utxos, MaxTransactionsUTXO)
 
 	// Loop Batches - and get each batch (multiple batches of MaxTransactionsUTXO)
 	txHashes := &TxHashes{}
@@ -115,15 +103,15 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 			return history, err
 		}
 
-		// Build a map from tx hash to history record for O(1) lookup
-		historyMap := make(map[string]*HistoryRecord, len(history))
-		for _, utxo := range history {
-			historyMap[utxo.TxHash] = utxo
+		// Build a map from tx hash to tx info for O(1) lookup
+		txInfoMap := make(map[string]*TxInfo, len(txList))
+		for _, tx := range txList {
+			txInfoMap[tx.TxID] = tx
 		}
-		// Attach tx info to matching history records
-		for i, tx := range txList {
-			if utxo, ok := historyMap[tx.TxID]; ok {
-				utxo.Info = txList[i]
+		// Attach tx info to all UTXOs in this batch with matching tx hash
+		for _, utxo := range batch {
+			if info, ok := txInfoMap[utxo.TxHash]; ok {
+				utxo.Info = info
 			}
 		}
 	}
@@ -143,6 +131,10 @@ func (c *Client) DownloadStatement(ctx context.Context, address string) (string,
 
 // bulkRequest is the common parts of the bulk requests
 func bulkRequest(list *AddressList) ([]byte, error) {
+	if list == nil {
+		return nil, ErrMissingRequest
+	}
+
 	// The max limit by WOC
 	if len(list.Addresses) > MaxAddressesForLookup {
 		return nil, fmt.Errorf("%w: %d addresses requested, max is %d", ErrMaxAddressesExceeded, len(list.Addresses), MaxAddressesForLookup)
@@ -177,16 +169,7 @@ func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (AddressBal
 //
 // For more information: https://docs.whatsonchain.com/#bulk-unspent-transactions
 func (c *Client) BulkUnspentTransactionsProcessor(ctx context.Context, list *AddressList) (responseList BulkUnspentResponse, err error) {
-	chunkSize := MaxTransactionsUTXO
-	numBatches := (len(list.Addresses) + chunkSize - 1) / chunkSize
-	batches := make([][]string, 0, numBatches)
-	for i := 0; i < len(list.Addresses); i += chunkSize {
-		end := i + chunkSize
-		if end > len(list.Addresses) {
-			end = len(list.Addresses)
-		}
-		batches = append(batches, list.Addresses[i:end])
-	}
+	batches := chunkSlice(list.Addresses, MaxTransactionsUTXO)
 	// Set up rate limiting with a ticker
 	ticker := time.NewTicker(time.Second / time.Duration(c.RateLimit()))
 	defer ticker.Stop()
