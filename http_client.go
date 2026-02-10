@@ -166,10 +166,12 @@ func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 		}
 
 		// Wait before retrying, respecting context cancellation
+		timer := time.NewTimer(backoffDuration)
 		select {
 		case <-req.Context().Done():
+			timer.Stop()
 			return lastResp, req.Context().Err()
-		case <-time.After(backoffDuration):
+		case <-timer.C:
 			// Continue to next attempt
 		}
 	}
