@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	netURL "net/url"
 	"time"
 )
 
@@ -43,7 +44,14 @@ func (c *Client) AddressHistory(ctx context.Context, address string) (AddressHis
 // For more information: https://docs.whatsonchain.com/#get-unspent-transactions
 func (c *Client) AddressUnspentTransactions(ctx context.Context, address string) (AddressHistory, error) {
 	url := c.buildURL("/address/%s/unspent/all", address)
-	return requestAndUnmarshalSlice[*HistoryRecord](ctx, c, url, http.MethodGet, nil, ErrAddressNotFound)
+	resp, err := requestAndUnmarshal[addressUnspentAllResponse](ctx, c, url, http.MethodGet, nil, ErrAddressNotFound)
+	if err != nil {
+		return nil, err
+	}
+	if resp.Error != "" {
+		return nil, fmt.Errorf("%w: %s", ErrRequestFailed, resp.Error)
+	}
+	return resp.Result, nil
 }
 
 // AddressUnspentTransactionDetails this endpoint retrieves transaction details for a given address
@@ -129,7 +137,7 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 // For more information: https://docs.whatsonchain.com/#download-statement
 func (c *Client) DownloadStatement(ctx context.Context, address string) (string, error) {
 	// This endpoint does not follow the convention of the WOC API v1
-	url := fmt.Sprintf("https://%s.whatsonchain.com/statement/%s", c.Network(), address)
+	url := fmt.Sprintf("https://%s.whatsonchain.com/statement/%s", c.Network(), netURL.PathEscape(address))
 	return requestString(ctx, c, url)
 }
 

@@ -37,8 +37,8 @@ const (
 	// MaxSingleTransactionSize is the max single TX size for Bulk Broadcast
 	MaxSingleTransactionSize = 102400
 
-	// MaxCombinedTransactionSize is the max of all transactions combined
-	MaxCombinedTransactionSize = 1e+7
+	// MaxCombinedTransactionSize is the max of all transactions combined (10 MB)
+	MaxCombinedTransactionSize = 10_000_000
 
 	// MaxAddressesForLookup is the max allowed in the request for Bulk requests
 	MaxAddressesForLookup int = 20
@@ -283,6 +283,15 @@ type HistoryRecord struct {
 	TxHash string  `json:"tx_hash"`
 	TxPos  int64   `json:"tx_pos"`
 	Value  int64   `json:"value"`
+}
+
+// addressUnspentAllResponse wraps the /address/{addr}/unspent/all response.
+// The WOC API returns {"address":"...","script":"...","result":[...],"error":"..."}.
+type addressUnspentAllResponse struct {
+	Address string           `json:"address"`
+	Script  string           `json:"script"`
+	Result  []*HistoryRecord `json:"result"`
+	Error   string           `json:"error"`
 }
 
 // MempoolInfo is the response for the get mempool info request
