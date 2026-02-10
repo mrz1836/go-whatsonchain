@@ -2,7 +2,7 @@ package whatsonchain
 
 import (
 	"context"
-	"fmt"
+	"encoding/json"
 	"net/http"
 )
 
@@ -11,7 +11,10 @@ import (
 //
 // For more information: https://docs.whatsonchain.com/#get-history
 func (c *Client) GetExplorerLinks(ctx context.Context, query string) (SearchResults, error) {
-	postData := []byte(fmt.Sprintf(`{"query":"%s"}`, query))
+	postData, err := json.Marshal(map[string]string{"query": query})
+	if err != nil {
+		return SearchResults{}, err
+	}
 	url := c.buildURL("/search/links")
 	result, err := requestAndUnmarshal[SearchResults](ctx, c, url, http.MethodPost, postData, ErrChainInfoNotFound)
 	if err != nil {
