@@ -12,7 +12,7 @@ import (
 
 // TestNewClient tests the new NewClient function with default options
 func TestNewClient(t *testing.T) {
-	t.Parallel()
+	t.Setenv(EnvAPIKey, "")
 
 	client, err := NewClient(context.Background())
 	require.NoError(t, err)
@@ -470,6 +470,8 @@ func TestNewClient_EnvAPIKey_ExplicitOverrides(t *testing.T) {
 
 // TestNewClient_EnvAPIKey_NotSet tests that no API key is set when env var is absent
 func TestNewClient_EnvAPIKey_NotSet(t *testing.T) {
+	t.Setenv(EnvAPIKey, "")
+
 	client, err := NewClient(context.Background())
 	require.NoError(t, err)
 	assert.Empty(t, client.APIKey())
