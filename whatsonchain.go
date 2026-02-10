@@ -10,8 +10,8 @@ Example:
 	)
 
 	// Get a balance for an address:
-	balance, _ := client.AddressBalance(context.Background(), "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
-	fmt.Println("confirmed balance", balance.Confirmed)
+	balance, _ := client.AddressConfirmedBalance(context.Background(), "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+	fmt.Println("confirmed balance", balance.Balance)
 */
 package whatsonchain
 
@@ -83,7 +83,7 @@ func (c *Client) request(ctx context.Context, url, method string, payload []byte
 	// Store debugging information under mutex
 	c.lastRequestMu.Lock()
 	if method == http.MethodPost || method == http.MethodPut {
-		bodyReader = bytes.NewBuffer(payload)
+		bodyReader = bytes.NewReader(payload)
 		c.lastRequest.PostData = string(payload)
 	}
 	c.lastRequest.Method = method
@@ -262,33 +262,11 @@ func (c *Client) RequestTimeout() time.Duration {
 	return c.options.requestTimeout
 }
 
-// SetRequestTimeout updates the stored request timeout value.
-//
-// This does not rebuild the underlying HTTP client. The timeout used for
-// actual requests is determined at client construction time (via WithRequestTimeout).
-// This method is safe for concurrent use.
-func (c *Client) SetRequestTimeout(timeout time.Duration) {
-	c.optionsMu.Lock()
-	defer c.optionsMu.Unlock()
-	c.options.requestTimeout = timeout
-}
-
 // RequestRetryCount returns the retry count
 func (c *Client) RequestRetryCount() int {
 	c.optionsMu.RLock()
 	defer c.optionsMu.RUnlock()
 	return c.options.requestRetryCount
-}
-
-// SetRequestRetryCount updates the stored retry count value.
-//
-// This does not rebuild the underlying HTTP client. The retry count used for
-// actual requests is determined at client construction time (via WithRequestRetryCount).
-// This method is safe for concurrent use.
-func (c *Client) SetRequestRetryCount(count int) {
-	c.optionsMu.Lock()
-	defer c.optionsMu.Unlock()
-	c.options.requestRetryCount = count
 }
 
 // BackoffConfig returns the backoff configuration
@@ -299,37 +277,11 @@ func (c *Client) BackoffConfig() (initialTimeout, maxTimeout time.Duration, expo
 		c.options.backOffExponentFactor, c.options.backOffMaximumJitterInterval
 }
 
-// SetBackoffConfig updates the stored backoff configuration values.
-//
-// This does not rebuild the underlying HTTP client. The backoff configuration
-// used for actual requests is determined at client construction time (via WithBackoff).
-// This method is safe for concurrent use.
-func (c *Client) SetBackoffConfig(initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration) {
-	c.optionsMu.Lock()
-	defer c.optionsMu.Unlock()
-	c.options.backOffInitialTimeout = initialTimeout
-	c.options.backOffMaxTimeout = maxTimeout
-	c.options.backOffExponentFactor = exponentFactor
-	c.options.backOffMaximumJitterInterval = maxJitter
-}
-
 // DialerConfig returns the dialer configuration
 func (c *Client) DialerConfig() (keepAlive, timeout time.Duration) {
 	c.optionsMu.RLock()
 	defer c.optionsMu.RUnlock()
 	return c.options.dialerKeepAlive, c.options.dialerTimeout
-}
-
-// SetDialerConfig updates the stored dialer configuration values.
-//
-// This does not rebuild the underlying HTTP client. The dialer configuration
-// used for actual requests is determined at client construction time (via WithDialer).
-// This method is safe for concurrent use.
-func (c *Client) SetDialerConfig(keepAlive, timeout time.Duration) {
-	c.optionsMu.Lock()
-	defer c.optionsMu.Unlock()
-	c.options.dialerKeepAlive = keepAlive
-	c.options.dialerTimeout = timeout
 }
 
 // TransportConfig returns the transport configuration
@@ -340,16 +292,3 @@ func (c *Client) TransportConfig() (idleTimeout, tlsTimeout, expectContinueTimeo
 		c.options.transportExpectContinueTimeout, c.options.transportMaxIdleConnections
 }
 
-// SetTransportConfig updates the stored transport configuration values.
-//
-// This does not rebuild the underlying HTTP client. The transport configuration
-// used for actual requests is determined at client construction time (via WithTransport).
-// This method is safe for concurrent use.
-func (c *Client) SetTransportConfig(idleTimeout, tlsTimeout, expectContinueTimeout time.Duration, maxIdleConnections int) {
-	c.optionsMu.Lock()
-	defer c.optionsMu.Unlock()
-	c.options.transportIdleTimeout = idleTimeout
-	c.options.transportTLSHandshakeTimeout = tlsTimeout
-	c.options.transportExpectContinueTimeout = expectContinueTimeout
-	c.options.transportMaxIdleConnections = maxIdleConnections
-}
