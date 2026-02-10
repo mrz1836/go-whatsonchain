@@ -68,8 +68,9 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 	}
 
 	// Break up the UTXOs into batches
-	var batches []AddressHistory
 	chunkSize := MaxTransactionsUTXO
+	numBatches := (len(utxos) + chunkSize - 1) / chunkSize
+	batches := make([]AddressHistory, 0, numBatches)
 
 	for i := 0; i < len(utxos); i += chunkSize {
 		end := i + chunkSize
@@ -81,17 +82,21 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 		batches = append(batches, utxos[i:end])
 	}
 
-	// todo: use channels/wait group to fire all requests at the same time (rate limiting)
-
 	// Loop Batches - and get each batch (multiple batches of MaxTransactionsUTXO)
+	txHashes := &TxHashes{}
 	for _, batch := range batches {
+		// Check for context cancellation before processing
+		select {
+		case <-ctx.Done():
+			return history, ctx.Err()
+		default:
+		}
 
-		txHashes := new(TxHashes)
+		// Reuse the TxHashes struct
+		txHashes.TxIDs = txHashes.TxIDs[:0]
 
 		// Loop the batch (max MaxTransactionsUTXO)
 		for _, utxo := range batch {
-
-			// Append to the list to send and return
 			txHashes.TxIDs = append(txHashes.TxIDs, utxo.TxHash)
 			history = append(history, utxo)
 		}
@@ -102,13 +107,15 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 			return history, err
 		}
 
-		// Add to the history list
-		for index, tx := range txList {
-			for _, utxo := range history {
-				if utxo.TxHash == tx.TxID {
-					utxo.Info = txList[index]
-					continue
-				}
+		// Build a map from tx hash to history record for O(1) lookup
+		historyMap := make(map[string]*HistoryRecord, len(history))
+		for _, utxo := range history {
+			historyMap[utxo.TxHash] = utxo
+		}
+		// Attach tx info to matching history records
+		for i, tx := range txList {
+			if utxo, ok := historyMap[tx.TxID]; ok {
+				utxo.Info = txList[i]
 			}
 		}
 	}
@@ -162,8 +169,9 @@ func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (AddressBal
 //
 // For more information: https://docs.whatsonchain.com/#bulk-unspent-transactions
 func (c *Client) BulkUnspentTransactionsProcessor(ctx context.Context, list *AddressList) (responseList BulkUnspentResponse, err error) {
-	var batches [][]string
 	chunkSize := MaxTransactionsUTXO
+	numBatches := (len(list.Addresses) + chunkSize - 1) / chunkSize
+	batches := make([][]string, 0, numBatches)
 	for i := 0; i < len(list.Addresses); i += chunkSize {
 		end := i + chunkSize
 		if end > len(list.Addresses) {
@@ -171,20 +179,33 @@ func (c *Client) BulkUnspentTransactionsProcessor(ctx context.Context, list *Add
 		}
 		batches = append(batches, list.Addresses[i:end])
 	}
-	var currentRateLimit int
+	// Set up rate limiting with a ticker
+	ticker := time.NewTicker(time.Second / time.Duration(c.RateLimit()))
+	defer ticker.Stop()
+
+	addressList := &AddressList{}
 	for _, batch := range batches {
-		addressList := new(AddressList)
+		// Check for context cancellation before processing
+		select {
+		case <-ctx.Done():
+			return responseList, ctx.Err()
+		default:
+		}
+
+		// Wait for rate limit tick
+		select {
+		case <-ctx.Done():
+			return responseList, ctx.Err()
+		case <-ticker.C:
+		}
+
+		addressList.Addresses = addressList.Addresses[:0]
 		addressList.Addresses = append(addressList.Addresses, batch...)
 		var returnedList BulkUnspentResponse
 		if returnedList, err = c.BulkUnspentTransactions(ctx, addressList); err != nil {
 			return responseList, err
 		}
 		responseList = append(responseList, returnedList...)
-		currentRateLimit++
-		if currentRateLimit >= c.RateLimit() {
-			time.Sleep(1 * time.Second)
-			currentRateLimit = 0
-		}
 	}
 	return responseList, err
 }
