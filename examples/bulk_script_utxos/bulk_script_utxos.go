@@ -18,8 +18,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Get the balance for multiple addresses
-	balances, _ := client.BulkScriptUnspentTransactions(
+	// Get the UTXOs for multiple scripts
+	balances, _ := client.BulkScriptConfirmedUTXOs(
 		context.Background(),
 		&whatsonchain.ScriptsList{
 			Scripts: []string{

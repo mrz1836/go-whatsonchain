@@ -18,8 +18,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Get the balance for multiple addresses
-	balances, _ := client.BulkUnspentTransactions(
+	// Get the UTXOs for multiple addresses
+	balances, _ := client.BulkAddressConfirmedUTXOs(
 		context.Background(),
 		&whatsonchain.AddressList{
 			Addresses: []string{

@@ -19,7 +19,7 @@ func main() {
 	}
 
 	// Get the balance for multiple addresses
-	balances, _ := client.BulkBalance(
+	balances, _ := client.BulkAddressConfirmedBalance(
 		context.Background(),
 		&whatsonchain.AddressList{
 			Addresses: []string{

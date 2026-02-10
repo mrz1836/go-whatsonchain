@@ -19,6 +19,6 @@ func main() {
 	}
 
 	// Get a balance for an address
-	balance, _ := client.AddressBalance(context.Background(), "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
-	log.Printf("confirmed balance: %d", balance.Confirmed)
+	balance, _ := client.AddressConfirmedBalance(context.Background(), "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+	log.Printf("confirmed balance: %d", balance.Balance)
 }
