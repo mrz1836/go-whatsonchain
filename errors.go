@@ -70,3 +70,6 @@ var ErrBTCChainRequired = errors.New("operation is only available for BTC chain"
 
 // ErrTokenNotFound is when a token is not found
 var ErrTokenNotFound = errors.New("token not found")
+
+// ErrRequestFailed is when an API request returns a non-200 HTTP status code
+var ErrRequestFailed = errors.New("API request failed")
