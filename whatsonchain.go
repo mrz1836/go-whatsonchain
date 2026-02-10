@@ -91,8 +91,14 @@ func (c *Client) request(ctx context.Context, url, method string, payload []byte
 		return nil, 0, err
 	}
 
+	// Read user agent and API key under options lock
+	c.optionsMu.RLock()
+	ua := c.options.userAgent
+	apiKey := c.options.apiKey
+	c.optionsMu.RUnlock()
+
 	// Change the header (user agent is in case they block default Go user agents)
-	request.Header.Set("User-Agent", c.UserAgent())
+	request.Header.Set("User-Agent", ua)
 
 	// Set the content type on Method
 	if method == http.MethodPost || method == http.MethodPut {
@@ -100,8 +106,8 @@ func (c *Client) request(ctx context.Context, url, method string, payload []byte
 	}
 
 	// Set the API key if found
-	if len(c.apiKey) > 0 {
-		request.Header.Set(apiHeaderKey, c.apiKey)
+	if len(apiKey) > 0 {
+		request.Header.Set(apiHeaderKey, apiKey)
 	}
 
 	// Fire the http request
@@ -138,22 +144,30 @@ func (c *Client) request(ctx context.Context, url, method string, payload []byte
 
 // UserAgent will return the current user agent
 func (c *Client) UserAgent() string {
-	return c.userAgent
+	c.optionsMu.RLock()
+	defer c.optionsMu.RUnlock()
+	return c.options.userAgent
 }
 
 // RateLimit will return the current configured rate limit
 func (c *Client) RateLimit() int {
-	return c.rateLimit
+	c.optionsMu.RLock()
+	defer c.optionsMu.RUnlock()
+	return c.options.rateLimit
 }
 
 // Chain will return the chain
 func (c *Client) Chain() ChainType {
-	return c.chain
+	c.optionsMu.RLock()
+	defer c.optionsMu.RUnlock()
+	return c.options.chain
 }
 
 // Network will return the network
 func (c *Client) Network() NetworkType {
-	return c.network
+	c.optionsMu.RLock()
+	defer c.optionsMu.RUnlock()
+	return c.options.network
 }
 
 // LastRequest will return a copy of the last request information.
@@ -172,129 +186,146 @@ func (c *Client) HTTPClient() HTTPInterface {
 
 // APIKey returns the current API key
 func (c *Client) APIKey() string {
-	return c.apiKey
+	c.optionsMu.RLock()
+	defer c.optionsMu.RUnlock()
+	return c.options.apiKey
 }
 
-// SetAPIKey sets the API key
+// SetAPIKey sets the API key.
+// This method is safe for concurrent use.
 func (c *Client) SetAPIKey(apiKey string) {
-	c.apiKey = apiKey
-	if c.options != nil {
-		c.options.apiKey = apiKey
-	}
+	c.optionsMu.Lock()
+	defer c.optionsMu.Unlock()
+	c.options.apiKey = apiKey
 }
 
-// SetUserAgent sets the user agent
+// SetUserAgent sets the user agent.
+// This method is safe for concurrent use.
 func (c *Client) SetUserAgent(userAgent string) {
-	c.userAgent = userAgent
-	if c.options != nil {
-		c.options.userAgent = userAgent
-	}
+	c.optionsMu.Lock()
+	defer c.optionsMu.Unlock()
+	c.options.userAgent = userAgent
 }
 
-// SetRateLimit sets the rate limit
+// SetRateLimit sets the rate limit.
+// This method is safe for concurrent use.
 func (c *Client) SetRateLimit(rateLimit int) {
-	c.rateLimit = rateLimit
-	if c.options != nil {
-		c.options.rateLimit = rateLimit
-	}
+	c.optionsMu.Lock()
+	defer c.optionsMu.Unlock()
+	c.options.rateLimit = rateLimit
 }
 
-// SetChain sets the blockchain type
+// SetChain sets the blockchain type.
+// This method is safe for concurrent use.
 func (c *Client) SetChain(chain ChainType) {
-	c.chain = chain
-	if c.options != nil {
-		c.options.chain = chain
-	}
+	c.optionsMu.Lock()
+	defer c.optionsMu.Unlock()
+	c.options.chain = chain
 }
 
-// SetNetwork sets the network type
+// SetNetwork sets the network type.
+// This method is safe for concurrent use.
 func (c *Client) SetNetwork(network NetworkType) {
-	c.network = network
-	if c.options != nil {
-		c.options.network = network
-	}
+	c.optionsMu.Lock()
+	defer c.optionsMu.Unlock()
+	c.options.network = network
 }
 
 // RequestTimeout returns the request timeout
 func (c *Client) RequestTimeout() time.Duration {
-	if c.options != nil {
-		return c.options.requestTimeout
-	}
-	return 0
+	c.optionsMu.RLock()
+	defer c.optionsMu.RUnlock()
+	return c.options.requestTimeout
 }
 
-// SetRequestTimeout sets the request timeout
+// SetRequestTimeout updates the stored request timeout value.
+//
+// This does not rebuild the underlying HTTP client. The timeout used for
+// actual requests is determined at client construction time (via WithRequestTimeout).
+// This method is safe for concurrent use.
 func (c *Client) SetRequestTimeout(timeout time.Duration) {
-	if c.options != nil {
-		c.options.requestTimeout = timeout
-	}
+	c.optionsMu.Lock()
+	defer c.optionsMu.Unlock()
+	c.options.requestTimeout = timeout
 }
 
 // RequestRetryCount returns the retry count
 func (c *Client) RequestRetryCount() int {
-	if c.options != nil {
-		return c.options.requestRetryCount
-	}
-	return 0
+	c.optionsMu.RLock()
+	defer c.optionsMu.RUnlock()
+	return c.options.requestRetryCount
 }
 
-// SetRequestRetryCount sets the retry count
+// SetRequestRetryCount updates the stored retry count value.
+//
+// This does not rebuild the underlying HTTP client. The retry count used for
+// actual requests is determined at client construction time (via WithRequestRetryCount).
+// This method is safe for concurrent use.
 func (c *Client) SetRequestRetryCount(count int) {
-	if c.options != nil {
-		c.options.requestRetryCount = count
-	}
+	c.optionsMu.Lock()
+	defer c.optionsMu.Unlock()
+	c.options.requestRetryCount = count
 }
 
 // BackoffConfig returns the backoff configuration
 func (c *Client) BackoffConfig() (initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration) {
-	if c.options != nil {
-		return c.options.backOffInitialTimeout, c.options.backOffMaxTimeout,
-			c.options.backOffExponentFactor, c.options.backOffMaximumJitterInterval
-	}
-	return 0, 0, 0, 0
+	c.optionsMu.RLock()
+	defer c.optionsMu.RUnlock()
+	return c.options.backOffInitialTimeout, c.options.backOffMaxTimeout,
+		c.options.backOffExponentFactor, c.options.backOffMaximumJitterInterval
 }
 
-// SetBackoffConfig sets the backoff configuration
+// SetBackoffConfig updates the stored backoff configuration values.
+//
+// This does not rebuild the underlying HTTP client. The backoff configuration
+// used for actual requests is determined at client construction time (via WithBackoff).
+// This method is safe for concurrent use.
 func (c *Client) SetBackoffConfig(initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration) {
-	if c.options != nil {
-		c.options.backOffInitialTimeout = initialTimeout
-		c.options.backOffMaxTimeout = maxTimeout
-		c.options.backOffExponentFactor = exponentFactor
-		c.options.backOffMaximumJitterInterval = maxJitter
-	}
+	c.optionsMu.Lock()
+	defer c.optionsMu.Unlock()
+	c.options.backOffInitialTimeout = initialTimeout
+	c.options.backOffMaxTimeout = maxTimeout
+	c.options.backOffExponentFactor = exponentFactor
+	c.options.backOffMaximumJitterInterval = maxJitter
 }
 
 // DialerConfig returns the dialer configuration
 func (c *Client) DialerConfig() (keepAlive, timeout time.Duration) {
-	if c.options != nil {
-		return c.options.dialerKeepAlive, c.options.dialerTimeout
-	}
-	return 0, 0
+	c.optionsMu.RLock()
+	defer c.optionsMu.RUnlock()
+	return c.options.dialerKeepAlive, c.options.dialerTimeout
 }
 
-// SetDialerConfig sets the dialer configuration
+// SetDialerConfig updates the stored dialer configuration values.
+//
+// This does not rebuild the underlying HTTP client. The dialer configuration
+// used for actual requests is determined at client construction time (via WithDialer).
+// This method is safe for concurrent use.
 func (c *Client) SetDialerConfig(keepAlive, timeout time.Duration) {
-	if c.options != nil {
-		c.options.dialerKeepAlive = keepAlive
-		c.options.dialerTimeout = timeout
-	}
+	c.optionsMu.Lock()
+	defer c.optionsMu.Unlock()
+	c.options.dialerKeepAlive = keepAlive
+	c.options.dialerTimeout = timeout
 }
 
 // TransportConfig returns the transport configuration
 func (c *Client) TransportConfig() (idleTimeout, tlsTimeout, expectContinueTimeout time.Duration, maxIdleConnections int) {
-	if c.options != nil {
-		return c.options.transportIdleTimeout, c.options.transportTLSHandshakeTimeout,
-			c.options.transportExpectContinueTimeout, c.options.transportMaxIdleConnections
-	}
-	return 0, 0, 0, 0
+	c.optionsMu.RLock()
+	defer c.optionsMu.RUnlock()
+	return c.options.transportIdleTimeout, c.options.transportTLSHandshakeTimeout,
+		c.options.transportExpectContinueTimeout, c.options.transportMaxIdleConnections
 }
 
-// SetTransportConfig sets the transport configuration
+// SetTransportConfig updates the stored transport configuration values.
+//
+// This does not rebuild the underlying HTTP client. The transport configuration
+// used for actual requests is determined at client construction time (via WithTransport).
+// This method is safe for concurrent use.
 func (c *Client) SetTransportConfig(idleTimeout, tlsTimeout, expectContinueTimeout time.Duration, maxIdleConnections int) {
-	if c.options != nil {
-		c.options.transportIdleTimeout = idleTimeout
-		c.options.transportTLSHandshakeTimeout = tlsTimeout
-		c.options.transportExpectContinueTimeout = expectContinueTimeout
-		c.options.transportMaxIdleConnections = maxIdleConnections
-	}
+	c.optionsMu.Lock()
+	defer c.optionsMu.Unlock()
+	c.options.transportIdleTimeout = idleTimeout
+	c.options.transportTLSHandshakeTimeout = tlsTimeout
+	c.options.transportExpectContinueTimeout = expectContinueTimeout
+	c.options.transportMaxIdleConnections = maxIdleConnections
 }

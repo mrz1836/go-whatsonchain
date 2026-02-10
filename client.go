@@ -30,17 +30,18 @@ type HTTPInterface interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-// Client is the parent struct that contains the HTTP client
+// Client is the parent struct that contains the HTTP client.
+//
+// All configuration fields (apiKey, chain, network, rateLimit, userAgent)
+// are stored in c.options as the single source of truth and protected by
+// c.optionsMu for concurrent access. The Set* and getter methods acquire
+// this mutex automatically, so callers may safely call them from any goroutine.
 type Client struct {
-	apiKey        string         // optional for requests that require an API Key
-	chain         ChainType      // is the blockchain type to use (BSV or BTC)
 	httpClient    HTTPInterface  // carries out the http operations
 	lastRequest   *LastRequest   // is the raw information from the last request
 	lastRequestMu sync.RWMutex   // protects lastRequest for concurrent access
-	network       NetworkType    // is the BitcoinSV network to use
-	rateLimit     int            // configured rate limit per second
-	userAgent     string         // optional for changing user agents
-	options       *clientOptions // internal options configuration
+	options       *clientOptions // single source of truth for all configuration
+	optionsMu     sync.RWMutex   // protects options fields for concurrent access
 }
 
 // clientOptions holds all configuration for the client
@@ -189,16 +190,9 @@ type LastRequest struct {
 func newClientFromOptions(opts *clientOptions) *Client {
 	// Create a client
 	c := &Client{
-		chain:       opts.chain,
 		lastRequest: &LastRequest{},
-		network:     opts.network,
 		options:     opts,
 	}
-
-	// Set values on the client from the given options
-	c.apiKey = opts.apiKey
-	c.rateLimit = opts.rateLimit
-	c.userAgent = opts.userAgent
 
 	// Is there a custom HTTP client to use?
 	if opts.customHTTPClient != nil {
