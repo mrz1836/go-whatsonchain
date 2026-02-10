@@ -40,8 +40,9 @@ func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (
 // See: BulkTransactionDetails()
 func (c *Client) BulkTransactionDetailsProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
 	// Break up the transactions into batches
-	var batches [][]string
 	chunkSize := MaxTransactionsUTXO
+	numBatches := (len(hashes.TxIDs) + chunkSize - 1) / chunkSize
+	batches := make([][]string, 0, numBatches)
 
 	for i := 0; i < len(hashes.TxIDs); i += chunkSize {
 		end := i + chunkSize
@@ -53,14 +54,30 @@ func (c *Client) BulkTransactionDetailsProcessor(ctx context.Context, hashes *Tx
 		batches = append(batches, hashes.TxIDs[i:end])
 	}
 
-	var currentRateLimit int
+	// Set up rate limiting with a ticker
+	ticker := time.NewTicker(time.Second / time.Duration(c.RateLimit()))
+	defer ticker.Stop()
+
+	txHashes := &TxHashes{}
 
 	// Loop Batches - and get each batch (multiple batches of MaxTransactionsUTXO)
 	for _, batch := range batches {
+		// Check for context cancellation before processing
+		select {
+		case <-ctx.Done():
+			return txList, ctx.Err()
+		default:
+		}
 
-		txHashes := new(TxHashes)
+		// Wait for rate limit tick
+		select {
+		case <-ctx.Done():
+			return txList, ctx.Err()
+		case <-ticker.C:
+		}
 
-		// Loop the batch (max MaxTransactionsUTXO)
+		// Reuse the TxHashes struct
+		txHashes.TxIDs = txHashes.TxIDs[:0]
 		txHashes.TxIDs = append(txHashes.TxIDs, batch...)
 
 		// Get the tx details (max of MaxTransactionsUTXO)
@@ -73,13 +90,6 @@ func (c *Client) BulkTransactionDetailsProcessor(ctx context.Context, hashes *Tx
 
 		// Add to the list
 		txList = append(txList, returnedList...)
-
-		// Accumulate / sleep to prevent rate limiting
-		currentRateLimit++
-		if currentRateLimit >= c.RateLimit() {
-			time.Sleep(1 * time.Second)
-			currentRateLimit = 0
-		}
 	}
 
 	return txList, err
@@ -138,8 +148,9 @@ func (c *Client) BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (
 // For more information: https://docs.whatsonchain.com/#bulk-raw-transaction-data
 func (c *Client) BulkRawTransactionDataProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
 	// Break up the transactions into batches
-	var batches [][]string
 	chunkSize := MaxTransactionsRaw
+	numBatches := (len(hashes.TxIDs) + chunkSize - 1) / chunkSize
+	batches := make([][]string, 0, numBatches)
 
 	for i := 0; i < len(hashes.TxIDs); i += chunkSize {
 		end := i + chunkSize
@@ -151,17 +162,33 @@ func (c *Client) BulkRawTransactionDataProcessor(ctx context.Context, hashes *Tx
 		batches = append(batches, hashes.TxIDs[i:end])
 	}
 
-	var currentRateLimit int
+	// Set up rate limiting with a ticker
+	ticker := time.NewTicker(time.Second / time.Duration(c.RateLimit()))
+	defer ticker.Stop()
+
+	txHashes := &TxHashes{}
 
 	// Loop Batches - and get each batch (multiple batches of MaxTransactionsRaw)
 	for _, batch := range batches {
+		// Check for context cancellation before processing
+		select {
+		case <-ctx.Done():
+			return txList, ctx.Err()
+		default:
+		}
 
-		txHashes := new(TxHashes)
+		// Wait for rate limit tick
+		select {
+		case <-ctx.Done():
+			return txList, ctx.Err()
+		case <-ticker.C:
+		}
 
-		// Loop the batch (max MaxTransactionsRaw)
+		// Reuse the TxHashes struct
+		txHashes.TxIDs = txHashes.TxIDs[:0]
 		txHashes.TxIDs = append(txHashes.TxIDs, batch...)
 
-		// Get the tx details (max of MaxTransactionsUTXO)
+		// Get the tx details (max of MaxTransactionsRaw)
 		var returnedList TxList
 		if returnedList, err = c.BulkRawTransactionData(
 			ctx, txHashes,
@@ -171,13 +198,6 @@ func (c *Client) BulkRawTransactionDataProcessor(ctx context.Context, hashes *Tx
 
 		// Add to the list
 		txList = append(txList, returnedList...)
-
-		// Accumulate / sleep to prevent rate limiting
-		currentRateLimit++
-		if currentRateLimit >= c.RateLimit() {
-			time.Sleep(1 * time.Second)
-			currentRateLimit = 0
-		}
 	}
 
 	return txList, err
@@ -197,27 +217,30 @@ func (c *Client) GetRawTransactionOutputData(ctx context.Context, hash string, v
 // For more information: https://docs.whatsonchain.com/#broadcast-transaction
 func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, err error) {
 	// Start the post data
-	postData := []byte(fmt.Sprintf(`{"txhex":"%s"}`, txHex))
+	postData, err := json.Marshal(map[string]string{"txhex": txHex})
+	if err != nil {
+		return "", err
+	}
 
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
-	if txID, err = c.request(
+	var resp []byte
+	var statusCode int
+	if resp, statusCode, err = c.request(
 		ctx,
 		c.buildURL("/tx/raw"),
 		http.MethodPost, postData,
 	); err != nil {
-		return txID, err
+		return "", fmt.Errorf("%w: %w", ErrBroadcastFailed, err)
 	}
 
-	// Got an error
-	if c.lastRequest.StatusCode > http.StatusOK {
-		err = fmt.Errorf("%w: %s", ErrBroadcastFailed, txID)
-		txID = "" // remove the error message
-	} else {
-		// Remove quotes or spaces
-		txID = strings.TrimSpace(strings.ReplaceAll(txID, `"`, ""))
+	// Check for non-OK status codes using the standard helper
+	if err = checkStatusCode(statusCode, resp); err != nil {
+		return "", fmt.Errorf("%w: %w", ErrBroadcastFailed, err)
 	}
 
-	return txID, err
+	// Remove quotes or spaces from successful response
+	txID = strings.TrimSpace(strings.ReplaceAll(string(resp), `"`, ""))
+	return txID, nil
 }
 
 // BulkBroadcastTx will broadcast many transactions at once
@@ -269,37 +292,41 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 		return nil, err
 	}
 
-	var resp string
+	var resp []byte
+	var statusCode int
 
 	// https://api.whatsonchain.com/v1/bsv/tx/broadcast?feedback=<feedback>
-	if resp, err = c.request(
+	if resp, statusCode, err = c.request(
 		ctx,
 		fmt.Sprintf("%s%s/%s/tx/broadcast?feedback=%t", apiEndpointBase, c.Chain(), c.Network(), feedback),
 		http.MethodPost, postData,
 	); err != nil {
-		return response, err
+		return nil, fmt.Errorf("%w: %w", ErrBroadcastFailed, err)
+	}
+
+	// Check for non-OK status codes using the standard helper
+	if err = checkStatusCode(statusCode, resp); err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrBroadcastFailed, err)
 	}
 
 	response = &BulkBroadcastResponse{Feedback: feedback}
 	if feedback {
-		if err = json.Unmarshal([]byte(resp), response); err != nil {
+		if err = json.Unmarshal(resp, response); err != nil {
 			return response, err
 		}
 	}
 
-	// Got an error
-	if c.lastRequest.StatusCode > http.StatusOK {
-		err = fmt.Errorf("%w: %s", ErrBroadcastFailed, resp)
-	}
-
-	return response, err
+	return response, nil
 }
 
 // DecodeTransaction this endpoint decodes raw transaction
 //
 // For more information: https://docs.whatsonchain.com/#decode-transaction
 func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (*TxInfo, error) {
-	postData := []byte(fmt.Sprintf(`{"txhex":"%s"}`, txHex))
+	postData, err := json.Marshal(map[string]string{"txhex": txHex})
+	if err != nil {
+		return nil, err
+	}
 	url := c.buildURL("/tx/decode")
 	return requestAndUnmarshal[TxInfo](ctx, c, url, http.MethodPost, postData, ErrTransactionNotFound)
 }
