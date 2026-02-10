@@ -23,6 +23,9 @@ func (c *Client) GetTxByHash(ctx context.Context, hash string) (*TxInfo, error) 
 //
 // For more information: https://docs.whatsonchain.com/#bulk-transaction-details
 func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (TxList, error) {
+	if hashes == nil {
+		return nil, ErrMissingRequest
+	}
 	if len(hashes.TxIDs) > MaxTransactionsUTXO {
 		return nil, fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxTransactionsExceeded, len(hashes.TxIDs), MaxTransactionsUTXO)
 	}
@@ -40,6 +43,9 @@ func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (
 // Processes 20 transactions per request
 // See: BulkTransactionDetails()
 func (c *Client) BulkTransactionDetailsProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
+	if hashes == nil {
+		return nil, ErrMissingRequest
+	}
 	// Break up the transactions into batches
 	batches := chunkSlice(hashes.TxIDs, MaxTransactionsUTXO)
 
@@ -97,7 +103,7 @@ func (c *Client) GetMerkleProof(ctx context.Context, hash string) (MerkleResults
 
 // GetMerkleProofTSC this endpoint returns TSC compliant proof to a confirmed transaction
 //
-// For more information: TODO! No link today
+// For more information: https://docs.whatsonchain.com/#get-merkle-proof-tsc
 func (c *Client) GetMerkleProofTSC(ctx context.Context, hash string) (MerkleTSCResults, error) {
 	url := c.buildURL("/tx/%s/proof/tsc", hash)
 	return requestAndUnmarshalSlice[*MerkleTSCInfo](ctx, c, url, http.MethodGet, nil, ErrTransactionNotFound)
@@ -117,6 +123,9 @@ func (c *Client) GetRawTransactionData(ctx context.Context, hash string) (string
 //
 // For more information: https://docs.whatsonchain.com/#bulk-raw-transaction-data
 func (c *Client) BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (TxList, error) {
+	if hashes == nil {
+		return nil, ErrMissingRequest
+	}
 	if len(hashes.TxIDs) > MaxTransactionsRaw {
 		return nil, fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxRawTransactionsExceeded, len(hashes.TxIDs), MaxTransactionsRaw)
 	}
@@ -136,6 +145,9 @@ func (c *Client) BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (
 //
 // For more information: https://docs.whatsonchain.com/#bulk-raw-transaction-data
 func (c *Client) BulkRawTransactionDataProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error) {
+	if hashes == nil {
+		return nil, ErrMissingRequest
+	}
 	// Break up the transactions into batches
 	batches := chunkSlice(hashes.TxIDs, MaxTransactionsRaw)
 
@@ -342,6 +354,9 @@ func (c *Client) GetTransactionPropagationStatus(ctx context.Context, hash strin
 //
 // For more information: https://docs.whatsonchain.com/#bulk-transaction-status
 func (c *Client) BulkTransactionStatus(ctx context.Context, hashes *TxHashes) (TxStatusList, error) {
+	if hashes == nil {
+		return nil, ErrMissingRequest
+	}
 	if len(hashes.TxIDs) > MaxTransactionsUTXO {
 		return nil, fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxTransactionsExceeded, len(hashes.TxIDs), MaxTransactionsUTXO)
 	}
@@ -375,6 +390,9 @@ func (c *Client) GetTransactionAsBinary(ctx context.Context, hash string) ([]byt
 //
 // For more information: https://docs.whatsonchain.com/#bulk-raw-tx-output
 func (c *Client) BulkRawTransactionOutputData(ctx context.Context, request *BulkRawOutputRequest) ([]*BulkRawOutputResponse, error) {
+	if request == nil {
+		return nil, ErrMissingRequest
+	}
 	if len(request.TxIDs) > MaxTransactionsUTXO {
 		return nil, fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxUTXOsExceeded, len(request.TxIDs), MaxTransactionsUTXO)
 	}
@@ -417,6 +435,9 @@ func (c *Client) GetSpentOutput(ctx context.Context, txHash string, index int) (
 //
 // For more information: https://docs.whatsonchain.com/#bulk-spent-outputs
 func (c *Client) BulkSpentOutputs(ctx context.Context, request *BulkSpentOutputRequest) (BulkSpentOutputResponse, error) {
+	if request == nil {
+		return nil, ErrMissingRequest
+	}
 	if len(request.UTXOs) > MaxTransactionsUTXO {
 		return nil, fmt.Errorf("%w: %d UTXOs requested, max is %d", ErrMaxUTXOsExceeded, len(request.UTXOs), MaxTransactionsUTXO)
 	}
