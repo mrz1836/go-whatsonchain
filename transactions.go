@@ -85,7 +85,10 @@ func (c *Client) BulkTransactionDetailsProcessor(ctx context.Context, hashes *Tx
 	return txList, err
 }
 
-// GetMerkleProof this endpoint returns merkle branch to a confirmed transaction
+// GetMerkleProof retrieves the merkle proof for a transaction.
+//
+// Deprecated: GetMerkleProof uses a non-TSC proof endpoint that is no longer in the API.
+// Use GetMerkleProofTSC instead.
 //
 // For more information: https://docs.whatsonchain.com/#get-merkle-proof
 func (c *Client) GetMerkleProof(ctx context.Context, hash string) (MerkleResults, error) {
@@ -199,7 +202,7 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 	// https://api.whatsonchain.com/v1/bsv/<network>/tx/raw
 	if txID, err = c.request(
 		ctx,
-		fmt.Sprintf("%s%s/%s/tx/raw", apiEndpointBase, c.Chain(), c.Network()),
+		c.buildURL("/tx/raw"),
 		http.MethodPost, postData,
 	); err != nil {
 		return txID, err
@@ -229,6 +232,9 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 //
 // Feedback: true/false: true if response from the node is required for each transaction, otherwise, set it to false.
 // (For stress testing set it to false). When set to true a unique url is provided to check the progress of the
+// Deprecated: BulkBroadcastTx uses a bulk broadcast endpoint that is no longer in the API.
+// Use BroadcastTx for individual transactions instead.
+//
 // submitted transactions, eg 'QUEUED' or 'PROCESSED', with response data from node. You can poll the provided unique
 // url until all transactions are marked as 'PROCESSED'. Progress of the transactions are tracked on this unique url
 // for up to 5 hours.

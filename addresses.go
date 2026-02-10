@@ -16,7 +16,10 @@ func (c *Client) AddressInfo(ctx context.Context, address string) (*AddressInfo,
 	return requestAndUnmarshal[AddressInfo](ctx, c, url, http.MethodGet, nil, ErrAddressNotFound)
 }
 
-// AddressBalance this endpoint retrieves confirmed and unconfirmed address balance.
+// AddressBalance retrieves the balance for an address.
+//
+// Deprecated: AddressBalance uses a combined balance endpoint that is no longer in the API.
+// Use AddressConfirmedBalance and AddressUnconfirmedBalance instead.
 //
 // For more information: https://docs.whatsonchain.com/#get-balance
 func (c *Client) AddressBalance(ctx context.Context, address string) (*AddressBalance, error) {
@@ -24,7 +27,10 @@ func (c *Client) AddressBalance(ctx context.Context, address string) (*AddressBa
 	return requestAndUnmarshal[AddressBalance](ctx, c, url, http.MethodGet, nil, ErrAddressNotFound)
 }
 
-// AddressHistory this endpoint retrieves confirmed and unconfirmed address transactions.
+// AddressHistory retrieves the transaction history for an address.
+//
+// Deprecated: AddressHistory uses a combined history endpoint that is no longer in the API.
+// Use AddressConfirmedHistory and AddressUnconfirmedHistory instead.
 //
 // For more information: https://docs.whatsonchain.com/#get-history
 func (c *Client) AddressHistory(ctx context.Context, address string) (AddressHistory, error) {
@@ -131,8 +137,11 @@ func bulkRequest(list *AddressList) ([]byte, error) {
 	return json.Marshal(list)
 }
 
-// BulkBalance this endpoint retrieves confirmed and unconfirmed address balances
-// Max of 20 addresses at a time
+// BulkBalance retrieves balances for multiple addresses.
+// Max of 20 addresses at a time.
+//
+// Deprecated: BulkBalance uses a combined balance endpoint that is no longer in the API.
+// Use BulkAddressConfirmedBalance and BulkAddressUnconfirmedBalance instead.
 //
 // For more information: https://docs.whatsonchain.com/#bulk-balance
 func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (AddressBalances, error) {
@@ -145,8 +154,11 @@ func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (AddressBal
 	return requestAndUnmarshalSlice[*AddressBalanceRecord](ctx, c, url, http.MethodPost, postData, ErrAddressNotFound)
 }
 
-// BulkUnspentTransactionsProcessor will fetch UTXOs for multiple addresses in a single request while automatically batching
-// Max of 20 addresses at a time
+// BulkUnspentTransactionsProcessor processes bulk unspent transactions in batches.
+// Max of 20 addresses at a time.
+//
+// Deprecated: BulkUnspentTransactionsProcessor wraps BulkUnspentTransactions which uses an endpoint
+// no longer in the API. Use BulkAddressConfirmedUTXOs and BulkAddressUnconfirmedUTXOs instead.
 //
 // For more information: https://docs.whatsonchain.com/#bulk-unspent-transactions
 func (c *Client) BulkUnspentTransactionsProcessor(ctx context.Context, list *AddressList) (responseList BulkUnspentResponse, err error) {
@@ -177,8 +189,11 @@ func (c *Client) BulkUnspentTransactionsProcessor(ctx context.Context, list *Add
 	return responseList, err
 }
 
-// BulkUnspentTransactions will fetch UTXOs for multiple addresses in a single request
-// Max of 20 addresses at a time
+// BulkUnspentTransactions retrieves unspent transactions for multiple addresses.
+// Max of 20 addresses at a time.
+//
+// Deprecated: BulkUnspentTransactions uses a combined unspent endpoint that is no longer in the API.
+// Use BulkAddressConfirmedUTXOs and BulkAddressUnconfirmedUTXOs instead.
 //
 // For more information: https://docs.whatsonchain.com/#bulk-unspent-transactions
 func (c *Client) BulkUnspentTransactions(ctx context.Context, list *AddressList) (BulkUnspentResponse, error) {

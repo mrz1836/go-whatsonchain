@@ -147,6 +147,7 @@ func BenchmarkAddressUnspentTransactions(b *testing.B) {
 
 // BenchmarkBulkBalance benchmarks bulk balance requests with different sizes
 // Currently disabled due to mock response format issue
+// Deprecated: This benchmarks a deprecated method. Use BulkAddressConfirmedBalance and BulkAddressUnconfirmedBalance.
 func BenchmarkBulkBalanceDisabled(b *testing.B) {
 	client, _ := NewClient(context.Background(),
 		WithChain(ChainBSV),

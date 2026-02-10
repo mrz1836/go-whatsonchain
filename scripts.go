@@ -7,7 +7,10 @@ import (
 	"net/http"
 )
 
-// GetScriptHistory this endpoint retrieves confirmed and unconfirmed script transactions
+// GetScriptHistory retrieves the transaction history for a script.
+//
+// Deprecated: GetScriptHistory uses a combined history endpoint that is no longer in the API.
+// Use GetScriptConfirmedHistory and GetScriptUnconfirmedHistory instead.
 //
 // For more information: https://docs.whatsonchain.com/#get-script-history
 func (c *Client) GetScriptHistory(ctx context.Context, scriptHash string) (ScriptList, error) {
@@ -23,8 +26,11 @@ func (c *Client) GetScriptUnspentTransactions(ctx context.Context, scriptHash st
 	return requestAndUnmarshalSlice[*ScriptRecord](ctx, c, url, http.MethodGet, nil, ErrScriptNotFound)
 }
 
-// BulkScriptUnspentTransactions will fetch UTXOs for multiple scripts in a single request
-// Max of 20 scripts at a time
+// BulkScriptUnspentTransactions retrieves unspent transactions for multiple scripts.
+// Max of 20 scripts at a time.
+//
+// Deprecated: BulkScriptUnspentTransactions uses a combined unspent endpoint that is no longer in the API.
+// Use BulkScriptConfirmedUTXOs and BulkScriptUnconfirmedUTXOs instead.
 //
 // For more information: https://docs.whatsonchain.com/#bulk-script-unspent-transactions
 func (c *Client) BulkScriptUnspentTransactions(ctx context.Context, list *ScriptsList) (BulkScriptUnspentResponse, error) {

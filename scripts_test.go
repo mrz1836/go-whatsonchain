@@ -205,6 +205,7 @@ func (m *mockHTTPScriptNotFound) Do(req *http.Request) (*http.Response, error) {
 }
 
 // TestClient_GetScriptHistory tests the GetScriptHistory()
+// Deprecated: This tests a deprecated method. Use GetScriptConfirmedHistory and GetScriptUnconfirmedHistory.
 func TestClient_GetScriptHistory(t *testing.T) {
 	t.Parallel()
 
@@ -308,6 +309,7 @@ func TestClient_GetScriptUnspentTransactions(t *testing.T) {
 }
 
 // TestClient_BulkScriptUnspentTransactions tests the BulkScriptUnspentTransactions()
+// Deprecated: This tests a deprecated method. Use BulkScriptConfirmedUTXOs and BulkScriptUnconfirmedUTXOs.
 func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
 	t.Parallel()
 

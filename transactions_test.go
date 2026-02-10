@@ -512,6 +512,7 @@ func TestClient_GetTxByHash(t *testing.T) {
 }
 
 // TestClient_GetMerkleProof tests the GetMerkleProof()
+// Deprecated: This tests a deprecated method. Use GetMerkleProofTSC instead.
 func TestClient_GetMerkleProof(t *testing.T) {
 	t.Parallel()
 
@@ -750,6 +751,7 @@ func TestClient_BroadcastTx(t *testing.T) {
 }
 
 // TestClient_BulkBroadcastTx tests the BulkBroadcastTx()
+// Deprecated: This tests a deprecated method. Use BroadcastTx instead.
 func TestClient_BulkBroadcastTx(t *testing.T) {
 	t.Parallel()
 
@@ -785,6 +787,7 @@ func TestClient_BulkBroadcastTx(t *testing.T) {
 }
 
 // TestClient_BulkBroadcastTxMaxValues tests the BulkBroadcastTx()
+// Deprecated: This tests a deprecated method. Use BroadcastTx instead.
 func TestClient_BulkBroadcastTxMaxValues(t *testing.T) {
 	t.Parallel()
 

@@ -519,6 +519,7 @@ func TestClient_AddressInfo(t *testing.T) {
 }
 
 // TestClient_AddressBalance tests the AddressBalance()
+// Deprecated: This tests a deprecated method. Use AddressConfirmedBalance and AddressUnconfirmedBalance.
 func TestClient_AddressBalance(t *testing.T) {
 	t.Parallel()
 
@@ -570,6 +571,7 @@ func TestClient_AddressBalance(t *testing.T) {
 }
 
 // TestClient_AddressHistory tests the AddressHistory()
+// Deprecated: This tests a deprecated method. Use AddressConfirmedHistory and AddressUnconfirmedHistory.
 func TestClient_AddressHistory(t *testing.T) {
 	t.Parallel()
 
@@ -762,6 +764,7 @@ func TestClient_DownloadStatement(t *testing.T) {
 }
 
 // TestClient_BulkBalance tests the BulkBalance()
+// Deprecated: This tests a deprecated method. Use BulkAddressConfirmedBalance and BulkAddressUnconfirmedBalance.
 func TestClient_BulkBalance(t *testing.T) {
 	t.Parallel()
 
@@ -826,6 +829,7 @@ func TestClient_BulkBalance(t *testing.T) {
 }
 
 // TestClient_BulkUnspentTransactionsProcessor tests the BulkUnspentTransactionsProcessor()
+// Deprecated: This tests a deprecated method. Use BulkAddressConfirmedUTXOs and BulkAddressUnconfirmedUTXOs.
 func TestClient_BulkUnspentTransactionsProcessor(t *testing.T) {
 	t.Parallel()
 
@@ -901,6 +905,7 @@ func TestClient_BulkUnspentTransactionsProcessor(t *testing.T) {
 }
 
 // TestClient_BulkUnspentTransactions tests the BulkUnspentTransactions()
+// Deprecated: This tests a deprecated method. Use BulkAddressConfirmedUTXOs and BulkAddressUnconfirmedUTXOs.
 func TestClient_BulkUnspentTransactions(t *testing.T) {
 	t.Parallel()
 

@@ -7,10 +7,12 @@ import (
 
 // AddressService is the WhatsOnChain address related requests
 type AddressService interface {
+	// Deprecated: AddressBalance uses a combined endpoint no longer in the API. Use AddressConfirmedBalance and AddressUnconfirmedBalance.
 	AddressBalance(ctx context.Context, address string) (balance *AddressBalance, err error)
 	AddressConfirmedBalance(ctx context.Context, address string) (balance *AddressConfirmedBalance, err error)
 	AddressConfirmedHistory(ctx context.Context, address string) (history AddressHistory, err error)
 	AddressConfirmedUTXOs(ctx context.Context, address string) (history AddressHistory, err error)
+	// Deprecated: AddressHistory uses a combined endpoint no longer in the API. Use AddressConfirmedHistory and AddressUnconfirmedHistory.
 	AddressHistory(ctx context.Context, address string) (history AddressHistory, err error)
 	AddressInfo(ctx context.Context, address string) (addressInfo *AddressInfo, err error)
 	AddressScripts(ctx context.Context, address string) (scripts *AddressScripts, err error)
@@ -27,6 +29,7 @@ type AddressService interface {
 	BulkAddressUnconfirmedBalance(ctx context.Context, list *AddressList) (balances AddressBalances, err error)
 	BulkAddressUnconfirmedHistory(ctx context.Context, list *AddressList) (history BulkAddressHistoryResponse, err error)
 	BulkAddressUnconfirmedUTXOs(ctx context.Context, list *AddressList) (response BulkUnspentResponse, err error)
+	// Deprecated: BulkBalance uses a combined endpoint no longer in the API. Use BulkAddressConfirmedBalance and BulkAddressUnconfirmedBalance.
 	BulkBalance(ctx context.Context, list *AddressList) (balances AddressBalances, err error)
 }
 
@@ -75,8 +78,10 @@ type ScriptService interface {
 	BulkScriptConfirmedUTXOs(ctx context.Context, list *ScriptsList) (response BulkScriptUnspentResponse, err error)
 	BulkScriptUnconfirmedHistory(ctx context.Context, list *ScriptsList) (response BulkScriptHistoryResponse, err error)
 	BulkScriptUnconfirmedUTXOs(ctx context.Context, list *ScriptsList) (response BulkScriptUnspentResponse, err error)
+	// Deprecated: BulkScriptUnspentTransactions uses a combined endpoint no longer in the API. Use BulkScriptConfirmedUTXOs and BulkScriptUnconfirmedUTXOs.
 	BulkScriptUnspentTransactions(ctx context.Context, list *ScriptsList) (response BulkScriptUnspentResponse, err error)
 	GetScriptConfirmedHistory(ctx context.Context, scriptHash string) (history ScriptList, err error)
+	// Deprecated: GetScriptHistory uses a combined endpoint no longer in the API. Use GetScriptConfirmedHistory and GetScriptUnconfirmedHistory.
 	GetScriptHistory(ctx context.Context, scriptHash string) (history ScriptList, err error)
 	GetScriptUnconfirmedHistory(ctx context.Context, scriptHash string) (history ScriptList, err error)
 	GetScriptUnspentTransactions(ctx context.Context, scriptHash string) (scriptList ScriptList, err error)
@@ -118,6 +123,7 @@ type TokenService interface {
 // TransactionService is the WhatsOnChain transaction related requests
 type TransactionService interface {
 	BroadcastTx(ctx context.Context, txHex string) (txID string, err error)
+	// Deprecated: BulkBroadcastTx uses an endpoint no longer in the API. Use BroadcastTx instead.
 	BulkBroadcastTx(ctx context.Context, rawTxs []string, feedback bool) (response *BulkBroadcastResponse, err error)
 	BulkRawTransactionData(ctx context.Context, hashes *TxHashes) (txList TxList, err error)
 	BulkRawTransactionDataProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error)
@@ -126,10 +132,13 @@ type TransactionService interface {
 	BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (txList TxList, err error)
 	BulkTransactionDetailsProcessor(ctx context.Context, hashes *TxHashes) (txList TxList, err error)
 	BulkTransactionStatus(ctx context.Context, hashes *TxHashes) (txStatusList TxStatusList, err error)
+	// Deprecated: BulkUnspentTransactions uses an endpoint no longer in the API. Use BulkAddressConfirmedUTXOs and BulkAddressUnconfirmedUTXOs.
 	BulkUnspentTransactions(ctx context.Context, list *AddressList) (response BulkUnspentResponse, err error)
+	// Deprecated: BulkUnspentTransactionsProcessor wraps BulkUnspentTransactions which is deprecated.
 	BulkUnspentTransactionsProcessor(ctx context.Context, list *AddressList) (response BulkUnspentResponse, err error)
 	DecodeTransaction(ctx context.Context, txHex string) (txInfo *TxInfo, err error)
 	GetConfirmedSpentOutput(ctx context.Context, txHash string, index int) (spentOutput *SpentOutput, err error)
+	// Deprecated: GetMerkleProof uses a non-TSC endpoint no longer in the API. Use GetMerkleProofTSC instead.
 	GetMerkleProof(ctx context.Context, hash string) (merkleResults MerkleResults, err error)
 	GetMerkleProofTSC(ctx context.Context, hash string) (merkleResults MerkleTSCResults, err error)
 	GetRawTransactionData(ctx context.Context, hash string) (string, error)
