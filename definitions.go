@@ -444,7 +444,7 @@ type Quote struct {
 	ExpiryTime                string      `json:"expiryTime"`
 	Fees                      []*FeeQuote `json:"fees"`
 	MinerID                   string      `json:"minerId"`
-	MinerReputation           interface{} `json:"minerReputation"`
+	MinerReputation           any         `json:"minerReputation"`
 	Timestamp                 string      `json:"timestamp"`
 }
 
@@ -657,22 +657,22 @@ type OneSatOrdinalStats struct {
 
 // STASToken represents a STAS token
 type STASToken struct {
-	ContractID        string      `json:"contractId"`
-	Symbol            string      `json:"symbol"`
-	IssuerPK          string      `json:"issuerPk"`
-	IsZeroSupplyToken bool        `json:"isZeroSupplyToken"`
-	ProtocolID        string      `json:"protocolId"`
-	Schema            interface{} `json:"schema,omitempty"`
-	TotalSupply       int64       `json:"totalSupply"`
-	CirculatingSupply int64       `json:"circulatingSupply"`
-	DecimalPrecision  int         `json:"decimalPrecision"`
-	Name              string      `json:"name"`
-	Description       string      `json:"description"`
-	Image             string      `json:"image"`
-	TokenType         string      `json:"tokenType"`
-	Properties        interface{} `json:"properties,omitempty"`
-	SatsPerToken      int64       `json:"satsPerToken"`
-	LifeCycleComplete bool        `json:"lifeCycleComplete"`
+	ContractID        string `json:"contractId"`
+	Symbol            string `json:"symbol"`
+	IssuerPK          string `json:"issuerPk"`
+	IsZeroSupplyToken bool   `json:"isZeroSupplyToken"`
+	ProtocolID        string `json:"protocolId"`
+	Schema            any    `json:"schema,omitempty"`
+	TotalSupply       int64  `json:"totalSupply"`
+	CirculatingSupply int64  `json:"circulatingSupply"`
+	DecimalPrecision  int    `json:"decimalPrecision"`
+	Name              string `json:"name"`
+	Description       string `json:"description"`
+	Image             string `json:"image"`
+	TokenType         string `json:"tokenType"`
+	Properties        any    `json:"properties,omitempty"`
+	SatsPerToken      int64  `json:"satsPerToken"`
+	LifeCycleComplete bool   `json:"lifeCycleComplete"`
 }
 
 // STASTokenBalance represents token balance for an address
@@ -706,4 +706,64 @@ type STASStats struct {
 	Tokens      int64 `json:"tokens"`
 	Issuers     int64 `json:"issuers"`
 	TotalSupply int64 `json:"totalSupply"`
+}
+
+// BlockStats represents block statistics
+type BlockStats struct {
+	Height         int64   `json:"height"`
+	Hash           string  `json:"hash"`
+	Version        int     `json:"version"`
+	Size           int     `json:"size"`
+	Weight         int     `json:"weight"`
+	MerkleRoot     string  `json:"merkleroot"`
+	Timestamp      int64   `json:"timestamp"`
+	MedianTime     int64   `json:"mediantime"`
+	Nonce          int64   `json:"nonce"`
+	Bits           string  `json:"bits"`
+	Difficulty     float64 `json:"difficulty"`
+	ChainWork      string  `json:"chainwork"`
+	TxCount        int     `json:"tx_count"`
+	TotalSize      int     `json:"total_size"`
+	TotalFees      int64   `json:"total_fees"`
+	SubsidyTotal   int64   `json:"subsidy_total"`
+	SubsidyAddress int64   `json:"subsidy_address"`
+	SubsidyMiner   int64   `json:"subsidy_miner"`
+	MinerName      string  `json:"miner_name"`
+	MinerAddress   string  `json:"miner_address"`
+	FeeRateAvg     float64 `json:"fee_rate_avg"`
+	FeeRateMin     float64 `json:"fee_rate_min"`
+	FeeRateMax     float64 `json:"fee_rate_max"`
+	FeeRateMedian  float64 `json:"fee_rate_median"`
+	FeeRateStdDev  float64 `json:"fee_rate_stddev"`
+	InputCount     int     `json:"input_count"`
+	OutputCount    int     `json:"output_count"`
+	UTXOIncrease   int     `json:"utxo_increase"`
+	UTXOSizeInc    int     `json:"utxo_size_inc"`
+}
+
+// MinerStats represents miner statistics
+type MinerStats struct {
+	Name       string  `json:"name"`
+	Address    string  `json:"address"`
+	BlockCount int     `json:"block_count"`
+	Percentage float64 `json:"percentage"`
+}
+
+// MinerFeeStats represents miner fee statistics from the /miner/fees endpoint.
+type MinerFeeStats struct {
+	Miner      string  `json:"miner"`
+	MinFeeRate float64 `json:"min_fee_rate"`
+}
+
+// MinerSummaryStats represents miner summary statistics
+type MinerSummaryStats struct {
+	Days   int           `json:"days"`
+	Miners []*MinerStats `json:"miners"`
+}
+
+// TagCount represents tag count statistics by height
+type TagCount struct {
+	Height    int64          `json:"height"`
+	Hash      string         `json:"hash"`
+	TagCounts map[string]int `json:"tag_counts"`
 }
