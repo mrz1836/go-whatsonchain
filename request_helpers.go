@@ -77,6 +77,10 @@ func requestString(ctx context.Context, c *Client, url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	_ = statusCode // status is available via LastRequest() for callers that need it
+
+	if err = checkStatusCode(statusCode, resp); err != nil {
+		return "", err
+	}
+
 	return string(resp), nil
 }

@@ -2,8 +2,6 @@ package whatsonchain
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 )
 
 // BSVService is the interface for BSV-specific endpoints
@@ -21,11 +19,6 @@ func (c *Client) GetOpReturnData(ctx context.Context, txHash string) (string, er
 		return "", ErrBSVChainRequired
 	}
 
-	// https://api.whatsonchain.com/v1/bsv/<network>/tx/<txHash>/opreturn
-	resp, _, err := c.request(
-		ctx,
-		fmt.Sprintf("%s%s/%s/tx/%s/opreturn", apiEndpointBase, c.Chain(), c.Network(), txHash),
-		http.MethodGet, nil,
-	)
-	return string(resp), err
+	url := c.buildURL("/tx/%s/opreturn", txHash)
+	return requestString(ctx, c, url)
 }

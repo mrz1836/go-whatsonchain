@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	netURL "net/url"
 	"strings"
 	"time"
 )
@@ -23,7 +24,7 @@ func (c *Client) GetTxByHash(ctx context.Context, hash string) (*TxInfo, error) 
 // For more information: https://docs.whatsonchain.com/#bulk-transaction-details
 func (c *Client) BulkTransactionDetails(ctx context.Context, hashes *TxHashes) (TxList, error) {
 	if len(hashes.TxIDs) > MaxTransactionsUTXO {
-		return nil, fmt.Errorf("%w: %d UTXOs requested, max is %d", ErrMaxUTXOsExceeded, len(hashes.TxIDs), MaxTransactionsUTXO)
+		return nil, fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxTransactionsExceeded, len(hashes.TxIDs), MaxTransactionsUTXO)
 	}
 
 	postData, err := json.Marshal(hashes)
@@ -272,9 +273,16 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 		return response, err
 	}
 
-	// Set a total max
-	if len(strings.Join(rawTxs[:], ",")) > MaxCombinedTransactionSize {
-		err = fmt.Errorf("%w: payload size %.0f bytes, max is %.0f bytes", ErrMaxPayloadSizeExceeded, float64(len(strings.Join(rawTxs[:], ","))), MaxCombinedTransactionSize)
+	// Set a total max (compute size arithmetically to avoid allocating the joined string)
+	payloadSize := 0
+	for _, tx := range rawTxs {
+		payloadSize += len(tx)
+	}
+	if len(rawTxs) > 1 {
+		payloadSize += len(rawTxs) - 1 // commas between elements
+	}
+	if payloadSize > MaxCombinedTransactionSize {
+		err = fmt.Errorf("%w: payload size %d bytes, max is %d bytes", ErrMaxPayloadSizeExceeded, payloadSize, MaxCombinedTransactionSize)
 		return response, err
 	}
 
@@ -337,7 +345,7 @@ func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (*TxInfo, 
 // For more information: https://docs.whatsonchain.com/#download-receipt
 func (c *Client) DownloadReceipt(ctx context.Context, hash string) (string, error) {
 	// This endpoint does not follow the convention of the WOC API v1
-	url := fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network(), hash)
+	url := fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network(), netURL.PathEscape(hash))
 	return requestString(ctx, c, url)
 }
 
@@ -359,7 +367,7 @@ func (c *Client) GetTransactionPropagationStatus(ctx context.Context, hash strin
 // For more information: https://docs.whatsonchain.com/#bulk-transaction-status
 func (c *Client) BulkTransactionStatus(ctx context.Context, hashes *TxHashes) (TxStatusList, error) {
 	if len(hashes.TxIDs) > MaxTransactionsUTXO {
-		return nil, fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxUTXOsExceeded, len(hashes.TxIDs), MaxTransactionsUTXO)
+		return nil, fmt.Errorf("%w: %d transactions requested, max is %d", ErrMaxTransactionsExceeded, len(hashes.TxIDs), MaxTransactionsUTXO)
 	}
 
 	postData, err := json.Marshal(hashes)
