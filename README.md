@@ -305,13 +305,13 @@ extra baggage.
 <summary><strong><code>Supported API Coverage</code></strong></summary>
 <br/>
 
-**Coverage Summary:** 135 total endpoints (71 BSV + 64 BTC) from the [whatsonchain.com API](https://docs.whatsonchain.com/)
+**Coverage Summary:** 153 endpoints (84 BSV + 69 BTC) from the [whatsonchain.com API](https://docs.whatsonchain.com/)
 
-**Quick Navigation:** [BSV API](#bsv-api-71-endpoints) • [BTC API](#btc-api-64-endpoints) • [WebSockets](#websockets)
+**Quick Navigation:** [BSV API](#bsv-api-84-endpoints) • [BTC API](#btc-api-69-endpoints) • [WebSockets](#websockets)
 
 ---
 
-## BSV API (71 endpoints)
+## BSV API (84 endpoints)
 
 ### ✅ Health (1 endpoint)
 - [x] [Get Health Status](https://docs.whatsonchain.com/api/health) - `/woc`
@@ -381,12 +381,17 @@ extra baggage.
 - [x] [Bulk Confirmed History](https://docs.whatsonchain.com/api/address#bulk-confirmed-history) - `/addresses/confirmed/history` (POST)
 - [x] [Bulk History (All)](https://docs.whatsonchain.com/api/address#bulk-history) - `/addresses/history/all` (POST)
 
-### ✅ Script (6 endpoints)
+### ✅ Script (10 endpoints)
 - [x] [Get Script Usage Status](https://docs.whatsonchain.com/api/script#get-script-usage) - `/script/{script}/used`
-- [x] [Get Unconfirmed Script History](https://docs.whatsonchain.com/api/script#get-unconfirmed-script-history) - `/script/{script}/unconfirmed/history`
-- [x] [Bulk Unconfirmed Script History](https://docs.whatsonchain.com/api/script#bulk-unconfirmed-script-history) - `/scripts/unconfirmed/history` (POST)
+- [x] [Get Script Unspent Transactions](https://docs.whatsonchain.com/api/script#get-script-unspent-transactions) - `/script/{script}/unspent/all`
+- [x] [Get Confirmed Script UTXOs](https://docs.whatsonchain.com/api/script#get-confirmed-script-utxos) - `/script/{script}/confirmed/unspent`
+- [x] [Get Unconfirmed Script UTXOs](https://docs.whatsonchain.com/api/script#get-unconfirmed-script-utxos) - `/script/{script}/unconfirmed/unspent`
 - [x] [Get Confirmed Script History](https://docs.whatsonchain.com/api/script#get-confirmed-script-history) - `/script/{script}/confirmed/history`
+- [x] [Get Unconfirmed Script History](https://docs.whatsonchain.com/api/script#get-unconfirmed-script-history) - `/script/{script}/unconfirmed/history`
+- [x] [Bulk Confirmed Script UTXOs](https://docs.whatsonchain.com/api/script#bulk-confirmed-script-utxos) - `/scripts/confirmed/unspent` (POST)
+- [x] [Bulk Unconfirmed Script UTXOs](https://docs.whatsonchain.com/api/script#bulk-unconfirmed-script-utxos) - `/scripts/unconfirmed/unspent` (POST)
 - [x] [Bulk Confirmed Script History](https://docs.whatsonchain.com/api/script#bulk-confirmed-script-history) - `/scripts/confirmed/history` (POST)
+- [x] [Bulk Unconfirmed Script History](https://docs.whatsonchain.com/api/script#bulk-unconfirmed-script-history) - `/scripts/unconfirmed/history` (POST)
 
 ### ✅ Exchange Rate (2 endpoints)
 - [x] [Get Current Exchange Rate](https://docs.whatsonchain.com/api/exchange-rate#get-exchange-rate) - `/exchangerate`
@@ -427,7 +432,7 @@ extra baggage.
 
 ---
 
-## BTC API (64 endpoints)
+## BTC API (69 endpoints)
 
 ### ✅ Health (1 endpoint)
 - [x] [Get Health Status](https://docs.whatsonchain.com/api/btc/health) - `/woc`
@@ -492,12 +497,17 @@ extra baggage.
 - [x] [Bulk Confirmed History](https://docs.whatsonchain.com/api/btc/address#bulk-confirmed-history) - `/addresses/confirmed/history` (POST)
 - [x] [Bulk History (All)](https://docs.whatsonchain.com/api/btc/address#bulk-history) - `/addresses/history/all` (POST)
 
-### ✅ Script (6 endpoints)
+### ✅ Script (10 endpoints)
 - [x] [Get Script Usage Status](https://docs.whatsonchain.com/api/btc/script#get-script-usage) - `/script/{script}/used`
-- [x] [Get Unconfirmed Script History](https://docs.whatsonchain.com/api/btc/script#get-unconfirmed-script-history) - `/script/{script}/unconfirmed/history`
-- [x] [Bulk Unconfirmed Script History](https://docs.whatsonchain.com/api/btc/script#bulk-unconfirmed-script-history) - `/scripts/unconfirmed/history` (POST)
+- [x] [Get Script Unspent Transactions](https://docs.whatsonchain.com/api/btc/script#get-script-unspent-transactions) - `/script/{script}/unspent/all`
+- [x] [Get Confirmed Script UTXOs](https://docs.whatsonchain.com/api/btc/script#get-confirmed-script-utxos) - `/script/{script}/confirmed/unspent`
+- [x] [Get Unconfirmed Script UTXOs](https://docs.whatsonchain.com/api/btc/script#get-unconfirmed-script-utxos) - `/script/{script}/unconfirmed/unspent`
 - [x] [Get Confirmed Script History](https://docs.whatsonchain.com/api/btc/script#get-confirmed-script-history) - `/script/{script}/confirmed/history`
+- [x] [Get Unconfirmed Script History](https://docs.whatsonchain.com/api/btc/script#get-unconfirmed-script-history) - `/script/{script}/unconfirmed/history`
+- [x] [Bulk Confirmed Script UTXOs](https://docs.whatsonchain.com/api/btc/script#bulk-confirmed-script-utxos) - `/scripts/confirmed/unspent` (POST)
+- [x] [Bulk Unconfirmed Script UTXOs](https://docs.whatsonchain.com/api/btc/script#bulk-unconfirmed-script-utxos) - `/scripts/unconfirmed/unspent` (POST)
 - [x] [Bulk Confirmed Script History](https://docs.whatsonchain.com/api/btc/script#bulk-confirmed-script-history) - `/scripts/confirmed/history` (POST)
+- [x] [Bulk Unconfirmed Script History](https://docs.whatsonchain.com/api/btc/script#bulk-unconfirmed-script-history) - `/scripts/unconfirmed/history` (POST)
 
 ### ✅ Exchange Rate (2 endpoints)
 - [x] [Get Current Exchange Rate](https://docs.whatsonchain.com/api/btc/exchange-rate#get-exchange-rate) - `/exchangerate`
@@ -524,6 +534,27 @@ extra baggage.
 - [ ] [Confirmed transactions](https://docs.whatsonchain.com/api/websockets#confirmed-transactions)
 - [ ] [Chain Stats](https://docs.whatsonchain.com/api/websockets#chain-stats)
 - [ ] [Customized events](https://docs.whatsonchain.com/api/websockets#customized-events)
+
+---
+
+## ⚠️ Deprecated Endpoints
+
+The following methods are maintained for backward compatibility but should not be used in new code. They will be removed in a future major version.
+
+| Deprecated Method | Replacement |
+|-------------------|-------------|
+| `AddressBalance` | `AddressConfirmedBalance` + `AddressUnconfirmedBalance` |
+| `AddressHistory` | `AddressConfirmedHistory` + `AddressUnconfirmedHistory` |
+| `BulkBalance` | `BulkAddressConfirmedBalance` + `BulkAddressUnconfirmedBalance` |
+| `BulkUnspentTransactions` | `BulkAddressConfirmedUTXOs` + `BulkAddressUnconfirmedUTXOs` |
+| `BulkUnspentTransactionsProcessor` | Direct UTXO methods |
+| `GetScriptHistory` | `GetScriptConfirmedHistory` + `GetScriptUnconfirmedHistory` |
+| `BulkScriptUnspentTransactions` | `BulkScriptConfirmedUTXOs` + `BulkScriptUnconfirmedUTXOs` |
+| `GetMerkleProof` | `GetMerkleProofTSC` |
+| `BulkBroadcastTx` | `BroadcastTx` |
+
+These deprecated endpoints are **not included** in the active endpoint count above.
+
 </details>
 
 <details>
