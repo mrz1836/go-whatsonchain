@@ -34,6 +34,9 @@ func (c *Client) GetScriptUnspentTransactions(ctx context.Context, scriptHash st
 //
 // For more information: https://docs.whatsonchain.com/#bulk-script-unspent-transactions
 func (c *Client) BulkScriptUnspentTransactions(ctx context.Context, list *ScriptsList) (BulkScriptUnspentResponse, error) {
+	if list == nil {
+		return nil, ErrMissingRequest
+	}
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
 	}
@@ -60,6 +63,9 @@ func (c *Client) ScriptUnconfirmedUTXOs(ctx context.Context, scriptHash string) 
 //
 // For more information: https://docs.whatsonchain.com/#bulk-unconfirmed-script-utxos
 func (c *Client) BulkScriptUnconfirmedUTXOs(ctx context.Context, list *ScriptsList) (BulkScriptUnspentResponse, error) {
+	if list == nil {
+		return nil, ErrMissingRequest
+	}
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
 	}
@@ -86,6 +92,9 @@ func (c *Client) ScriptConfirmedUTXOs(ctx context.Context, scriptHash string) (S
 //
 // For more information: https://docs.whatsonchain.com/#bulk-confirmed-script-utxos
 func (c *Client) BulkScriptConfirmedUTXOs(ctx context.Context, list *ScriptsList) (BulkScriptUnspentResponse, error) {
+	if list == nil {
+		return nil, ErrMissingRequest
+	}
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
 	}
@@ -128,6 +137,9 @@ func (c *Client) GetScriptUnconfirmedHistory(ctx context.Context, scriptHash str
 //
 // For more information: https://docs.whatsonchain.com/api/script#bulk-unconfirmed-script-history
 func (c *Client) BulkScriptUnconfirmedHistory(ctx context.Context, list *ScriptsList) (BulkScriptHistoryResponse, error) {
+	if list == nil {
+		return nil, ErrMissingRequest
+	}
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
 	}
@@ -154,6 +166,9 @@ func (c *Client) GetScriptConfirmedHistory(ctx context.Context, scriptHash strin
 //
 // For more information: https://docs.whatsonchain.com/api/script#bulk-confirmed-script-history
 func (c *Client) BulkScriptConfirmedHistory(ctx context.Context, list *ScriptsList) (BulkScriptHistoryResponse, error) {
+	if list == nil {
+		return nil, ErrMissingRequest
+	}
 	if len(list.Scripts) > MaxScriptsForLookup {
 		return nil, fmt.Errorf("%w: %d scripts requested, max is %d", ErrMaxScriptsExceeded, len(list.Scripts), MaxScriptsForLookup)
 	}
