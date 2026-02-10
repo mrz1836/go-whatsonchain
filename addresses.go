@@ -169,6 +169,9 @@ func (c *Client) BulkBalance(ctx context.Context, list *AddressList) (AddressBal
 //
 // For more information: https://docs.whatsonchain.com/#bulk-unspent-transactions
 func (c *Client) BulkUnspentTransactionsProcessor(ctx context.Context, list *AddressList) (responseList BulkUnspentResponse, err error) {
+	if list == nil {
+		return nil, ErrMissingRequest
+	}
 	batches := chunkSlice(list.Addresses, MaxTransactionsUTXO)
 	// Set up rate limiting with a ticker
 	ticker := time.NewTicker(time.Second / time.Duration(c.RateLimit()))
