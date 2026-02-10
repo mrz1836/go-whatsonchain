@@ -1,15 +1,23 @@
 package whatsonchain
 
-import "fmt"
+import (
+	"fmt"
+	"net/url"
+)
 
 // buildURL constructs a URL with the chain and network prefix
 // This centralizes URL construction to avoid repetition across all API methods
-func (c *Client) buildURL(path string, args ...interface{}) string {
+func (c *Client) buildURL(path string, args ...any) string {
 	// Build the base URL with chain and network
 	baseURL := fmt.Sprintf("%s%s/%s", apiEndpointBase, c.Chain(), c.Network())
 
-	// If args are provided, format the path with them
+	// If args are provided, escape string arguments and format the path
 	if len(args) > 0 {
+		for i, arg := range args {
+			if s, ok := arg.(string); ok {
+				args[i] = url.PathEscape(s)
+			}
+		}
 		path = fmt.Sprintf(path, args...)
 	}
 
