@@ -368,86 +368,42 @@ func TestSetTransportConfig(t *testing.T) {
 	assert.Equal(t, maxIdle, m)
 }
 
-// TestClientWithNilOptions tests all getter methods when options is nil
-func TestClientWithNilOptions(t *testing.T) {
+// TestSettersUpdateOptions tests that setters properly update the options
+func TestSettersUpdateOptions(t *testing.T) {
 	t.Parallel()
 
-	// Create a client and then set its options to nil to test the nil path
 	client, err := NewClient(context.Background())
 	require.NoError(t, err)
 
-	// Force options to nil by directly accessing the internal Client struct
-	c := client.(*Client)
-	c.options = nil
+	// Test SetRequestTimeout updates the stored value
+	client.SetRequestTimeout(30 * time.Second)
+	assert.Equal(t, 30*time.Second, client.RequestTimeout())
 
-	// Test RequestTimeout with nil options
-	timeout := c.RequestTimeout()
-	assert.Equal(t, time.Duration(0), timeout)
+	// Test SetRequestRetryCount updates the stored value
+	client.SetRequestRetryCount(5)
+	assert.Equal(t, 5, client.RequestRetryCount())
 
-	// Test RequestRetryCount with nil options
-	retryCount := c.RequestRetryCount()
-	assert.Equal(t, 0, retryCount)
+	// Test SetBackoffConfig updates the stored values
+	client.SetBackoffConfig(10*time.Millisecond, 100*time.Millisecond, 2.0, 5*time.Millisecond)
+	initial, maxBackoff, factor, jitter := client.BackoffConfig()
+	assert.Equal(t, 10*time.Millisecond, initial)
+	assert.Equal(t, 100*time.Millisecond, maxBackoff)
+	assert.InDelta(t, 2.0, factor, 0.0001)
+	assert.Equal(t, 5*time.Millisecond, jitter)
 
-	// Test BackoffConfig with nil options
-	initial, maxBackoff, factor, jitter := c.BackoffConfig()
-	assert.Equal(t, time.Duration(0), initial)
-	assert.Equal(t, time.Duration(0), maxBackoff)
-	assert.InDelta(t, 0.0, factor, 0.0001)
-	assert.Equal(t, time.Duration(0), jitter)
+	// Test SetDialerConfig updates the stored values
+	client.SetDialerConfig(30*time.Second, 10*time.Second)
+	keepAlive, dialTimeout := client.DialerConfig()
+	assert.Equal(t, 30*time.Second, keepAlive)
+	assert.Equal(t, 10*time.Second, dialTimeout)
 
-	// Test DialerConfig with nil options
-	keepAlive, dialTimeout := c.DialerConfig()
-	assert.Equal(t, time.Duration(0), keepAlive)
-	assert.Equal(t, time.Duration(0), dialTimeout)
-
-	// Test TransportConfig with nil options
-	idle, tls, expect, maxIdle := c.TransportConfig()
-	assert.Equal(t, time.Duration(0), idle)
-	assert.Equal(t, time.Duration(0), tls)
-	assert.Equal(t, time.Duration(0), expect)
-	assert.Equal(t, 0, maxIdle)
-}
-
-// TestSettersWithNilOptions tests all setter methods when options is nil
-func TestSettersWithNilOptions(t *testing.T) {
-	t.Parallel()
-
-	// Create a client and then set its options to nil to test the nil path
-	client, err := NewClient(context.Background())
-	require.NoError(t, err)
-
-	c := client.(*Client)
-	c.options = nil
-
-	// Test SetRequestTimeout with nil options (should not panic)
-	c.SetRequestTimeout(30 * time.Second)
-	assert.Equal(t, time.Duration(0), c.RequestTimeout())
-
-	// Test SetRequestRetryCount with nil options (should not panic)
-	c.SetRequestRetryCount(5)
-	assert.Equal(t, 0, c.RequestRetryCount())
-
-	// Test SetBackoffConfig with nil options (should not panic)
-	c.SetBackoffConfig(10*time.Millisecond, 100*time.Millisecond, 2.0, 5*time.Millisecond)
-	initial, maxBackoff, factor, jitter := c.BackoffConfig()
-	assert.Equal(t, time.Duration(0), initial)
-	assert.Equal(t, time.Duration(0), maxBackoff)
-	assert.InDelta(t, 0.0, factor, 0.0001)
-	assert.Equal(t, time.Duration(0), jitter)
-
-	// Test SetDialerConfig with nil options (should not panic)
-	c.SetDialerConfig(30*time.Second, 10*time.Second)
-	keepAlive, dialTimeout := c.DialerConfig()
-	assert.Equal(t, time.Duration(0), keepAlive)
-	assert.Equal(t, time.Duration(0), dialTimeout)
-
-	// Test SetTransportConfig with nil options (should not panic)
-	c.SetTransportConfig(30*time.Second, 10*time.Second, 5*time.Second, 20)
-	idle, tls, expect, maxIdle := c.TransportConfig()
-	assert.Equal(t, time.Duration(0), idle)
-	assert.Equal(t, time.Duration(0), tls)
-	assert.Equal(t, time.Duration(0), expect)
-	assert.Equal(t, 0, maxIdle)
+	// Test SetTransportConfig updates the stored values
+	client.SetTransportConfig(30*time.Second, 10*time.Second, 5*time.Second, 20)
+	idle, tls, expect, maxIdle := client.TransportConfig()
+	assert.Equal(t, 30*time.Second, idle)
+	assert.Equal(t, 10*time.Second, tls)
+	assert.Equal(t, 5*time.Second, expect)
+	assert.Equal(t, 20, maxIdle)
 }
 
 // TestNewClient_EnvAPIKey tests that WHATS_ON_CHAIN_API_KEY env var is auto-loaded

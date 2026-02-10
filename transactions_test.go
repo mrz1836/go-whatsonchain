@@ -657,7 +657,7 @@ func TestClient_GetRawTransactionOutputData(t *testing.T) {
 		statusCode    int
 	}{
 		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "76a914492558fb8ca71a3591316d095afc0f20ef7d42f788ac", false, http.StatusOK},
-		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz", "", false, http.StatusBadGateway},
+		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz", "", true, http.StatusBadGateway},
 		{"error", "", true, http.StatusBadRequest},
 	}
 

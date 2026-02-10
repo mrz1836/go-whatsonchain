@@ -26,10 +26,10 @@ func (m *mockHTTPTokensValid) Do(req *http.Request) (*http.Response, error) {
 
 	// 1Sat Ordinals endpoints
 	if strings.Contains(req.URL.String(), "/bsv/") && strings.Contains(req.URL.String(), "/token/1satordinals/") {
-		// Check for "invalid" to trigger 404
+		// Check for "invalid" to trigger 404 with empty body
 		if strings.Contains(req.URL.String(), "/invalid/") {
 			resp.StatusCode = http.StatusNotFound
-			resp.Body = io.NopCloser(bytes.NewBufferString(`{"error":"Not found"}`))
+			resp.Body = io.NopCloser(bytes.NewBufferString(``))
 			return resp, nil
 		}
 

@@ -120,7 +120,7 @@ func TestCheckStatusCode_SliceEndpoint_OK(t *testing.T) {
 
 	client := newMockClient(&mockHTTPStatusCode{
 		statusCode: http.StatusOK,
-		body:       `[{"tx_hash": "abc123", "tx_pos": 0, "value": 1000, "height": 100}]`,
+		body:       `{"address":"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA","script":"","result":[{"tx_hash": "abc123", "tx_pos": 0, "value": 1000, "height": 100}],"error":""}`,
 	})
 
 	history, err := client.AddressUnspentTransactions(context.Background(), "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
