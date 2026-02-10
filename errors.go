@@ -68,6 +68,9 @@ var ErrBSVChainRequired = errors.New("operation is only available for BSV chain"
 // ErrBTCChainRequired is when a BTC-only operation is attempted on a non-BTC chain
 var ErrBTCChainRequired = errors.New("operation is only available for BTC chain")
 
+// ErrStatsNotFound is when stats data is not found
+var ErrStatsNotFound = errors.New("stats not found")
+
 // ErrTokenNotFound is when a token is not found
 var ErrTokenNotFound = errors.New("token not found")
 
