@@ -83,7 +83,7 @@ func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 
 	// If no retries configured, just execute once
 	if r.retryCount <= 0 {
-		return r.client.Do(req)
+		return r.client.Do(req) //nolint:gosec // G704: URL is controlled by this library, not user input
 	}
 
 	// Read and store the request body once so we can reuse it for retries
@@ -135,7 +135,7 @@ func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 
 		// Execute the request
 		var resp *http.Response
-		resp, err = r.client.Do(reqForAttempt)
+		resp, err = r.client.Do(reqForAttempt) //nolint:gosec // G704: URL is controlled by this library, not user input
 
 		// If this is the last attempt, return whatever we got
 		if attempt == maxAttempts-1 {
@@ -219,5 +219,5 @@ func NewSimpleHTTPClient(httpClient *http.Client) *SimpleHTTPClient {
 
 // Do executes an HTTP request without retry logic
 func (s *SimpleHTTPClient) Do(req *http.Request) (*http.Response, error) {
-	return s.client.Do(req)
+	return s.client.Do(req) //nolint:gosec // G704: URL is controlled by this library, not user input
 }
