@@ -106,7 +106,7 @@ func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 
 		if bodyBytes != nil {
 			// Create new request with fresh body
-			reqForAttempt, err = http.NewRequestWithContext(
+			reqForAttempt, err = http.NewRequestWithContext( //nolint:gosec // G704: URL is controlled by this library, not user input
 				req.Context(),
 				req.Method,
 				req.URL.String(),
@@ -114,7 +114,7 @@ func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 			)
 		} else {
 			// There is no "body", just clone the request
-			reqForAttempt, err = http.NewRequestWithContext(
+			reqForAttempt, err = http.NewRequestWithContext( //nolint:gosec // G704: URL is controlled by this library, not user input
 				req.Context(),
 				req.Method,
 				req.URL.String(),
