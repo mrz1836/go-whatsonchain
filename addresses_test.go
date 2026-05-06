@@ -498,10 +498,10 @@ func TestClient_AddressInfo(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", false, http.StatusOK},
+		{testAddress1, testAddress1, false, http.StatusOK},
 		{"16ZqP5invalid", "", false, http.StatusOK},
-		{"error", "", true, http.StatusInternalServerError},
-		{"notFound", "", true, http.StatusNotFound},
+		{testMockError, "", true, http.StatusInternalServerError},
+		{testMockNotFound, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -535,7 +535,7 @@ func TestClient_AddressBalance(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", 10102050381, 123, false, http.StatusOK},
+		{testAddress1, 10102050381, 123, false, http.StatusOK},
 		{"16ZqP5invalid", 0, 0, true, http.StatusBadRequest},
 		{"16ZqP5notFound", 0, 0, true, http.StatusNotFound},
 	}
@@ -587,7 +587,7 @@ func TestClient_AddressHistory(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", "6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1", 563052, false, http.StatusOK},
+		{testAddress1, "6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1", 563052, false, http.StatusOK},
 		{"1NfHy82RqJVGEau9u5DwFRyGc6QKwDuQeT", "", 0, false, http.StatusOK},
 		{"16ZqP5invalid", "", 0, true, http.StatusBadRequest},
 		{"16ZqP5notFound", "", 0, true, http.StatusNotFound},
@@ -640,7 +640,7 @@ func TestClient_AddressUnspentTransactions(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", "33b9432a0ea203bbb6ec00592622cf6e90223849e4c9a76447a19a3ed43907d3", 639302, 2451680, false, http.StatusOK},
+		{testAddress1, "33b9432a0ea203bbb6ec00592622cf6e90223849e4c9a76447a19a3ed43907d3", 639302, 2451680, false, http.StatusOK},
 		{"1NfHy82RqJVGEau9u5DwFRyGc6QKwDuQeT", "", 0, 0, false, http.StatusOK},
 		{"16ZqP5invalid", "", 0, 0, true, http.StatusBadRequest},
 		{"16ZqP5notFound", "", 0, 0, true, http.StatusNotFound},
@@ -695,7 +695,7 @@ func TestClient_AddressUnspentTransactionDetails(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", "33b9432a0ea203bbb6ec00592622cf6e90223849e4c9a76447a19a3ed43907d3", 639302, false, http.StatusOK},
+		{testAddress1, "33b9432a0ea203bbb6ec00592622cf6e90223849e4c9a76447a19a3ed43907d3", 639302, false, http.StatusOK},
 		{"16ZqP5notFound", "", 0, true, http.StatusNotFound},
 		{"16ZqP5invalid", "", 0, true, http.StatusBadRequest},
 	}
@@ -745,7 +745,7 @@ func TestClient_DownloadStatement(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA", "PDF", false, http.StatusOK},
+		{testAddress1, "PDF", false, http.StatusOK},
 		{"invalid", "invalid", false, http.StatusOK},
 	}
 
@@ -771,7 +771,7 @@ func TestClient_BulkBalance(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		balances, err := client.BulkBalance(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		balances, err := client.BulkBalance(ctx, &AddressList{Addresses: []string{testAddress2, testAddress3}})
 		require.NoError(t, err)
 		assert.NotNil(t, balances)
 		assert.Len(t, balances, 2)
@@ -811,7 +811,7 @@ func TestClient_BulkBalance(t *testing.T) {
 		client := newMockClient(&mockHTTPAddressesErrors{})
 		ctx := context.Background()
 		balances, err := client.BulkBalance(ctx, &AddressList{Addresses: []string{
-			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+			testAddress2,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, balances)
@@ -821,7 +821,7 @@ func TestClient_BulkBalance(t *testing.T) {
 		client := newMockClient(&mockHTTPAddressesNotFound{})
 		ctx := context.Background()
 		balances, err := client.BulkBalance(ctx, &AddressList{Addresses: []string{
-			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+			testAddress2,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, balances)
@@ -836,7 +836,7 @@ func TestClient_BulkUnspentTransactionsProcessor(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{testAddress2, testAddress3}})
 		require.NoError(t, err)
 		assert.NotNil(t, balances)
 		assert.Len(t, balances, 2)
@@ -846,32 +846,32 @@ func TestClient_BulkUnspentTransactionsProcessor(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
 		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{
-			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
-			"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob",
+			testAddress2,
+			testAddress3,
 			"1Bo1qfAm93cgqrd4vjTN1CeNXwjByjfrDC",
 			"1AXQmPt6eyU1ZSt2bSvDiV1PJctpLbEZ3u",
 			"1GhWikHYDvYRiN37KjDfc6ba6CkaTAZmHG",
 			"1BzUYnHr6tY2uAkydt9M8ozctM4e8keW9G",
 			"1AU4yMBFnnB8SWjy7nofZcPDRd8x8pJdY5",
 			"18x1r2cL1CGjoMbKn5sq3BuDfYFdbjdK3U",
-			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
-			"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob",
+			testAddress2,
+			testAddress3,
 			"1Bo1qfAm93cgqrd4vjTN1CeNXwjByjfrDC",
 			"1AXQmPt6eyU1ZSt2bSvDiV1PJctpLbEZ3u",
 			"1GhWikHYDvYRiN37KjDfc6ba6CkaTAZmHG",
 			"1BzUYnHr6tY2uAkydt9M8ozctM4e8keW9G",
 			"1AU4yMBFnnB8SWjy7nofZcPDRd8x8pJdY5",
 			"18x1r2cL1CGjoMbKn5sq3BuDfYFdbjdK3U",
-			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
-			"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob",
+			testAddress2,
+			testAddress3,
 			"1Bo1qfAm93cgqrd4vjTN1CeNXwjByjfrDC",
 			"1AXQmPt6eyU1ZSt2bSvDiV1PJctpLbEZ3u",
 			"1GhWikHYDvYRiN37KjDfc6ba6CkaTAZmHG",
 			"1BzUYnHr6tY2uAkydt9M8ozctM4e8keW9G",
 			"1AU4yMBFnnB8SWjy7nofZcPDRd8x8pJdY5",
 			"18x1r2cL1CGjoMbKn5sq3BuDfYFdbjdK3U",
-			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
-			"1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob",
+			testAddress2,
+			testAddress3,
 			"1Bo1qfAm93cgqrd4vjTN1CeNXwjByjfrDC",
 			"1AXQmPt6eyU1ZSt2bSvDiV1PJctpLbEZ3u",
 			"1GhWikHYDvYRiN37KjDfc6ba6CkaTAZmHG",
@@ -887,7 +887,7 @@ func TestClient_BulkUnspentTransactionsProcessor(t *testing.T) {
 		client := newMockClient(&mockHTTPAddressesErrors{})
 		ctx := context.Background()
 		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{
-			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+			testAddress2,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, balances)
@@ -897,7 +897,7 @@ func TestClient_BulkUnspentTransactionsProcessor(t *testing.T) {
 		client := newMockClient(&mockHTTPAddressesNotFound{})
 		ctx := context.Background()
 		balances, err := client.BulkUnspentTransactionsProcessor(ctx, &AddressList{Addresses: []string{
-			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+			testAddress2,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, balances)
@@ -912,7 +912,7 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		balances, err := client.BulkUnspentTransactions(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		balances, err := client.BulkUnspentTransactions(ctx, &AddressList{Addresses: []string{testAddress2, testAddress3}})
 		require.NoError(t, err)
 		assert.NotNil(t, balances)
 		assert.Len(t, balances, 2)
@@ -952,7 +952,7 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 		client := newMockClient(&mockHTTPAddressesErrors{})
 		ctx := context.Background()
 		balances, err := client.BulkUnspentTransactions(ctx, &AddressList{Addresses: []string{
-			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+			testAddress2,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, balances)
@@ -962,7 +962,7 @@ func TestClient_BulkUnspentTransactions(t *testing.T) {
 		client := newMockClient(&mockHTTPAddressesNotFound{})
 		ctx := context.Background()
 		balances, err := client.BulkUnspentTransactions(ctx, &AddressList{Addresses: []string{
-			"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP",
+			testAddress2,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, balances)
@@ -976,7 +976,7 @@ func TestClient_AddressUsed(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		used, err := client.AddressUsed(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		used, err := client.AddressUsed(ctx, testAddress1)
 		require.NoError(t, err)
 		assert.NotNil(t, used)
 		assert.True(t, used.Used)
@@ -998,7 +998,7 @@ func TestClient_AddressScripts(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		scripts, err := client.AddressScripts(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		scripts, err := client.AddressScripts(ctx, testAddress1)
 		require.NoError(t, err)
 		assert.NotNil(t, scripts)
 		assert.Len(t, scripts.Scripts, 1)
@@ -1021,7 +1021,7 @@ func TestClient_AddressUnconfirmedBalance(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		balance, err := client.AddressUnconfirmedBalance(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		balance, err := client.AddressUnconfirmedBalance(ctx, testAddress1)
 		require.NoError(t, err)
 		assert.NotNil(t, balance)
 		assert.Equal(t, int64(123), balance.Balance)
@@ -1043,7 +1043,7 @@ func TestClient_AddressConfirmedBalance(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		balance, err := client.AddressConfirmedBalance(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		balance, err := client.AddressConfirmedBalance(ctx, testAddress1)
 		require.NoError(t, err)
 		assert.NotNil(t, balance)
 		assert.Equal(t, int64(10102050381), balance.Balance)
@@ -1065,7 +1065,7 @@ func TestClient_AddressUnconfirmedHistory(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		history, err := client.AddressUnconfirmedHistory(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		history, err := client.AddressUnconfirmedHistory(ctx, testAddress1)
 		require.NoError(t, err)
 		assert.NotNil(t, history)
 		assert.Len(t, history, 1)
@@ -1089,7 +1089,7 @@ func TestClient_AddressConfirmedHistory(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		history, err := client.AddressConfirmedHistory(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		history, err := client.AddressConfirmedHistory(ctx, testAddress1)
 		require.NoError(t, err)
 		assert.NotNil(t, history)
 		assert.Len(t, history, 1)
@@ -1113,11 +1113,11 @@ func TestClient_BulkAddressUnconfirmedBalance(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		balances, err := client.BulkAddressUnconfirmedBalance(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		balances, err := client.BulkAddressUnconfirmedBalance(ctx, &AddressList{Addresses: []string{testAddress2, testAddress3}})
 		require.NoError(t, err)
 		assert.NotNil(t, balances)
 		assert.Len(t, balances, 2)
-		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", balances[0].Address)
+		assert.Equal(t, testAddress2, balances[0].Address)
 	})
 
 	t.Run("max addresses (error)", func(t *testing.T) {
@@ -1139,11 +1139,11 @@ func TestClient_BulkAddressConfirmedBalance(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		balances, err := client.BulkAddressConfirmedBalance(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		balances, err := client.BulkAddressConfirmedBalance(ctx, &AddressList{Addresses: []string{testAddress2, testAddress3}})
 		require.NoError(t, err)
 		assert.NotNil(t, balances)
 		assert.Len(t, balances, 2)
-		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", balances[0].Address)
+		assert.Equal(t, testAddress2, balances[0].Address)
 	})
 
 	t.Run("max addresses (error)", func(t *testing.T) {
@@ -1165,11 +1165,11 @@ func TestClient_BulkAddressUnconfirmedHistory(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		history, err := client.BulkAddressUnconfirmedHistory(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		history, err := client.BulkAddressUnconfirmedHistory(ctx, &AddressList{Addresses: []string{testAddress2, testAddress3}})
 		require.NoError(t, err)
 		assert.NotNil(t, history)
 		assert.Len(t, history, 2)
-		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", history[0].Address)
+		assert.Equal(t, testAddress2, history[0].Address)
 		assert.Len(t, history[0].History, 1)
 		assert.Equal(t, "unconfirmed123", history[0].History[0].TxHash)
 	})
@@ -1193,11 +1193,11 @@ func TestClient_BulkAddressConfirmedHistory(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		history, err := client.BulkAddressConfirmedHistory(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		history, err := client.BulkAddressConfirmedHistory(ctx, &AddressList{Addresses: []string{testAddress2, testAddress3}})
 		require.NoError(t, err)
 		assert.NotNil(t, history)
 		assert.Len(t, history, 2)
-		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", history[0].Address)
+		assert.Equal(t, testAddress2, history[0].Address)
 		assert.Len(t, history[0].History, 1)
 		assert.Equal(t, "6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1", history[0].History[0].TxHash)
 	})
@@ -1221,11 +1221,11 @@ func TestClient_BulkAddressHistory(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		history, err := client.BulkAddressHistory(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		history, err := client.BulkAddressHistory(ctx, &AddressList{Addresses: []string{testAddress2, testAddress3}})
 		require.NoError(t, err)
 		assert.NotNil(t, history)
 		assert.Len(t, history, 2)
-		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", history[0].Address)
+		assert.Equal(t, testAddress2, history[0].Address)
 		assert.Len(t, history[0].History, 2) // Should have both confirmed and unconfirmed
 		assert.Equal(t, "6b22c47e7956e5404e05c3dc87dc9f46e929acfd46c8dd7813a34e1218d2f9d1", history[0].History[0].TxHash)
 		assert.Equal(t, "unconfirmed123", history[0].History[1].TxHash)
@@ -1250,7 +1250,7 @@ func TestClient_AddressUnconfirmedUTXOs(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		utxos, err := client.AddressUnconfirmedUTXOs(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		utxos, err := client.AddressUnconfirmedUTXOs(ctx, testAddress1)
 		require.NoError(t, err)
 		assert.NotNil(t, utxos)
 		assert.Len(t, utxos, 1)
@@ -1276,7 +1276,7 @@ func TestClient_AddressConfirmedUTXOs(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		utxos, err := client.AddressConfirmedUTXOs(ctx, "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA")
+		utxos, err := client.AddressConfirmedUTXOs(ctx, testAddress1)
 		require.NoError(t, err)
 		assert.NotNil(t, utxos)
 		assert.Len(t, utxos, 1)
@@ -1302,11 +1302,11 @@ func TestClient_BulkAddressUnconfirmedUTXOs(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		response, err := client.BulkAddressUnconfirmedUTXOs(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		response, err := client.BulkAddressUnconfirmedUTXOs(ctx, &AddressList{Addresses: []string{testAddress2, testAddress3}})
 		require.NoError(t, err)
 		assert.NotNil(t, response)
 		assert.Len(t, response, 2)
-		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", response[0].Address)
+		assert.Equal(t, testAddress2, response[0].Address)
 		assert.Len(t, response[0].Utxos, 1)
 		assert.Equal(t, "unconfirmed_bulk_123", response[0].Utxos[0].TxHash)
 		assert.Equal(t, int64(0), response[0].Utxos[0].Height)
@@ -1332,11 +1332,11 @@ func TestClient_BulkAddressConfirmedUTXOs(t *testing.T) {
 	t.Run("valid response", func(t *testing.T) {
 		client := newMockClient(&mockHTTPAddresses{})
 		ctx := context.Background()
-		response, err := client.BulkAddressConfirmedUTXOs(ctx, &AddressList{Addresses: []string{"16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", "1KGHhLTQaPr4LErrvbAuGE62yPpDoRwrob"}})
+		response, err := client.BulkAddressConfirmedUTXOs(ctx, &AddressList{Addresses: []string{testAddress2, testAddress3}})
 		require.NoError(t, err)
 		assert.NotNil(t, response)
 		assert.Len(t, response, 2)
-		assert.Equal(t, "16ZBEb7pp6mx5EAGrdeKivztd5eRJFuvYP", response[0].Address)
+		assert.Equal(t, testAddress2, response[0].Address)
 		assert.Len(t, response[0].Utxos, 1)
 		assert.Equal(t, "confirmed_bulk_456", response[0].Utxos[0].TxHash)
 		assert.Equal(t, int64(563052), response[0].Utxos[0].Height)
@@ -1361,7 +1361,7 @@ func TestClient_AddressUnconfirmedUTXOs_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPAddressesNotFound{})
 	ctx := context.Background()
-	history, err := client.AddressUnconfirmedUTXOs(ctx, "notFound")
+	history, err := client.AddressUnconfirmedUTXOs(ctx, testMockNotFound)
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrAddressNotFound)
 	assert.Nil(t, history)
@@ -1373,7 +1373,7 @@ func TestClient_AddressConfirmedUTXOs_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPAddressesNotFound{})
 	ctx := context.Background()
-	history, err := client.AddressConfirmedUTXOs(ctx, "notFound")
+	history, err := client.AddressConfirmedUTXOs(ctx, testMockNotFound)
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrAddressNotFound)
 	assert.Nil(t, history)
@@ -1385,7 +1385,7 @@ func TestClient_AddressUsed_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPAddressesNotFound{})
 	ctx := context.Background()
-	_, err := client.AddressUsed(ctx, "notFound")
+	_, err := client.AddressUsed(ctx, testMockNotFound)
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrAddressNotFound)
 }
@@ -1396,7 +1396,7 @@ func TestClient_AddressScripts_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPAddressesNotFound{})
 	ctx := context.Background()
-	scripts, err := client.AddressScripts(ctx, "notFound")
+	scripts, err := client.AddressScripts(ctx, testMockNotFound)
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrAddressNotFound)
 	assert.Nil(t, scripts)
@@ -1408,7 +1408,7 @@ func TestClient_BulkAddressUnconfirmedBalance_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPAddressesNotFound{})
 	ctx := context.Background()
-	balances, err := client.BulkAddressUnconfirmedBalance(ctx, &AddressList{Addresses: []string{"notFound"}})
+	balances, err := client.BulkAddressUnconfirmedBalance(ctx, &AddressList{Addresses: []string{testMockNotFound}})
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrAddressNotFound)
 	assert.Nil(t, balances)
@@ -1420,7 +1420,7 @@ func TestClient_BulkAddressConfirmedBalance_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPAddressesNotFound{})
 	ctx := context.Background()
-	balances, err := client.BulkAddressConfirmedBalance(ctx, &AddressList{Addresses: []string{"notFound"}})
+	balances, err := client.BulkAddressConfirmedBalance(ctx, &AddressList{Addresses: []string{testMockNotFound}})
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrAddressNotFound)
 	assert.Nil(t, balances)
@@ -1432,7 +1432,7 @@ func TestClient_BulkAddressUnconfirmedHistory_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPAddressesNotFound{})
 	ctx := context.Background()
-	history, err := client.BulkAddressUnconfirmedHistory(ctx, &AddressList{Addresses: []string{"notFound"}})
+	history, err := client.BulkAddressUnconfirmedHistory(ctx, &AddressList{Addresses: []string{testMockNotFound}})
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrAddressNotFound)
 	assert.Nil(t, history)
@@ -1444,7 +1444,7 @@ func TestClient_BulkAddressConfirmedHistory_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPAddressesNotFound{})
 	ctx := context.Background()
-	history, err := client.BulkAddressConfirmedHistory(ctx, &AddressList{Addresses: []string{"notFound"}})
+	history, err := client.BulkAddressConfirmedHistory(ctx, &AddressList{Addresses: []string{testMockNotFound}})
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrAddressNotFound)
 	assert.Nil(t, history)
@@ -1456,7 +1456,7 @@ func TestClient_BulkAddressHistory_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPAddressesNotFound{})
 	ctx := context.Background()
-	history, err := client.BulkAddressHistory(ctx, &AddressList{Addresses: []string{"notFound"}})
+	history, err := client.BulkAddressHistory(ctx, &AddressList{Addresses: []string{testMockNotFound}})
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrAddressNotFound)
 	assert.Nil(t, history)
@@ -1468,7 +1468,7 @@ func TestClient_BulkAddressUnconfirmedUTXOs_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPAddressesNotFound{})
 	ctx := context.Background()
-	response, err := client.BulkAddressUnconfirmedUTXOs(ctx, &AddressList{Addresses: []string{"notFound"}})
+	response, err := client.BulkAddressUnconfirmedUTXOs(ctx, &AddressList{Addresses: []string{testMockNotFound}})
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrAddressNotFound)
 	assert.Nil(t, response)
@@ -1480,7 +1480,7 @@ func TestClient_BulkAddressConfirmedUTXOs_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPAddressesNotFound{})
 	ctx := context.Background()
-	response, err := client.BulkAddressConfirmedUTXOs(ctx, &AddressList{Addresses: []string{"notFound"}})
+	response, err := client.BulkAddressConfirmedUTXOs(ctx, &AddressList{Addresses: []string{testMockNotFound}})
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrAddressNotFound)
 	assert.Nil(t, response)

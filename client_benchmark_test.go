@@ -146,7 +146,7 @@ func BenchmarkBuildURL(b *testing.B) {
 		{
 			name: "LongAddress",
 			path: "/address/%s/balance",
-			args: []any{"16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"},
+			args: []any{testAddress1},
 		},
 	}
 

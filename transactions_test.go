@@ -57,7 +57,7 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 		}
 
 		// Invalid
-		if len(bulkRawData.TxIDs) > 0 && strings.Contains(bulkRawData.TxIDs[0], "error") {
+		if len(bulkRawData.TxIDs) > 0 && strings.Contains(bulkRawData.TxIDs[0], testMockError) {
 			resp.StatusCode = http.StatusBadRequest
 			resp.Body = io.NopCloser(bytes.NewBufferString(""))
 			return resp, errTxUnknownError
@@ -228,7 +228,7 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 		}
 
 		// Invalid (two bad txs)
-		if strings.Contains(data.TxIDs[0], "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV") {
+		if strings.Contains(data.TxIDs[0], testTxIDInvalid) {
 			resp.StatusCode = http.StatusOK
 			resp.Body = io.NopCloser(bytes.NewBufferString(`[]`))
 		}
@@ -240,14 +240,14 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 		}
 
 		// Invalid - force an error
-		if strings.Contains(data.TxIDs[0], "error") {
+		if strings.Contains(data.TxIDs[0], testMockError) {
 			resp.StatusCode = http.StatusBadRequest
 			resp.Body = io.NopCloser(bytes.NewBufferString(""))
 			return resp, errTxUnknownError
 		}
 
 		// Not found
-		if strings.Contains(data.TxIDs[0], "notFound") {
+		if strings.Contains(data.TxIDs[0], testMockNotFound) {
 			resp.StatusCode = http.StatusNotFound
 			resp.Body = io.NopCloser(bytes.NewBufferString(""))
 			return resp, nil
@@ -323,7 +323,7 @@ endobj
 		}
 
 		// Valid bulk spent outputs
-		if len(bulkSpentRequest.UTXOs) > 0 && bulkSpentRequest.UTXOs[0].TxID == "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96" {
+		if len(bulkSpentRequest.UTXOs) > 0 && bulkSpentRequest.UTXOs[0].TxID == testTxID1 {
 			resp.StatusCode = http.StatusOK
 			resp.Body = io.NopCloser(bytes.NewBufferString(`[{"txid":"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96","vout":0,"spent":{"txid":"spendingTxId123","vin":0}}]`))
 		}
@@ -421,7 +421,7 @@ func (m *mockHTTPBroadcast) Do(req *http.Request) (*http.Response, error) {
 	}
 
 	// Not found
-	if strings.Contains(data.TxHex, "notFound") {
+	if strings.Contains(data.TxHex, testMockNotFound) {
 		resp.StatusCode = http.StatusNotFound
 		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
@@ -468,7 +468,7 @@ func (m *mockHTTPBroadcastBulk) Do(req *http.Request) (*http.Response, error) {
 	}
 
 	// Invalid - error
-	if strings.Contains(data[0], "error") {
+	if strings.Contains(data[0], testMockError) {
 		resp.Body = io.NopCloser(bytes.NewBufferString(`unknown error`))
 		return resp, errTxUnknownError
 	}
@@ -492,9 +492,9 @@ func TestClient_GetTxByHash(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", false, http.StatusOK},
-		{"error", "", true, http.StatusInternalServerError},
-		{"notFound", "", true, http.StatusNotFound},
+		{testTxID1, testTxID1, false, http.StatusOK},
+		{testMockError, "", true, http.StatusInternalServerError},
+		{testMockNotFound, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -528,9 +528,9 @@ func TestClient_GetMerkleProof(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "0000000000000000091216c46973d82db057a6f9911352892b7769ed517681c3", "95a920b1002bed05379a0d2650bb13eb216138f28ee80172f4cf21048528dc60", false, http.StatusOK},
-		{"error", "", "", true, http.StatusBadRequest},
-		{"notFound", "", "", true, http.StatusNotFound},
+		{testTxID1, "0000000000000000091216c46973d82db057a6f9911352892b7769ed517681c3", "95a920b1002bed05379a0d2650bb13eb216138f28ee80172f4cf21048528dc60", false, http.StatusOK},
+		{testMockError, "", "", true, http.StatusBadRequest},
+		{testMockNotFound, "", "", true, http.StatusNotFound},
 		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz", "", "", false, http.StatusOK},
 	}
 
@@ -567,9 +567,9 @@ func TestClient_GetMerkleProofTSC(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{0, "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "0000000000000000091216c46973d82db057a6f9911352892b7769ed517681c3", []string{"7e0ba1980522125f1f40d19a249ab3ae036001b991776813d25aebe08e8b8a50", "1e3a5a8946e0caf07006f6c4f76773d7e474d4f240a276844f866bd09820adb3"}, false, http.StatusOK},
-		{0, "error", "", []string{}, true, http.StatusBadRequest},
-		{0, "notFound", "", []string{}, true, http.StatusNotFound},
+		{0, testTxID1, "0000000000000000091216c46973d82db057a6f9911352892b7769ed517681c3", []string{"7e0ba1980522125f1f40d19a249ab3ae036001b991776813d25aebe08e8b8a50", "1e3a5a8946e0caf07006f6c4f76773d7e474d4f240a276844f866bd09820adb3"}, false, http.StatusOK},
+		{0, testMockError, "", []string{}, true, http.StatusBadRequest},
+		{0, testMockNotFound, "", []string{}, true, http.StatusNotFound},
 		{0, "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz", "", []string{}, false, http.StatusOK},
 	}
 
@@ -621,10 +621,10 @@ func TestClient_GetRawTransactionData(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c03d7c6082f7376706f6f6c2e636f6d2f3edff034600055b8467f0040ffffffff01247e814a000000001976a914492558fb8ca71a3591316d095afc0f20ef7d42f788ac00000000", false, http.StatusOK},
+		{testTxID1, "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c03d7c6082f7376706f6f6c2e636f6d2f3edff034600055b8467f0040ffffffff01247e814a000000001976a914492558fb8ca71a3591316d095afc0f20ef7d42f788ac00000000", false, http.StatusOK},
 		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz", "", false, http.StatusNotFound},
-		{"error", "", true, http.StatusBadRequest},
-		{"notFound", "", false, http.StatusNotFound},
+		{testMockError, "", true, http.StatusBadRequest},
+		{testMockNotFound, "", false, http.StatusNotFound},
 	}
 
 	// Test all
@@ -656,9 +656,9 @@ func TestClient_GetRawTransactionOutputData(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "76a914492558fb8ca71a3591316d095afc0f20ef7d42f788ac", false, http.StatusOK},
+		{testTxID1, "76a914492558fb8ca71a3591316d095afc0f20ef7d42f788ac", false, http.StatusOK},
 		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz", "", true, http.StatusBadGateway},
-		{"error", "", true, http.StatusBadRequest},
+		{testMockError, "", true, http.StatusBadRequest},
 	}
 
 	// Test all
@@ -691,12 +691,12 @@ func TestClient_BulkTransactionDetails(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258"}}, "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258", false, http.StatusOK},
-		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1ZZ", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258"}}, "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258", "", false, http.StatusOK},
-		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV"}}, "", "", false, http.StatusOK},
-		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV", "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV"}}, "", "", true, http.StatusOK},
-		{&TxHashes{TxIDs: []string{"error"}}, "", "", true, http.StatusBadRequest},
-		{&TxHashes{TxIDs: []string{"notFound"}}, "", "", false, http.StatusNotFound},
+		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", testTxID2}}, "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", testTxID2, false, http.StatusOK},
+		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1ZZ", testTxID2}}, testTxID2, "", false, http.StatusOK},
+		{&TxHashes{TxIDs: []string{testTxIDInvalid, testTxID2Invalid}}, "", "", false, http.StatusOK},
+		{&TxHashes{TxIDs: []string{testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid}}, "", "", true, http.StatusOK},
+		{&TxHashes{TxIDs: []string{testMockError}}, "", "", true, http.StatusBadRequest},
+		{&TxHashes{TxIDs: []string{testMockNotFound}}, "", "", false, http.StatusNotFound},
 	}
 
 	// Test all
@@ -769,7 +769,7 @@ func TestClient_BulkBroadcastTx(t *testing.T) {
 	}{
 		{[]string{"020000000232900e9b0e359cb95ad3853e1450591fdf01e3efaa1b3b2b5ab5c5ef784946b8010000006a473044022055ec4f9b9cbdd97cf5f4893f921da75287483edb4ebba4f5b23231577212fd5f022007ed037ab7da039e0d4cf0fa35f620f2d7f71285959dcb6c885652d843d0038741210232b357c5309644cf4aa72b9b2d8bfe58bdf2515d40119318d5cb51ef378cae7efffffffff91d2feda79506806c5b0dc74b6fa6ae42fb7963da460ac256383fce498b9952020000006b483045022100ac75defcda55d644b6c095c2e7cbded92e38ea52e4d7f561f37962aa036a92fe0220059c0071d7c53cc964f641fa60ba2a076e3030ae6edc0f650792041c7691c66641210282d7e568e56f59e01a4edae297ac26caabc4684971ac6c7558c91c0fa84002f7ffffffff03322a093f000000001976a914c4263eb96d88849f498d139424b59a0cba1005e888ac2f92bb09000000001976a9146cbff9881ac47da8cb699e4543c28f9b3d6941da88ac404b4c00000000001976a914f7899faf1696892e6cb029b00c713f044761f03588ac00000000", "0100000006279fdaff3d61920bc0b017c7b7ed8a8944b1ed1cc1998efc18b71f4828dd3a02010000006a47304402205ba16dccd88461f11e0a705b1015ae84d543acc92cb25012c14578d14cedf677022036bfdd96c6bbe57488b288a1dd3c1c4208154066fb7f8f9dfe59fb6ef53ca01b41210215b9d8176b6697758859e95ff43e61dfea94d44340b16d6f6ac4ae6d61a37ab3ffffffff3efb67c48b0a387f769219ee5c7431eaa49e11a3bfb4e7969d91b0973bcc3a30010000006b483045022100d1a25279f2bb720848717b85c518018c3a26ac584dce2956aeaa4ead86e43b1002200c2e5193fcc2250cc08407b22e7ee73ba48c8755d2aa193b543d01ad97dff85941210306e0678608241a4dc0bde0a39ab3d29dfdef6624ab5a20aa0b821dea85c9d9d4ffffffff9da533cd621baa3d07aca98f07c03115db993bf685afad6a3f321dac61db1731010000006a473044022009769824e84a1b9756aa9450249c19604ffe1474875e9389e851c562dcf272e502206dec4452cdec705bb4066883a2b9cd571768df2017638143bdec4a053b37abcb41210243b052e875c67900cebb6bcf816c7ee510f1a7c1068b0625a1828f1ab82c3806ffffffff4e6647164ee0edc0c7617e82575a88eca16056efb3af297e32fd03767c4e353d010000006a473044022012949fd73deca106804968fd50d86cb89872758f5c492b0938fdb8cee28b30df0220168f88d65400c68c5df348d60c800b1f9fb7e3135af05addac049c940da36bf9412102645b8993f1a183e9d37ec2fd9c5f950110b404aea7e9f01687ab42eb6f8b3563ffffffff49236581eb2ada13ac5972e7211771539ebe06061ac6a27a58acde5521b80949010000006a4730440220621f6dff81bfc0ab6c2b9e321c920f477f4ee5e5a01e3d24aecbb265ad264a1202205e99ac2fe08f6cecfcc8ddc98de09d4693c7f81f03bb478d1ee5936919e00b0d4121039925d3b23e560bd021d665e56f912735fcbb96303051b037a6816a55697a226effffffff1b6196327f18bbe6af3fabd46a5d3af568cc7c4447a340f4949824b6762a98f2010000006b483045022100f679c4408b7d893a6bbfb042685053369de044d4d12c6ddcc678d223684f7a320220669bd27d9e9e2be82c0f653d95cd74a4e188a66b976c5be7ba7d3b113692547041210235157690d4fc237b4aceb9e6f91ae0f0058628df36e4450f173ffae2d7d0d49affffffff0253290000000000001976a914dc57ab8a8365a7263fad7491e9a36601a786772388ac37d60000000000001976a914594d5717bd8f9ae5ae8c56646042082d3d6995f988ac00000000"}, "", false, false, http.StatusOK},
 		{[]string{"0100000001d1bda0bde67183817b21af863adaa31fda8cafcf2083ca1eaba3054496cbde10010000006a47304402205fddd6abab6b8e94f36bfec51ba2e1f3a91b5327efa88264b5530d0c86538723022010e51693e3d52347d4d2ff142b85b460d3953e625d1e062a5fa2569623fb0ea94121029df3723daceb1fef64fa0558371bc48cc3a7a8e35d8e05b87137dc129a9d4598ffffffff0115d40000000000001976a91459cc95a8cde59ceda718dbf70e612dba4034552688ac00000000", "0100000006279fdaff3d61920bc0b017c7b7ed8a8944b1ed1cc1998efc18b71f4828dd3a02010000006a47304402205ba16dccd88461f11e0a705b1015ae84d543acc92cb25012c14578d14cedf677022036bfdd96c6bbe57488b288a1dd3c1c4208154066fb7f8f9dfe59fb6ef53ca01b41210215b9d8176b6697758859e95ff43e61dfea94d44340b16d6f6ac4ae6d61a37ab3ffffffff3efb67c48b0a387f769219ee5c7431eaa49e11a3bfb4e7969d91b0973bcc3a30010000006b483045022100d1a25279f2bb720848717b85c518018c3a26ac584dce2956aeaa4ead86e43b1002200c2e5193fcc2250cc08407b22e7ee73ba48c8755d2aa193b543d01ad97dff85941210306e0678608241a4dc0bde0a39ab3d29dfdef6624ab5a20aa0b821dea85c9d9d4ffffffff9da533cd621baa3d07aca98f07c03115db993bf685afad6a3f321dac61db1731010000006a473044022009769824e84a1b9756aa9450249c19604ffe1474875e9389e851c562dcf272e502206dec4452cdec705bb4066883a2b9cd571768df2017638143bdec4a053b37abcb41210243b052e875c67900cebb6bcf816c7ee510f1a7c1068b0625a1828f1ab82c3806ffffffff4e6647164ee0edc0c7617e82575a88eca16056efb3af297e32fd03767c4e353d010000006a473044022012949fd73deca106804968fd50d86cb89872758f5c492b0938fdb8cee28b30df0220168f88d65400c68c5df348d60c800b1f9fb7e3135af05addac049c940da36bf9412102645b8993f1a183e9d37ec2fd9c5f950110b404aea7e9f01687ab42eb6f8b3563ffffffff49236581eb2ada13ac5972e7211771539ebe06061ac6a27a58acde5521b80949010000006a4730440220621f6dff81bfc0ab6c2b9e321c920f477f4ee5e5a01e3d24aecbb265ad264a1202205e99ac2fe08f6cecfcc8ddc98de09d4693c7f81f03bb478d1ee5936919e00b0d4121039925d3b23e560bd021d665e56f912735fcbb96303051b037a6816a55697a226effffffff1b6196327f18bbe6af3fabd46a5d3af568cc7c4447a340f4949824b6762a98f2010000006b483045022100f679c4408b7d893a6bbfb042685053369de044d4d12c6ddcc678d223684f7a320220669bd27d9e9e2be82c0f653d95cd74a4e188a66b976c5be7ba7d3b113692547041210235157690d4fc237b4aceb9e6f91ae0f0058628df36e4450f173ffae2d7d0d49affffffff0253290000000000001976a914dc57ab8a8365a7263fad7491e9a36601a786772388ac37d60000000000001976a914594d5717bd8f9ae5ae8c56646042082d3d6995f988ac00000000"}, "https://api.whatsonchain.com/v1/bsv/tx/broadcast/cxF3xOdSvR_JgoXWDYZ0RQ", true, false, http.StatusOK},
-		{[]string{"error", "error2"}, "", true, true, http.StatusBadRequest},
+		{[]string{testMockError, "error2"}, "", true, true, http.StatusBadRequest},
 	}
 
 	// Test all
@@ -850,7 +850,7 @@ func TestClient_DecodeTransaction(t *testing.T) {
 	}{
 		{"010000000110784fd521b55a303da0f8b4ea113a2a3b5fa71565bab86c4257cff83ab4a1b9010000006a4730440220113a56d87122f28d6b60931498951f9709527a5c095ae852dc7b17d3d7915ef802206fd0b026d2e8dd30a39daaef17f503d985e2306c8244bb0e09a957bf1c9b530441210269a7785783c12405a1eaecb3088a3d830ed7e2de6ac527f42374a55a8cc5aeadffffffff0266ba0200000000001976a914021e4ac858f0ee6e0dfdf4438857f602a900698988acde905606000000001976a914022a8c1a18378885db9054676f17a27f4219045e88ac00000000", "cfcd9c342411592319442f705f9083938847e88f709096aa2cec15e6350b947e", false, http.StatusOK},
 		{"zzzz0784fd521b55a303da0f8b4ea113a2a3b5fa71565bab86c4257cff83ab4a1b9010000006a4730440220113a56d87122f28d6b60931498951f9709527a5c095ae852dc7b17d3d7915ef802206fd0b026d2e8dd30a39daaef17f503d985e2306c8244bb0e09a957bf1c9b530441210269a7785783c12405a1eaecb3088a3d830ed7e2de6ac527f42374a55a8cc5aeadffffffff0266ba0200000000001976a914021e4ac858f0ee6e0dfdf4438857f602a900698988acde905606000000001976a914022a8c1a18378885db9054676f17a27f4219045e88ac00000000", "", true, http.StatusBadRequest},
-		{"notFound", "", true, http.StatusNotFound},
+		{testMockNotFound, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -882,7 +882,7 @@ func TestClient_DownloadReceipt(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "PDF", false, http.StatusOK},
+		{testTxID1, "PDF", false, http.StatusOK},
 		{"invalid", "invalid", true, http.StatusGatewayTimeout},
 	}
 
@@ -920,10 +920,10 @@ func TestClient_BulkTransactionDetailsProcessor(t *testing.T) {
 			"valid transactions",
 			&TxHashes{TxIDs: []string{
 				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+				testTxID2,
 			}},
 			"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
-			"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+			testTxID2,
 			false,
 			http.StatusOK,
 		},
@@ -931,9 +931,9 @@ func TestClient_BulkTransactionDetailsProcessor(t *testing.T) {
 			"one real tx, one wrong",
 			&TxHashes{TxIDs: []string{
 				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1ZZ",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+				testTxID2,
 			}},
-			"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+			testTxID2,
 			"",
 			false,
 			http.StatusOK,
@@ -941,8 +941,8 @@ func TestClient_BulkTransactionDetailsProcessor(t *testing.T) {
 		{
 			"both txs are not found",
 			&TxHashes{TxIDs: []string{
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				testTxIDInvalid,
+				testTxID2Invalid,
 			}},
 			"",
 			"",
@@ -952,28 +952,28 @@ func TestClient_BulkTransactionDetailsProcessor(t *testing.T) {
 		{
 			"using 20 transactions",
 			&TxHashes{TxIDs: []string{
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
 			}},
 			"",
 			"",
@@ -983,7 +983,7 @@ func TestClient_BulkTransactionDetailsProcessor(t *testing.T) {
 		{
 			"invalid tx",
 			&TxHashes{TxIDs: []string{
-				"error",
+				testMockError,
 			}},
 			"",
 			"",
@@ -1029,10 +1029,10 @@ func TestClient_BulkRawTransactionDataProcessor(t *testing.T) {
 			"valid transactions",
 			&TxHashes{TxIDs: []string{
 				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+				testTxID2,
 			}},
 			"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
-			"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+			testTxID2,
 			false,
 			http.StatusOK,
 		},
@@ -1040,9 +1040,9 @@ func TestClient_BulkRawTransactionDataProcessor(t *testing.T) {
 			"one real tx, one wrong",
 			&TxHashes{TxIDs: []string{
 				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1ZZ",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+				testTxID2,
 			}},
-			"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+			testTxID2,
 			"",
 			false,
 			http.StatusOK,
@@ -1050,8 +1050,8 @@ func TestClient_BulkRawTransactionDataProcessor(t *testing.T) {
 		{
 			"both txs are not found",
 			&TxHashes{TxIDs: []string{
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				testTxIDInvalid,
+				testTxID2Invalid,
 			}},
 			"",
 			"",
@@ -1061,28 +1061,28 @@ func TestClient_BulkRawTransactionDataProcessor(t *testing.T) {
 		{
 			"using 20 transactions",
 			&TxHashes{TxIDs: []string{
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1VV",
-				"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba32VV",
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
+				testTxIDInvalid,
+				testTxID2Invalid,
 			}},
 			"",
 			"",
@@ -1092,7 +1092,7 @@ func TestClient_BulkRawTransactionDataProcessor(t *testing.T) {
 		{
 			"invalid tx",
 			&TxHashes{TxIDs: []string{
-				"error",
+				testMockError,
 			}},
 			"",
 			"",
@@ -1158,7 +1158,7 @@ func TestClient_GetTransactionPropagationStatus(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", false, http.StatusOK},
+		{testTxID1, testTxID1, false, http.StatusOK},
 		{"invalid", "invalid", true, http.StatusBadRequest},
 	}
 
@@ -1220,9 +1220,9 @@ func TestClient_BulkTransactionStatus(t *testing.T) {
 		statusCode    int
 	}{
 		{
-			&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", "91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258"}},
+			&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", testTxID2}},
 			"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
-			"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+			testTxID2,
 			false,
 			http.StatusOK,
 		},
@@ -1292,7 +1292,7 @@ func TestClient_GetTransactionAsBinary(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", "binary_data_here", false, http.StatusOK},
+		{testTxID1, "binary_data_here", false, http.StatusOK},
 		{"invalid", "invalid", true, http.StatusBadRequest},
 	}
 
@@ -1403,7 +1403,7 @@ func TestClient_BulkRawTransactionData(t *testing.T) {
 		ctx := context.Background()
 		txList, err := client.BulkRawTransactionData(ctx, &TxHashes{TxIDs: []string{
 			"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
-			"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258",
+			testTxID2,
 		}})
 		require.NoError(t, err)
 		assert.NotNil(t, txList)
@@ -1428,7 +1428,7 @@ func TestClient_BulkRawTransactionData(t *testing.T) {
 		client := newMockClient(&mockHTTPTransactions{})
 		ctx := context.Background()
 		txList, err := client.BulkRawTransactionData(ctx, &TxHashes{TxIDs: []string{
-			"error",
+			testMockError,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, txList)
@@ -1453,7 +1453,7 @@ func TestClient_GetUnconfirmedSpentOutput(t *testing.T) {
 	}{
 		{
 			name:          "valid unconfirmed spent output",
-			txHash:        "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96",
+			txHash:        testTxID1,
 			index:         0,
 			expectedTxID:  "unconfirmedSpendingTxId456",
 			expectedVin:   1,
@@ -1462,7 +1462,7 @@ func TestClient_GetUnconfirmedSpentOutput(t *testing.T) {
 		},
 		{
 			name:          "not found",
-			txHash:        "notFound",
+			txHash:        testMockNotFound,
 			index:         0,
 			expectedTxID:  "",
 			expectedVin:   0,
@@ -1508,7 +1508,7 @@ func TestClient_GetConfirmedSpentOutput(t *testing.T) {
 	}{
 		{
 			name:          "valid confirmed spent output",
-			txHash:        "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96",
+			txHash:        testTxID1,
 			index:         0,
 			expectedTxID:  "confirmedSpendingTxId789",
 			expectedVin:   2,
@@ -1517,7 +1517,7 @@ func TestClient_GetConfirmedSpentOutput(t *testing.T) {
 		},
 		{
 			name:          "not found",
-			txHash:        "notFound",
+			txHash:        testMockNotFound,
 			index:         0,
 			expectedTxID:  "",
 			expectedVin:   0,
@@ -1563,7 +1563,7 @@ func TestClient_GetSpentOutput(t *testing.T) {
 	}{
 		{
 			name:          "valid spent output",
-			txHash:        "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96",
+			txHash:        testTxID1,
 			index:         0,
 			expectedTxID:  "spendingTxId123",
 			expectedVin:   0,
@@ -1572,7 +1572,7 @@ func TestClient_GetSpentOutput(t *testing.T) {
 		},
 		{
 			name:          "not found",
-			txHash:        "notFound",
+			txHash:        testMockNotFound,
 			index:         0,
 			expectedTxID:  "",
 			expectedVin:   0,
@@ -1610,7 +1610,7 @@ func TestClient_BulkSpentOutputs(t *testing.T) {
 		response, err := client.BulkSpentOutputs(ctx, &BulkSpentOutputRequest{
 			UTXOs: []BulkSpentUTXO{
 				{
-					TxID: "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96",
+					TxID: testTxID1,
 					Vout: 0,
 				},
 			},
@@ -1618,7 +1618,7 @@ func TestClient_BulkSpentOutputs(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, response)
 		assert.Len(t, response, 1)
-		assert.Equal(t, "c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8df96", response[0].TxID)
+		assert.Equal(t, testTxID1, response[0].TxID)
 		assert.Equal(t, 0, response[0].Vout)
 		assert.NotNil(t, response[0].Spent)
 		assert.Equal(t, "spendingTxId123", response[0].Spent.TxID)
@@ -1647,7 +1647,7 @@ func TestClient_GetUnconfirmedSpentOutput_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPTransactionsNotFound{})
 	ctx := context.Background()
-	output, err := client.GetUnconfirmedSpentOutput(ctx, "notFound", 0)
+	output, err := client.GetUnconfirmedSpentOutput(ctx, testMockNotFound, 0)
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrTransactionNotFound)
 	assert.Nil(t, output)
@@ -1659,7 +1659,7 @@ func TestClient_GetConfirmedSpentOutput_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPTransactionsNotFound{})
 	ctx := context.Background()
-	output, err := client.GetConfirmedSpentOutput(ctx, "notFound", 0)
+	output, err := client.GetConfirmedSpentOutput(ctx, testMockNotFound, 0)
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrTransactionNotFound)
 	assert.Nil(t, output)
@@ -1671,7 +1671,7 @@ func TestClient_GetSpentOutput_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPTransactionsNotFound{})
 	ctx := context.Background()
-	output, err := client.GetSpentOutput(ctx, "notFound", 0)
+	output, err := client.GetSpentOutput(ctx, testMockNotFound, 0)
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrTransactionNotFound)
 	assert.Nil(t, output)
@@ -1683,7 +1683,7 @@ func TestClient_GetTransactionPropagationStatus_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPTransactionsNotFound{})
 	ctx := context.Background()
-	status, err := client.GetTransactionPropagationStatus(ctx, "notFound")
+	status, err := client.GetTransactionPropagationStatus(ctx, testMockNotFound)
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrTransactionNotFound)
 	assert.Nil(t, status)
@@ -1695,7 +1695,7 @@ func TestClient_GetTransactionAsBinary_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPTransactionsNotFound{})
 	ctx := context.Background()
-	binary, err := client.GetTransactionAsBinary(ctx, "notFound")
+	binary, err := client.GetTransactionAsBinary(ctx, testMockNotFound)
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrTransactionNotFound)
 	assert.Nil(t, binary)

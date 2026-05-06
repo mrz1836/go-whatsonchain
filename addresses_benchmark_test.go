@@ -70,7 +70,7 @@ func BenchmarkAddressInfo(b *testing.B) {
 	)
 
 	ctx := context.Background()
-	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
+	address := testAddress1
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -91,7 +91,7 @@ func BenchmarkAddressBalance(b *testing.B) {
 	)
 
 	ctx := context.Background()
-	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
+	address := testAddress1
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -112,7 +112,7 @@ func BenchmarkAddressHistory(b *testing.B) {
 	)
 
 	ctx := context.Background()
-	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
+	address := testAddress1
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -133,7 +133,7 @@ func BenchmarkAddressUnspentTransactions(b *testing.B) {
 	)
 
 	ctx := context.Background()
-	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
+	address := testAddress1
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -171,7 +171,7 @@ func BenchmarkBulkBalanceDisabled(b *testing.B) {
 		b.Run(tt.name, func(b *testing.B) {
 			addresses := make([]string, tt.addresses)
 			for i := 0; i < tt.addresses; i++ {
-				addresses[i] = "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
+				addresses[i] = testAddress1
 			}
 			list := &AddressList{Addresses: addresses}
 
@@ -196,7 +196,7 @@ func BenchmarkAddressConfirmedBalance(b *testing.B) {
 	)
 
 	ctx := context.Background()
-	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
+	address := testAddress1
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -217,7 +217,7 @@ func BenchmarkAddressUnconfirmedBalance(b *testing.B) {
 	)
 
 	ctx := context.Background()
-	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
+	address := testAddress1
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -238,7 +238,7 @@ func BenchmarkAddressUsed(b *testing.B) {
 	)
 
 	ctx := context.Background()
-	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
+	address := testAddress1
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -259,7 +259,7 @@ func BenchmarkAddressScripts(b *testing.B) {
 	)
 
 	ctx := context.Background()
-	address := "16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"
+	address := testAddress1
 
 	b.ResetTimer()
 	b.ReportAllocs()

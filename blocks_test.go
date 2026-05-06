@@ -216,7 +216,7 @@ func TestClient_GetBlockByHash(t *testing.T) {
 	}{
 		{"0000000000000000025b8506c83450afe84f0318775a52c7b91ee64aad0d5a23", "0000000000000000025b8506c83450afe84f0318775a52c7b91ee64aad0d5a23", false, http.StatusOK},
 		{"invalidBlockHash", "", true, http.StatusBadRequest},
-		{"notFound", "", true, http.StatusNotFound},
+		{testMockNotFound, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -285,8 +285,8 @@ func TestClient_GetBlockPages(t *testing.T) {
 	}{
 		{"000000000000000000885a4d8e9912f085b42288adc58b3ee5830a7da9f4fef4", "51c4933d986da4c0de51ea8446b7db4aa1753f205c594591a09998b1d05d7cfe", false, http.StatusOK},
 		{"invalidBlockPage", "null", false, http.StatusOK},
-		{"error", "", true, http.StatusBadRequest},
-		{"notFound", "", true, http.StatusNotFound},
+		{testMockError, "", true, http.StatusBadRequest},
+		{testMockNotFound, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -320,7 +320,7 @@ func TestClient_GetHeaderByHash(t *testing.T) {
 	}{
 		{"000000000000000004a288072ebb35e37233f419918f9783d499979cb6ac33eb", "000000000000000004a288072ebb35e37233f419918f9783d499979cb6ac33eb", false, http.StatusOK},
 		{"invalidBlockHeaderHash", "", true, http.StatusBadRequest},
-		{"notFound", "", true, http.StatusNotFound},
+		{testMockNotFound, "", true, http.StatusNotFound},
 	}
 
 	// Test all

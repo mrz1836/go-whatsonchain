@@ -221,9 +221,9 @@ func TestClient_GetScriptHistory(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 620539, "52dfceb815ad129a0fd946e3d665f44fa61f068135b9f38b05d3c697e11bad48", false, http.StatusOK},
+		{testScriptHash1, 620539, "52dfceb815ad129a0fd946e3d665f44fa61f068135b9f38b05d3c697e11bad48", false, http.StatusOK},
 		{"invalidTx", 0, "", true, http.StatusBadRequest},
-		{"notFound", 0, "", true, http.StatusNotFound},
+		{testMockNotFound, 0, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -273,9 +273,9 @@ func TestClient_GetScriptUnspentTransactions(t *testing.T) {
 		statusCode    int
 	}{
 		{"92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb", 640558, "5c6ac3a685be0791aa6e6eedb03d48cbf76046ea499e0a9cefbdc0fb3969ad13", false, http.StatusOK},
-		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 0, "", true, http.StatusOK}, // Empty response should error
+		{testScriptHash1, 0, "", true, http.StatusOK}, // Empty response should error
 		{"invalidTx", 0, "", true, http.StatusBadRequest},
-		{"notFound", 0, "", true, http.StatusNotFound},
+		{testMockNotFound, 0, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -318,7 +318,7 @@ func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
 		ctx := context.Background()
 		balances, err := client.BulkScriptUnspentTransactions(ctx, &ScriptsList{Scripts: []string{
 			"f814a7c3a40164aacc440871e8b7b14eb6a45f0ca7dcbeaea709edc83274c5e7",
-			"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3",
+			testScriptHash1,
 		}})
 		require.NoError(t, err)
 		assert.NotNil(t, balances)
@@ -369,7 +369,7 @@ func TestClient_BulkScriptUnspentTransactions(t *testing.T) {
 		client := newMockClient(&mockHTTPScriptNotFound{})
 		ctx := context.Background()
 		balances, err := client.BulkScriptUnspentTransactions(ctx, &ScriptsList{Scripts: []string{
-			"notFound",
+			testMockNotFound,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, balances)
@@ -391,10 +391,10 @@ func TestClient_GetScriptUsed(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", true, false, http.StatusOK},
+		{testScriptHash1, true, false, http.StatusOK},
 		{"92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb", false, false, http.StatusOK},
 		{"invalidTx", false, true, http.StatusBadRequest},
-		{"notFound", false, true, http.StatusNotFound},
+		{testMockNotFound, false, true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -438,9 +438,9 @@ func TestClient_GetScriptUnconfirmedHistory(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 620539, "52dfceb815ad129a0fd946e3d665f44fa61f068135b9f38b05d3c697e11bad48", false, http.StatusOK},
+		{testScriptHash1, 620539, "52dfceb815ad129a0fd946e3d665f44fa61f068135b9f38b05d3c697e11bad48", false, http.StatusOK},
 		{"invalidTx", 0, "", true, http.StatusBadRequest},
-		{"notFound", 0, "", true, http.StatusNotFound},
+		{testMockNotFound, 0, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -489,9 +489,9 @@ func TestClient_GetScriptConfirmedHistory(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 620539, "4ec3b63d764558303eda720e8e51f69bbcfe81376075657313fb587306f8a9b0", false, http.StatusOK},
+		{testScriptHash1, 620539, "4ec3b63d764558303eda720e8e51f69bbcfe81376075657313fb587306f8a9b0", false, http.StatusOK},
 		{"invalidTx", 0, "", true, http.StatusBadRequest},
-		{"notFound", 0, "", true, http.StatusNotFound},
+		{testMockNotFound, 0, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -532,12 +532,12 @@ func TestClient_BulkScriptUnconfirmedHistory(t *testing.T) {
 		client := newMockClient(&mockHTTPScript{})
 		ctx := context.Background()
 		histories, err := client.BulkScriptUnconfirmedHistory(ctx, &ScriptsList{Scripts: []string{
-			"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3",
+			testScriptHash1,
 		}})
 		require.NoError(t, err)
 		assert.NotNil(t, histories)
 		assert.Len(t, histories, 1)
-		assert.Equal(t, "995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", histories[0].Script)
+		assert.Equal(t, testScriptHash1, histories[0].Script)
 		assert.Len(t, histories[0].History, 1)
 		assert.Equal(t, "52dfceb815ad129a0fd946e3d665f44fa61f068135b9f38b05d3c697e11bad48", histories[0].History[0].TxHash)
 	})
@@ -557,7 +557,7 @@ func TestClient_BulkScriptUnconfirmedHistory(t *testing.T) {
 		client := newMockClient(&mockHTTPScriptErrors{})
 		ctx := context.Background()
 		histories, err := client.BulkScriptUnconfirmedHistory(ctx, &ScriptsList{Scripts: []string{
-			"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3",
+			testScriptHash1,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, histories)
@@ -572,12 +572,12 @@ func TestClient_BulkScriptConfirmedHistory(t *testing.T) {
 		client := newMockClient(&mockHTTPScript{})
 		ctx := context.Background()
 		histories, err := client.BulkScriptConfirmedHistory(ctx, &ScriptsList{Scripts: []string{
-			"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3",
+			testScriptHash1,
 		}})
 		require.NoError(t, err)
 		assert.NotNil(t, histories)
 		assert.Len(t, histories, 1)
-		assert.Equal(t, "995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", histories[0].Script)
+		assert.Equal(t, testScriptHash1, histories[0].Script)
 		assert.Len(t, histories[0].History, 1)
 		assert.Equal(t, "4ec3b63d764558303eda720e8e51f69bbcfe81376075657313fb587306f8a9b0", histories[0].History[0].TxHash)
 	})
@@ -597,7 +597,7 @@ func TestClient_BulkScriptConfirmedHistory(t *testing.T) {
 		client := newMockClient(&mockHTTPScriptErrors{})
 		ctx := context.Background()
 		histories, err := client.BulkScriptConfirmedHistory(ctx, &ScriptsList{Scripts: []string{
-			"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3",
+			testScriptHash1,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, histories)
@@ -620,10 +620,10 @@ func TestClient_ScriptUnconfirmedUTXOs(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 0, "abc123", false, http.StatusOK},
+		{testScriptHash1, 0, "abc123", false, http.StatusOK},
 		{"92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb", 0, "", true, http.StatusOK}, // Empty response should error
 		{"invalidTx", 0, "", true, http.StatusBadRequest},
-		{"notFound", 0, "", true, http.StatusNotFound},
+		{testMockNotFound, 0, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -664,12 +664,12 @@ func TestClient_BulkScriptUnconfirmedUTXOs(t *testing.T) {
 		client := newMockClient(&mockHTTPScript{})
 		ctx := context.Background()
 		unspentList, err := client.BulkScriptUnconfirmedUTXOs(ctx, &ScriptsList{Scripts: []string{
-			"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3",
+			testScriptHash1,
 		}})
 		require.NoError(t, err)
 		assert.NotNil(t, unspentList)
 		assert.Len(t, unspentList, 1)
-		assert.Equal(t, "995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", unspentList[0].Script)
+		assert.Equal(t, testScriptHash1, unspentList[0].Script)
 		assert.Len(t, unspentList[0].Utxos, 1)
 		assert.Equal(t, "abc123", unspentList[0].Utxos[0].TxHash)
 		assert.Equal(t, int64(100000), unspentList[0].Utxos[0].Value)
@@ -690,7 +690,7 @@ func TestClient_BulkScriptUnconfirmedUTXOs(t *testing.T) {
 		client := newMockClient(&mockHTTPScriptErrors{})
 		ctx := context.Background()
 		unspentList, err := client.BulkScriptUnconfirmedUTXOs(ctx, &ScriptsList{Scripts: []string{
-			"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3",
+			testScriptHash1,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, unspentList)
@@ -713,10 +713,10 @@ func TestClient_ScriptConfirmedUTXOs(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", 620539, "def456", false, http.StatusOK},
+		{testScriptHash1, 620539, "def456", false, http.StatusOK},
 		{"92cf18576a49ddad3e18f4af23b85d8d8218e03ce3b7533aced3fdd286f7e6cb", 0, "", true, http.StatusOK}, // Empty response should error
 		{"invalidTx", 0, "", true, http.StatusBadRequest},
-		{"notFound", 0, "", true, http.StatusNotFound},
+		{testMockNotFound, 0, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -757,12 +757,12 @@ func TestClient_BulkScriptConfirmedUTXOs(t *testing.T) {
 		client := newMockClient(&mockHTTPScript{})
 		ctx := context.Background()
 		unspentList, err := client.BulkScriptConfirmedUTXOs(ctx, &ScriptsList{Scripts: []string{
-			"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3",
+			testScriptHash1,
 		}})
 		require.NoError(t, err)
 		assert.NotNil(t, unspentList)
 		assert.Len(t, unspentList, 1)
-		assert.Equal(t, "995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3", unspentList[0].Script)
+		assert.Equal(t, testScriptHash1, unspentList[0].Script)
 		assert.Len(t, unspentList[0].Utxos, 1)
 		assert.Equal(t, "def456", unspentList[0].Utxos[0].TxHash)
 		assert.Equal(t, int64(200000), unspentList[0].Utxos[0].Value)
@@ -783,7 +783,7 @@ func TestClient_BulkScriptConfirmedUTXOs(t *testing.T) {
 		client := newMockClient(&mockHTTPScriptErrors{})
 		ctx := context.Background()
 		unspentList, err := client.BulkScriptConfirmedUTXOs(ctx, &ScriptsList{Scripts: []string{
-			"995ea8d0f752f41cdd99bb9d54cb004709e04c7dc4088bcbbbb9ea5c390a43c3",
+			testScriptHash1,
 		}})
 		require.Error(t, err)
 		assert.Nil(t, unspentList)
@@ -796,7 +796,7 @@ func TestClient_GetScriptUsed_EmptyResponse(t *testing.T) {
 
 	client := newMockClient(&mockHTTPScriptNotFound{})
 	ctx := context.Background()
-	used, err := client.GetScriptUsed(ctx, "notFound")
+	used, err := client.GetScriptUsed(ctx, testMockNotFound)
 	require.Error(t, err)
 	require.ErrorIs(t, err, ErrScriptNotFound)
 	assert.False(t, used)

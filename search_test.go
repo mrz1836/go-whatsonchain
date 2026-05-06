@@ -60,13 +60,13 @@ func (m *mockHTTPSearchValid) Do(req *http.Request) (*http.Response, error) {
 	}
 
 	// Invalid
-	if strings.Contains(data.Query, "error") {
+	if strings.Contains(data.Query, testMockError) {
 		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, ErrBadRequest
 	}
 
 	// Not found
-	if strings.Contains(data.Query, "notFound") {
+	if strings.Contains(data.Query, testMockNotFound) {
 		resp.StatusCode = http.StatusNotFound
 		resp.Body = io.NopCloser(bytes.NewBufferString(""))
 		return resp, nil
@@ -96,8 +96,8 @@ func TestClient_GetExplorerLinks(t *testing.T) {
 		{"6a7c821fd13c5cec773f7e221479651804197866469e92a4d6d47e1fd34d090d", "tx", "https://whatsonchain.com/tx/6a7c821fd13c5cec773f7e221479651804197866469e92a4d6d47e1fd34d090d", false, http.StatusOK},
 		{"000000000000000002080d0ad78d08691d956d08fb8556339b6dd84fbbfdf1bc", "block", "https://whatsonchain.com/block/000000000000000002080d0ad78d08691d956d08fb8556339b6dd84fbbfdf1bc", false, http.StatusOK},
 		{"unknown", "op_return", "https://whatsonchain.com/opreturn-query?term=unknown&size=10&offset=0", false, http.StatusOK},
-		{"error", "", "", true, http.StatusBadRequest},
-		{"notFound", "", "", true, http.StatusNotFound},
+		{testMockError, "", "", true, http.StatusBadRequest},
+		{testMockNotFound, "", "", true, http.StatusNotFound},
 	}
 
 	// Test all
