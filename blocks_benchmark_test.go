@@ -67,7 +67,8 @@ func (m *mockHTTPBlocksBenchmark) Do(req *http.Request) (*http.Response, error) 
 
 // BenchmarkGetBlockByHash benchmarks getting a block by hash
 func BenchmarkGetBlockByHash(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPBlocksBenchmark{}),
@@ -88,7 +89,8 @@ func BenchmarkGetBlockByHash(b *testing.B) {
 
 // BenchmarkGetBlockByHeight benchmarks getting a block by height
 func BenchmarkGetBlockByHeight(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPBlocksBenchmark{}),
@@ -120,7 +122,8 @@ func BenchmarkGetBlockByHeight(b *testing.B) {
 
 // BenchmarkGetBlockPages benchmarks getting block pages
 func BenchmarkGetBlockPages(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPBlocksBenchmark{}),
@@ -153,7 +156,8 @@ func BenchmarkGetBlockPages(b *testing.B) {
 
 // BenchmarkGetHeaderByHash benchmarks getting a block header by hash
 func BenchmarkGetHeaderByHash(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPBlocksBenchmark{}),
@@ -174,7 +178,8 @@ func BenchmarkGetHeaderByHash(b *testing.B) {
 
 // BenchmarkGetHeaders benchmarks getting the last 10 block headers
 func BenchmarkGetHeaders(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPBlocksBenchmark{}),
@@ -194,7 +199,8 @@ func BenchmarkGetHeaders(b *testing.B) {
 
 // BenchmarkGetHeaderBytesFileLinks benchmarks getting header bytes file links
 func BenchmarkGetHeaderBytesFileLinks(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPBlocksBenchmark{}),
@@ -214,7 +220,8 @@ func BenchmarkGetHeaderBytesFileLinks(b *testing.B) {
 
 // BenchmarkGetLatestHeaderBytes benchmarks getting latest header bytes
 func BenchmarkGetLatestHeaderBytes(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPBlocksBenchmark{}),

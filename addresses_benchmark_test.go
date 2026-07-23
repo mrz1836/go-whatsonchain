@@ -63,7 +63,8 @@ func (m *mockHTTPAddressesBenchmark) Do(req *http.Request) (*http.Response, erro
 
 // BenchmarkAddressInfo benchmarks getting address information
 func BenchmarkAddressInfo(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
@@ -84,7 +85,8 @@ func BenchmarkAddressInfo(b *testing.B) {
 
 // BenchmarkAddressBalance benchmarks getting address balance
 func BenchmarkAddressBalance(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
@@ -105,7 +107,8 @@ func BenchmarkAddressBalance(b *testing.B) {
 
 // BenchmarkAddressHistory benchmarks getting address history
 func BenchmarkAddressHistory(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
@@ -126,7 +129,8 @@ func BenchmarkAddressHistory(b *testing.B) {
 
 // BenchmarkAddressUnspentTransactions benchmarks getting unspent transactions
 func BenchmarkAddressUnspentTransactions(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
@@ -149,7 +153,8 @@ func BenchmarkAddressUnspentTransactions(b *testing.B) {
 // Currently disabled due to mock response format issue
 // Deprecated: This benchmarks a deprecated method. Use BulkAddressConfirmedBalance and BulkAddressUnconfirmedBalance.
 func BenchmarkBulkBalanceDisabled(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
@@ -189,7 +194,8 @@ func BenchmarkBulkBalanceDisabled(b *testing.B) {
 
 // BenchmarkAddressConfirmedBalance benchmarks getting confirmed balance
 func BenchmarkAddressConfirmedBalance(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
@@ -210,7 +216,8 @@ func BenchmarkAddressConfirmedBalance(b *testing.B) {
 
 // BenchmarkAddressUnconfirmedBalance benchmarks getting unconfirmed balance
 func BenchmarkAddressUnconfirmedBalance(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
@@ -231,7 +238,8 @@ func BenchmarkAddressUnconfirmedBalance(b *testing.B) {
 
 // BenchmarkAddressUsed benchmarks checking if address has been used
 func BenchmarkAddressUsed(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
@@ -252,7 +260,8 @@ func BenchmarkAddressUsed(b *testing.B) {
 
 // BenchmarkAddressScripts benchmarks getting associated scripthashes
 func BenchmarkAddressScripts(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),

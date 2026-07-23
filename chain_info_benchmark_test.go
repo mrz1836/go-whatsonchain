@@ -69,7 +69,8 @@ func (m *mockHTTPChainInfoBenchmark) Do(req *http.Request) (*http.Response, erro
 
 // BenchmarkGetChainInfo benchmarks getting chain information
 func BenchmarkGetChainInfo(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
@@ -89,7 +90,8 @@ func BenchmarkGetChainInfo(b *testing.B) {
 
 // BenchmarkGetChainTips benchmarks getting chain tips
 func BenchmarkGetChainTips(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
@@ -109,7 +111,8 @@ func BenchmarkGetChainTips(b *testing.B) {
 
 // BenchmarkGetCirculatingSupply benchmarks getting circulating supply
 func BenchmarkGetCirculatingSupply(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
@@ -129,7 +132,8 @@ func BenchmarkGetCirculatingSupply(b *testing.B) {
 
 // BenchmarkGetExchangeRate benchmarks getting current exchange rate
 func BenchmarkGetExchangeRate(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
@@ -149,7 +153,8 @@ func BenchmarkGetExchangeRate(b *testing.B) {
 
 // BenchmarkGetHistoricalExchangeRate benchmarks getting historical exchange rates
 func BenchmarkGetHistoricalExchangeRate(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
@@ -182,7 +187,8 @@ func BenchmarkGetHistoricalExchangeRate(b *testing.B) {
 
 // BenchmarkGetPeerInfo benchmarks getting peer information
 func BenchmarkGetPeerInfo(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
@@ -202,7 +208,8 @@ func BenchmarkGetPeerInfo(b *testing.B) {
 
 // BenchmarkGetMempoolInfo benchmarks getting mempool information
 func BenchmarkGetMempoolInfo(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
@@ -222,7 +229,8 @@ func BenchmarkGetMempoolInfo(b *testing.B) {
 
 // BenchmarkGetMempoolTransactions benchmarks getting mempool transactions
 func BenchmarkGetMempoolTransactions(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),

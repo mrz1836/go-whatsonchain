@@ -57,7 +57,8 @@ func BenchmarkClientCreation(b *testing.B) {
 
 // BenchmarkClientGetters benchmarks the getter methods
 func BenchmarkClientGetters(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithAPIKey("test-key"),
@@ -117,7 +118,8 @@ func BenchmarkClientSetters(b *testing.B) {
 
 // BenchmarkBuildURL benchmarks the URL building (hot path)
 func BenchmarkBuildURL(b *testing.B) {
-	client, _ := NewClient(context.Background(),
+	client, _ := NewClient(
+		context.Background(),
 		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 	)
