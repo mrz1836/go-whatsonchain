@@ -74,7 +74,6 @@ func (m *mockHTTPTransactionsBenchmark) Do(req *http.Request) (*http.Response, e
 func BenchmarkGetTxByHash(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPTransactionsBenchmark{}),
 	)
@@ -96,7 +95,6 @@ func BenchmarkGetTxByHash(b *testing.B) {
 func BenchmarkBulkTransactionDetails(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPTransactionsBenchmark{}),
 	)
@@ -137,7 +135,6 @@ func BenchmarkBulkTransactionDetails(b *testing.B) {
 func BenchmarkBulkTransactionStatus(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPTransactionsBenchmark{}),
 	)
@@ -164,7 +161,6 @@ func BenchmarkBulkTransactionStatus(b *testing.B) {
 func BenchmarkGetRawTransactionData(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPTransactionsBenchmark{}),
 	)
@@ -186,7 +182,6 @@ func BenchmarkGetRawTransactionData(b *testing.B) {
 func BenchmarkBroadcastTx(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPTransactionsBenchmark{}),
 	)
@@ -208,7 +203,6 @@ func BenchmarkBroadcastTx(b *testing.B) {
 func BenchmarkDecodeTransaction(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPTransactionsBenchmark{}),
 	)
@@ -230,7 +224,6 @@ func BenchmarkDecodeTransaction(b *testing.B) {
 func BenchmarkGetMerkleProof(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPTransactionsBenchmark{}),
 	)
@@ -252,7 +245,6 @@ func BenchmarkGetMerkleProof(b *testing.B) {
 func BenchmarkGetSpentOutput(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPTransactionsBenchmark{}),
 	)
@@ -274,7 +266,6 @@ func BenchmarkGetSpentOutput(b *testing.B) {
 func BenchmarkBulkRawTransactionData(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPTransactionsBenchmark{}),
 	)

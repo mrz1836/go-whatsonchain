@@ -37,10 +37,7 @@ func TestErrorConstants(t *testing.T) {
 		{"ErrMaxRawTransactionsExceeded", ErrMaxRawTransactionsExceeded, "max limit of raw transactions exceeded"},
 		{"ErrMissingRequest", ErrMissingRequest, "missing request"},
 		{"ErrBadRequest", ErrBadRequest, "bad request"},
-		{"ErrBSVChainRequired", ErrBSVChainRequired, "operation is only available for BSV chain"},
-		{"ErrBTCChainRequired", ErrBTCChainRequired, "operation is only available for BTC chain"},
 		{"ErrTokenNotFound", ErrTokenNotFound, "token not found"},
-		{"ErrInvalidChain", ErrInvalidChain, "invalid chain type: must be one of: bsv, btc"},
 		{"ErrInvalidNetwork", ErrInvalidNetwork, "invalid network type: must be one of: main, test, stn"},
 	}
 
@@ -64,26 +61,9 @@ func TestErrorComparison(t *testing.T) {
 
 	// Test that different errors are not equal
 	assert.NotEqual(t, ErrAddressNotFound, ErrBlockNotFound)
-	assert.NotEqual(t, ErrBSVChainRequired, ErrBTCChainRequired)
 
 	// Test error identity with errors.Is
 	assert.NotErrorIs(t, ErrAddressNotFound, ErrBlockNotFound)
-}
-
-// TestChainSpecificErrors tests chain-specific error behavior
-func TestChainSpecificErrors(t *testing.T) {
-	t.Parallel()
-
-	// Test BSV chain error
-	assert.Contains(t, ErrBSVChainRequired.Error(), "BSV chain")
-	assert.Contains(t, ErrBSVChainRequired.Error(), "operation is only available")
-
-	// Test BTC chain error
-	assert.Contains(t, ErrBTCChainRequired.Error(), "BTC chain")
-	assert.Contains(t, ErrBTCChainRequired.Error(), "operation is only available")
-
-	// Test chain errors are different
-	assert.NotEqual(t, ErrBSVChainRequired, ErrBTCChainRequired)
 }
 
 // TestNotFoundErrors tests all "not found" type errors

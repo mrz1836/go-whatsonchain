@@ -1,7 +1,9 @@
 package whatsonchain
 
-// ChainType is used internally to represent the blockchain type
-// for queries to be submitted: {"bsv", "btc"}
+// ChainType is used internally to represent the blockchain type.
+//
+// Deprecated: BSV is the only supported chain. This type is retained solely for
+// backward compatibility and will be removed in a future major version.
 type ChainType string
 
 // NetworkType is used internally to represent the possible values
@@ -10,11 +12,12 @@ type NetworkType string
 
 const (
 
-	// ChainBSV is for Bitcoin SV
+	// ChainBSV is for Bitcoin SV.
+	//
+	// Deprecated: BSV is the only supported chain, so this value is no longer
+	// meaningful. It is retained for backward compatibility and will be removed
+	// in a future major version.
 	ChainBSV ChainType = "bsv"
-
-	// ChainBTC is for Bitcoin Core
-	ChainBTC ChainType = "btc"
 
 	// NetworkMain is for main-net
 	NetworkMain NetworkType = "main"

@@ -104,26 +104,12 @@ func TestClient_GetOpReturnData(t *testing.T) {
 		}
 	})
 
-	t.Run("chain restriction - BTC client", func(t *testing.T) {
-		btcClient := newMockClientBTC(&mockHTTPOpReturnValid{})
+	t.Run("standard client retrieval", func(t *testing.T) {
+		client := newMockClientBSV(&mockHTTPOpReturnValid{})
 
-		_, err := btcClient.GetOpReturnData(context.Background(), "test")
-		if err == nil {
-			t.Fatal("expected an error for BTC chain, got nil")
-		}
-
-		expectedError := "operation is only available for BSV chain"
-		if err.Error() != expectedError {
-			t.Errorf("expected error '%s', got '%s'", expectedError, err.Error())
-		}
-	})
-
-	t.Run("chain restriction - BSV client", func(t *testing.T) {
-		bsvClient := newMockClientBSV(&mockHTTPOpReturnValid{})
-
-		data, err := bsvClient.GetOpReturnData(context.Background(), "test")
+		data, err := client.GetOpReturnData(context.Background(), "test")
 		if err != nil {
-			t.Fatalf("BSV client should allow GetOpReturnData, got error: %v", err)
+			t.Fatalf("GetOpReturnData should succeed, got error: %v", err)
 		}
 
 		if data != "" {

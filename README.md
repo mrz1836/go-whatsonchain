@@ -2,7 +2,7 @@
 
 # 🔗&nbsp;&nbsp;go-whatsonchain
 
-**The unofficial Go SDK for the [whatsonchain.com API](https://docs.whatsonchain.com/) supporting both **[BSV](https://bsvblockchain.org/)** and **[BTC](https://thatsbtcnotbitcoin.com/)** blockchains.**
+**The unofficial Go SDK for the [whatsonchain.com API](https://docs.whatsonchain.com/), built for the **[BSV](https://bsvblockchain.org/)** blockchain.**
 
 <br/>
 
@@ -157,7 +157,6 @@ func main() {
 	// Create a client with custom options
 	client, err := whatsonchain.NewClient(
 		context.Background(),
-		whatsonchain.WithChain(whatsonchain.ChainBSV),
 		whatsonchain.WithNetwork(whatsonchain.NetworkMain),
 		whatsonchain.WithAPIKey("your-secret-key"),
 		whatsonchain.WithUserAgent("my-app/1.0"),
@@ -175,7 +174,6 @@ func main() {
 
 ### Available Options
 
-- `WithChain(chain)` - Set blockchain (ChainBSV or ChainBTC)
 - `WithNetwork(network)` - Set network (NetworkMain, NetworkTest, NetworkStn)
 - `WithAPIKey(key)` - Set API key for authenticated requests
 - `WithUserAgent(agent)` - Set custom user agent
@@ -187,9 +185,7 @@ func main() {
 - `WithDialer(keepAlive, timeout)` - Configure dialer settings
 - `WithTransport(idle, tls, expect, maxIdle)` - Configure transport settings
 
-### Multi-Chain Support
-
-#### BSV Client
+### Usage Example
 
 ```go
 package main
@@ -202,75 +198,28 @@ import (
 )
 
 func main() {
-	// Create BSV client
+	// Create a client (BSV mainnet)
 	client, err := whatsonchain.NewClient(
 		context.Background(),
-		whatsonchain.WithChain(whatsonchain.ChainBSV),
 		whatsonchain.WithNetwork(whatsonchain.NetworkMain),
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Use BSV-specific methods
+	// Retrieve OP_RETURN data for a transaction
 	opReturnData, err := client.GetOpReturnData(context.Background(), "your-tx-hash")
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("OP_RETURN data:", opReturnData)
 
-	// Use shared methods (work for both BSV and BTC)
+	// Retrieve chain info
 	chainInfo, err := client.GetChainInfo(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("BSV Chain Info: %+v", chainInfo)
-}
-```
-
-#### BTC Client
-
-```go
-package main
-
-import (
-	"context"
-	"log"
-
-	"github.com/mrz1836/go-whatsonchain"
-)
-
-func main() {
-	// Create BTC client
-	client, err := whatsonchain.NewClient(
-		context.Background(),
-		whatsonchain.WithChain(whatsonchain.ChainBTC),
-		whatsonchain.WithNetwork(whatsonchain.NetworkMain),
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Use BTC-specific methods
-	blockStats, err := client.GetBlockStats(context.Background(), 700000)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Block Stats: %+v", blockStats)
-
-	// Get miner statistics
-	minerStats, err := client.GetMinerBlocksStats(context.Background(), 7) // last 7 days
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Miner Stats: %+v", minerStats)
-
-	// Use shared methods (work for both BSV and BTC)
-	chainInfo, err := client.GetChainInfo(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("BTC Chain Info: %+v", chainInfo)
 }
 ```
 
@@ -282,11 +231,11 @@ View the generated [documentation](https://pkg.go.dev/github.com/mrz1836/go-what
 <br/>
 
 ### Features
-- **Multi-blockchain support** - Seamless switching between [BSV](https://bsvblockchain.org/) and [BTC](https://thatsbtcnotbitcoin.com/) blockchains with a single client
+- **Built for BSV** - Full coverage of the [whatsonchain.com API](https://docs.whatsonchain.com/) for the [BSV](https://bsvblockchain.org/) blockchain
 - **Production-ready HTTP client** - Built-in exponential backoff with configurable retry logic and crypto-secure jitter to handle transient failures gracefully
 - **Intelligent rate limiting** - Per-second request throttling with automatic sleep intervals to stay within API quotas
 - **Zero external dependencies** - Pure Go implementation with no production dependencies (testify only for testing)
-- **Comprehensive API coverage** - 135+ endpoints (71 BSV, 64 BTC) fully implemented and tested
+- **Comprehensive API coverage** - 84+ endpoints fully implemented and tested
 - **Flexible configuration** - Functional options pattern for clean, type-safe client initialization
 - **Enterprise-grade transport** - Fine-grained control over timeouts, keep-alives, connection pooling, and TLS handshake settings
 - **Network flexibility** - Switch between mainnet, testnet, and STN per client or per request
@@ -304,9 +253,9 @@ extra baggage.
 <summary><strong><code>Supported API Coverage</code></strong></summary>
 <br/>
 
-**Coverage Summary:** 153 endpoints (84 BSV + 69 BTC) from the [whatsonchain.com API](https://docs.whatsonchain.com/)
+**Coverage Summary:** 84 endpoints from the [whatsonchain.com API](https://docs.whatsonchain.com/) for the BSV blockchain
 
-**Quick Navigation:** [BSV API](#bsv-api-84-endpoints) • [BTC API](#btc-api-69-endpoints) • [WebSockets](#websockets)
+**Quick Navigation:** [BSV API](#bsv-api-84-endpoints) • [WebSockets](#websockets)
 
 ---
 
@@ -428,100 +377,6 @@ extra baggage.
 - [x] [Get Address Token Balance](https://docs.whatsonchain.com/api/tokens/stas#get-address-token-balance) - `/address/{address}/tokens`
 - [x] [Get Token Transactions](https://docs.whatsonchain.com/api/tokens/stas#get-token-transactions) - `/token/{contractId}/{symbol}/tx`
 - [x] [Get STAS Stats](https://docs.whatsonchain.com/api/tokens/stas#get-stats) - `/tokens/stas`
-
----
-
-## BTC API (69 endpoints)
-
-### ✅ Health (1 endpoint)
-- [x] [Get Health Status](https://docs.whatsonchain.com/api/btc/health) - `/woc`
-
-### ✅ Chain Info (4 endpoints)
-- [x] [Get Blockchain Info](https://docs.whatsonchain.com/api/btc/chain-info#get-blockchain-info) - `/chain/info`
-- [x] [Get Circulating Supply](https://docs.whatsonchain.com/api/btc/chain-info#get-circulating-supply) - `/circulatingsupply`
-- [x] [Get Chain Tips](https://docs.whatsonchain.com/api/btc/chain-info#get-chain-tips) - `/chain/tips`
-- [x] [Get Peer Info](https://docs.whatsonchain.com/api/btc/chain-info#get-peer-info) - `/peer/info`
-
-### ✅ Block (7 endpoints)
-- [x] [Get Block by Hash](https://docs.whatsonchain.com/api/btc/block#get-by-hash) - `/block/hash/{hash}`
-- [x] [Get Block by Height](https://docs.whatsonchain.com/api/btc/block#get-by-height) - `/block/height/{height}`
-- [x] [Get Block Pages](https://docs.whatsonchain.com/api/btc/block#get-block-pages) - `/block/hash/{hash}/page/{page}`
-- [x] [Get Block Headers](https://docs.whatsonchain.com/api/btc/block#get-headers) - `/block/headers`
-- [x] [Get Header by Hash or Height](https://docs.whatsonchain.com/api/btc/block#get-header-by-hash) - `/block/{hash}/header`
-- [x] [Get Header Bytes File Links](https://docs.whatsonchain.com/api/btc/block#get-header-bytes) - `/block/headers/resources`
-- [x] [Get Latest Header Bytes](https://docs.whatsonchain.com/api/btc/block#get-latest-headers) - `/block/headers/latest`
-
-### ✅ Transaction (9 endpoints)
-- [x] [Get Transaction by Hash](https://docs.whatsonchain.com/api/btc/transaction#get-by-tx-hash) - `/tx/hash/{hash}`
-- [x] [Bulk Transaction Details](https://docs.whatsonchain.com/api/btc/transaction#bulk-transaction-details) - `/txs` (POST)
-- [x] [Bulk Transaction Status](https://docs.whatsonchain.com/api/btc/transaction#bulk-transaction-status) - `/txs/status` (POST)
-- [x] [Get Transaction as Binary](https://docs.whatsonchain.com/api/btc/transaction#get-tx-binary) - `/tx/{hash}/bin`
-- [x] [Get Raw Transaction Data](https://docs.whatsonchain.com/api/btc/transaction#get-raw-tx-data) - `/tx/{hash}/hex`
-- [x] [Bulk Raw Transaction Data](https://docs.whatsonchain.com/api/btc/transaction#bulk-raw-tx-data) - `/txs/hex` (POST)
-- [x] [Get Raw Transaction Output](https://docs.whatsonchain.com/api/btc/transaction#get-raw-tx-output) - `/tx/{hash}/out/{index}/hex`
-- [x] [Bulk Raw Transaction Output Data](https://docs.whatsonchain.com/api/btc/transaction#bulk-raw-tx-output) - `/txs/vouts/hex` (POST)
-- [x] [Decode Transaction](https://docs.whatsonchain.com/api/btc/transaction#decode-transaction) - `/tx/decode` (POST)
-
-### ✅ Mempool (2 endpoints)
-- [x] [Get Mempool Info](https://docs.whatsonchain.com/api/btc/mempool#get-mempool-info) - `/mempool/info`
-- [x] [Get Mempool Transactions](https://docs.whatsonchain.com/api/btc/mempool#get-mempool-transactions) - `/mempool/raw`
-
-### ✅ (Un)Spent Transaction Outputs (14 endpoints)
-- [x] [Get Unspent UTXOs by Address](https://docs.whatsonchain.com/api/btc/address#get-unspent-transactions) - `/address/{address}/unspent/all`
-- [x] [Get Unconfirmed UTXOs by Address](https://docs.whatsonchain.com/api/btc/address#get-unconfirmed-utxos) - `/address/{address}/unconfirmed/unspent`
-- [x] [Bulk Unconfirmed UTXOs by Address](https://docs.whatsonchain.com/api/btc/address#bulk-unconfirmed-utxos) - `/addresses/unconfirmed/unspent` (POST)
-- [x] [Get Confirmed UTXOs by Address](https://docs.whatsonchain.com/api/btc/address#get-confirmed-utxos) - `/address/{address}/confirmed/unspent`
-- [x] [Bulk Confirmed UTXOs by Address](https://docs.whatsonchain.com/api/btc/address#bulk-confirmed-utxos) - `/addresses/confirmed/unspent` (POST)
-- [x] [Get Unspent UTXOs by Script](https://docs.whatsonchain.com/api/btc/script#get-script-unspent-transactions) - `/script/{script}/unspent/all`
-- [x] [Get Unconfirmed UTXOs by Script](https://docs.whatsonchain.com/api/btc/script#get-unconfirmed-script-utxos) - `/script/{script}/unconfirmed/unspent`
-- [x] [Bulk Unconfirmed UTXOs by Script](https://docs.whatsonchain.com/api/btc/script#bulk-unconfirmed-script-utxos) - `/scripts/unconfirmed/unspent` (POST)
-- [x] [Get Confirmed UTXOs by Script](https://docs.whatsonchain.com/api/btc/script#get-confirmed-script-utxos) - `/script/{script}/confirmed/unspent`
-- [x] [Bulk Confirmed UTXOs by Script](https://docs.whatsonchain.com/api/btc/script#bulk-confirmed-script-utxos) - `/scripts/confirmed/unspent` (POST)
-- [x] [Get Unconfirmed Spent Output](https://docs.whatsonchain.com/api/btc/utxo#get-unconfirmed-spent) - `/tx/{hash}/{index}/unconfirmed/spent`
-- [x] [Get Confirmed Spent Output](https://docs.whatsonchain.com/api/btc/utxo#get-confirmed-spent) - `/tx/{hash}/{index}/confirmed/spent`
-- [x] [Get Spent Transaction Output](https://docs.whatsonchain.com/api/btc/utxo#get-spent-output) - `/tx/{hash}/{index}/spent`
-- [x] [Bulk Spent Transaction Outputs](https://docs.whatsonchain.com/api/btc/utxo#bulk-spent-outputs) - `/utxos/spent` (POST)
-
-### ✅ Address (12 endpoints)
-- [x] [Get Address Info](https://docs.whatsonchain.com/api/btc/address#get-address-info) - `/address/{address}/info`
-- [x] [Get Address Usage Status](https://docs.whatsonchain.com/api/btc/address#get-address-usage) - `/address/{address}/used`
-- [x] [Get Associated Scripthashes](https://docs.whatsonchain.com/api/btc/address#get-associated-scripthashes) - `/address/{address}/scripts`
-- [x] [Get Unconfirmed Balance](https://docs.whatsonchain.com/api/btc/address#get-unconfirmed-balance) - `/address/{address}/unconfirmed/balance`
-- [x] [Bulk Unconfirmed Balance](https://docs.whatsonchain.com/api/btc/address#bulk-unconfirmed-balance) - `/addresses/unconfirmed/balance` (POST)
-- [x] [Get Confirmed Balance](https://docs.whatsonchain.com/api/btc/address#get-confirmed-balance) - `/address/{address}/confirmed/balance`
-- [x] [Bulk Confirmed Balance](https://docs.whatsonchain.com/api/btc/address#bulk-confirmed-balance) - `/addresses/confirmed/balance` (POST)
-- [x] [Get Unconfirmed History](https://docs.whatsonchain.com/api/btc/address#get-unconfirmed-history) - `/address/{address}/unconfirmed/history`
-- [x] [Bulk Unconfirmed History](https://docs.whatsonchain.com/api/btc/address#bulk-unconfirmed-history) - `/addresses/unconfirmed/history` (POST)
-- [x] [Get Confirmed History](https://docs.whatsonchain.com/api/btc/address#get-confirmed-history) - `/address/{address}/confirmed/history`
-- [x] [Bulk Confirmed History](https://docs.whatsonchain.com/api/btc/address#bulk-confirmed-history) - `/addresses/confirmed/history` (POST)
-- [x] [Bulk History (All)](https://docs.whatsonchain.com/api/btc/address#bulk-history) - `/addresses/history/all` (POST)
-
-### ✅ Script (10 endpoints)
-- [x] [Get Script Usage Status](https://docs.whatsonchain.com/api/btc/script#get-script-usage) - `/script/{script}/used`
-- [x] [Get Script Unspent Transactions](https://docs.whatsonchain.com/api/btc/script#get-script-unspent-transactions) - `/script/{script}/unspent/all`
-- [x] [Get Confirmed Script UTXOs](https://docs.whatsonchain.com/api/btc/script#get-confirmed-script-utxos) - `/script/{script}/confirmed/unspent`
-- [x] [Get Unconfirmed Script UTXOs](https://docs.whatsonchain.com/api/btc/script#get-unconfirmed-script-utxos) - `/script/{script}/unconfirmed/unspent`
-- [x] [Get Confirmed Script History](https://docs.whatsonchain.com/api/btc/script#get-confirmed-script-history) - `/script/{script}/confirmed/history`
-- [x] [Get Unconfirmed Script History](https://docs.whatsonchain.com/api/btc/script#get-unconfirmed-script-history) - `/script/{script}/unconfirmed/history`
-- [x] [Bulk Confirmed Script UTXOs](https://docs.whatsonchain.com/api/btc/script#bulk-confirmed-script-utxos) - `/scripts/confirmed/unspent` (POST)
-- [x] [Bulk Unconfirmed Script UTXOs](https://docs.whatsonchain.com/api/btc/script#bulk-unconfirmed-script-utxos) - `/scripts/unconfirmed/unspent` (POST)
-- [x] [Bulk Confirmed Script History](https://docs.whatsonchain.com/api/btc/script#bulk-confirmed-script-history) - `/scripts/confirmed/history` (POST)
-- [x] [Bulk Unconfirmed Script History](https://docs.whatsonchain.com/api/btc/script#bulk-unconfirmed-script-history) - `/scripts/unconfirmed/history` (POST)
-
-### ✅ Exchange Rate (2 endpoints)
-- [x] [Get Current Exchange Rate](https://docs.whatsonchain.com/api/btc/exchange-rate#get-exchange-rate) - `/exchangerate`
-- [x] [Get Historical Exchange Rate](https://docs.whatsonchain.com/api/btc/exchange-rate#get-historical-exchange-rate) - `/exchangerate/historical`
-
-### ✅ Search (1 endpoint)
-- [x] [Get Explorer Links](https://docs.whatsonchain.com/api/btc/search#get-explorer-links) - `/search/links` (POST)
-
-### ✅ Stats (6 endpoints)
-- [x] [Get Block Stats by Height](https://docs.whatsonchain.com/api/btc/stats#get-block-stats-by-height) - `/block/height/{height}/stats`
-- [x] [Get Block Stats by Hash](https://docs.whatsonchain.com/api/btc/stats#get-block-stats-by-hash) - `/block/hash/{hash}/stats`
-- [x] [Get Miner Block Stats](https://docs.whatsonchain.com/api/btc/stats#get-miner-block-stats) - `/miner/blocks/stats`
-- [x] [Get Miner Minimum Fee Rate Stats](https://docs.whatsonchain.com/api/btc/stats#get-miner-fee-stats) - `/miner/fees`
-- [x] [Get Miner Summary Stats](https://docs.whatsonchain.com/api/btc/stats#get-miner-summary-stats) - `/miner/summary/stats`
-- [x] [Get Tag Count by Height](https://docs.whatsonchain.com/api/btc/stats#get-tag-count-by-height) - `/block/tagcount/height/{height}/stats`
 
 ---
 

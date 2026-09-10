@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// GetExchangeRate this endpoint provides exchange rate for BSV/BTC
+// GetExchangeRate this endpoint provides the exchange rate for BSV
 //
 // For more information: https://docs.whatsonchain.com/#get-exchange-rate
 func (c *Client) GetExchangeRate(ctx context.Context) (*ExchangeRate, error) {
@@ -13,7 +13,7 @@ func (c *Client) GetExchangeRate(ctx context.Context) (*ExchangeRate, error) {
 	return requestAndUnmarshal[ExchangeRate](ctx, c, url, http.MethodGet, nil, ErrExchangeRateNotFound)
 }
 
-// GetHistoricalExchangeRate this endpoint provides historical exchange rates for BSV/BTC
+// GetHistoricalExchangeRate this endpoint provides historical exchange rates for BSV
 // within a specified time range
 //
 // For more information: https://docs.whatsonchain.com/#get-historical-exchange-rate

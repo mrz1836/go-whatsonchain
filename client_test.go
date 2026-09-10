@@ -19,32 +19,10 @@ func TestNewClient(t *testing.T) {
 	require.NotNil(t, client)
 
 	// Check defaults
-	assert.Equal(t, ChainBSV, client.Chain())
 	assert.Equal(t, NetworkMain, client.Network())
 	assert.Equal(t, defaultUserAgent, client.UserAgent())
 	assert.Equal(t, defaultRateLimit, client.RateLimit())
 	assert.Empty(t, client.APIKey())
-}
-
-// TestWithChain tests the WithChain option
-func TestWithChain(t *testing.T) {
-	t.Parallel()
-
-	tests := []struct {
-		name  string
-		chain ChainType
-	}{
-		{"BSV", ChainBSV},
-		{"BTC", ChainBTC},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			client, err := NewClient(context.Background(), WithChain(tt.chain))
-			require.NoError(t, err)
-			assert.Equal(t, tt.chain, client.Chain())
-		})
-	}
 }
 
 // TestWithNetwork tests the WithNetwork option
@@ -206,7 +184,6 @@ func TestMultipleOptions(t *testing.T) {
 
 	apiKey := "test-key"
 	userAgent := "test-agent"
-	chain := ChainBTC
 	network := NetworkTest
 	rateLimit := 5
 
@@ -214,7 +191,6 @@ func TestMultipleOptions(t *testing.T) {
 		context.Background(),
 		WithAPIKey(apiKey),
 		WithUserAgent(userAgent),
-		WithChain(chain),
 		WithNetwork(network),
 		WithRateLimit(rateLimit),
 	)
@@ -222,7 +198,6 @@ func TestMultipleOptions(t *testing.T) {
 
 	assert.Equal(t, apiKey, client.APIKey())
 	assert.Equal(t, userAgent, client.UserAgent())
-	assert.Equal(t, chain, client.Chain())
 	assert.Equal(t, network, client.Network())
 	assert.Equal(t, rateLimit, client.RateLimit())
 }
@@ -261,17 +236,6 @@ func TestSetRateLimit(t *testing.T) {
 	newLimit := 15
 	client.SetRateLimit(newLimit)
 	assert.Equal(t, newLimit, client.RateLimit())
-}
-
-// TestSetChain tests the SetChain method
-func TestSetChain(t *testing.T) {
-	t.Parallel()
-
-	client, err := NewClient(context.Background())
-	require.NoError(t, err)
-
-	require.NoError(t, client.SetChain(ChainBTC))
-	assert.Equal(t, ChainBTC, client.Chain())
 }
 
 // TestSetNetwork tests the SetNetwork method
@@ -324,7 +288,6 @@ func BenchmarkNewClientWithOptions(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_, _ = NewClient(
 			context.Background(),
-			WithChain(ChainBTC),
 			WithNetwork(NetworkTest),
 			WithAPIKey("test-key"),
 			WithRateLimit(10),

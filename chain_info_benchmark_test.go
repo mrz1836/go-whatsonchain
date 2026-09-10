@@ -71,7 +71,6 @@ func (m *mockHTTPChainInfoBenchmark) Do(req *http.Request) (*http.Response, erro
 func BenchmarkGetChainInfo(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
 	)
@@ -92,7 +91,6 @@ func BenchmarkGetChainInfo(b *testing.B) {
 func BenchmarkGetChainTips(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
 	)
@@ -113,7 +111,6 @@ func BenchmarkGetChainTips(b *testing.B) {
 func BenchmarkGetCirculatingSupply(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
 	)
@@ -134,7 +131,6 @@ func BenchmarkGetCirculatingSupply(b *testing.B) {
 func BenchmarkGetExchangeRate(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
 	)
@@ -155,7 +151,6 @@ func BenchmarkGetExchangeRate(b *testing.B) {
 func BenchmarkGetHistoricalExchangeRate(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
 	)
@@ -189,7 +184,6 @@ func BenchmarkGetHistoricalExchangeRate(b *testing.B) {
 func BenchmarkGetPeerInfo(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
 	)
@@ -210,7 +204,6 @@ func BenchmarkGetPeerInfo(b *testing.B) {
 func BenchmarkGetMempoolInfo(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
 	)
@@ -231,7 +224,6 @@ func BenchmarkGetMempoolInfo(b *testing.B) {
 func BenchmarkGetMempoolTransactions(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPChainInfoBenchmark{}),
 	)

@@ -135,28 +135,6 @@ func TestTransactionService_Interface(t *testing.T) {
 	assert.Implements(t, (*TransactionService)(nil), client)
 }
 
-// TestBSVService_Interface tests BSVService interface compliance
-func TestBSVService_Interface(t *testing.T) {
-	t.Parallel()
-
-	// Test that Client implements BSVService
-	var _ BSVService = (*Client)(nil)
-
-	client := newMockClientBSV(&mockHTTPEmpty{})
-	assert.Implements(t, (*BSVService)(nil), client)
-}
-
-// TestBTCService_InterfaceCompliance tests BTCService interface compliance
-func TestBTCService_InterfaceCompliance(t *testing.T) {
-	t.Parallel()
-
-	// Test that Client implements BTCService
-	var _ BTCService = (*Client)(nil)
-
-	client := newMockClientBTC(&mockHTTPEmpty{})
-	assert.NotNil(t, client)
-}
-
 // TestClientInterface_EmbeddedInterfaces tests that ClientInterface embeds all service interfaces
 func TestClientInterface_EmbeddedInterfaces(t *testing.T) {
 	t.Parallel()
@@ -193,12 +171,6 @@ func TestClientInterface_EmbeddedInterfaces(t *testing.T) {
 
 	_, ok = interface{}(client).(TransactionService)
 	assert.True(t, ok, "Client should implement TransactionService")
-
-	_, ok = interface{}(client).(BSVService)
-	assert.True(t, ok, "Client should implement BSVService")
-
-	_, ok = interface{}(client).(BTCService)
-	assert.True(t, ok, "Client should implement BTCService")
 }
 
 // TestClientInterface_Methods tests ClientInterface specific methods
@@ -206,9 +178,6 @@ func TestClientInterface_Methods(t *testing.T) {
 	t.Parallel()
 
 	client := newMockClientBSV(&mockHTTPEmpty{})
-
-	// Test Chain method
-	assert.Equal(t, ChainBSV, client.Chain())
 
 	// Test Network method
 	assert.NotEmpty(t, client.Network())
@@ -225,19 +194,4 @@ func TestClientInterface_Methods(t *testing.T) {
 	// Test LastRequest method (may be nil initially)
 	lastReq := client.LastRequest()
 	assert.True(t, lastReq == nil || lastReq != nil) // Either is acceptable initially
-}
-
-// TestInterface_ChainSpecific tests chain-specific interface behavior
-func TestInterface_ChainSpecific(t *testing.T) {
-	t.Parallel()
-
-	// Test BSV client
-	bsvClient := newMockClientBSV(&mockHTTPEmpty{})
-	assert.Equal(t, ChainBSV, bsvClient.Chain())
-	assert.Implements(t, (*ClientInterface)(nil), bsvClient)
-
-	// Test BTC client
-	btcClient := newMockClientBTC(&mockHTTPEmpty{})
-	assert.Equal(t, ChainBTC, btcClient.Chain())
-	assert.Implements(t, (*ClientInterface)(nil), btcClient)
 }

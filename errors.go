@@ -62,12 +62,6 @@ var ErrMissingRequest = errors.New("missing request")
 // ErrBadRequest is when a request is invalid
 var ErrBadRequest = errors.New("bad request")
 
-// ErrBSVChainRequired is when a BSV-only operation is attempted on a non-BSV chain
-var ErrBSVChainRequired = errors.New("operation is only available for BSV chain")
-
-// ErrBTCChainRequired is when a BTC-only operation is attempted on a non-BTC chain
-var ErrBTCChainRequired = errors.New("operation is only available for BTC chain")
-
 // ErrStatsNotFound is when stats data is not found
 var ErrStatsNotFound = errors.New("stats not found")
 
@@ -76,9 +70,6 @@ var ErrTokenNotFound = errors.New("token not found")
 
 // ErrRequestFailed is when an API request returns a non-200 HTTP status code
 var ErrRequestFailed = errors.New("API request failed")
-
-// ErrInvalidChain is when an invalid chain type is provided
-var ErrInvalidChain = errors.New("invalid chain type: must be one of: bsv, btc")
 
 // ErrInvalidNetwork is when an invalid network type is provided
 var ErrInvalidNetwork = errors.New("invalid network type: must be one of: main, test, stn")
