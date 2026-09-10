@@ -1174,12 +1174,6 @@ func TestClient_GetTransactionPropagationStatus(t *testing.T) {
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
 	}
-
-	// Test BTC chain should fail
-	btcClient := newMockClientBTC(&mockHTTPPropagationStatus{})
-	if _, err := btcClient.GetTransactionPropagationStatus(ctx, "somehash"); err == nil {
-		t.Errorf("Expected error for BTC chain, but got none")
-	}
 }
 
 // mockHTTPTransactionStatus for mocking requests

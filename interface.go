@@ -141,6 +141,7 @@ type TransactionService interface {
 	// Deprecated: GetMerkleProof uses a non-TSC endpoint no longer in the API. Use GetMerkleProofTSC instead.
 	GetMerkleProof(ctx context.Context, hash string) (merkleResults MerkleResults, err error)
 	GetMerkleProofTSC(ctx context.Context, hash string) (merkleResults MerkleTSCResults, err error)
+	GetOpReturnData(ctx context.Context, txHash string) (string, error)
 	GetRawTransactionData(ctx context.Context, hash string) (string, error)
 	GetRawTransactionOutputData(ctx context.Context, hash string, vOutIndex int) (string, error)
 	GetSpentOutput(ctx context.Context, txHash string, index int) (spentOutput *SpentOutput, err error)
@@ -162,12 +163,13 @@ type ClientInterface interface {
 	StatsService
 	TokenService
 	TransactionService
-	BSVService
-	BTCService
 
 	// Getters
 	APIKey() string
 	BackoffConfig() (initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration)
+	// Chain returns the configured chain.
+	//
+	// Deprecated: BSV is the only supported chain; this always returns ChainBSV.
 	Chain() ChainType
 	DialerConfig() (keepAlive, timeout time.Duration)
 	HTTPClient() HTTPInterface
@@ -181,6 +183,9 @@ type ClientInterface interface {
 
 	// Setters
 	SetAPIKey(apiKey string)
+	// SetChain sets the chain.
+	//
+	// Deprecated: BSV is the only supported chain; this is a no-op returning nil.
 	SetChain(chain ChainType) error
 	SetNetwork(network NetworkType) error
 	SetRateLimit(rateLimit int)

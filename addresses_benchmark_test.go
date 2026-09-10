@@ -65,7 +65,6 @@ func (m *mockHTTPAddressesBenchmark) Do(req *http.Request) (*http.Response, erro
 func BenchmarkAddressInfo(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
 	)
@@ -87,7 +86,6 @@ func BenchmarkAddressInfo(b *testing.B) {
 func BenchmarkAddressBalance(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
 	)
@@ -109,7 +107,6 @@ func BenchmarkAddressBalance(b *testing.B) {
 func BenchmarkAddressHistory(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
 	)
@@ -131,7 +128,6 @@ func BenchmarkAddressHistory(b *testing.B) {
 func BenchmarkAddressUnspentTransactions(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
 	)
@@ -155,7 +151,6 @@ func BenchmarkAddressUnspentTransactions(b *testing.B) {
 func BenchmarkBulkBalanceDisabled(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
 	)
@@ -196,7 +191,6 @@ func BenchmarkBulkBalanceDisabled(b *testing.B) {
 func BenchmarkAddressConfirmedBalance(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
 	)
@@ -218,7 +212,6 @@ func BenchmarkAddressConfirmedBalance(b *testing.B) {
 func BenchmarkAddressUnconfirmedBalance(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
 	)
@@ -240,7 +233,6 @@ func BenchmarkAddressUnconfirmedBalance(b *testing.B) {
 func BenchmarkAddressUsed(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
 	)
@@ -262,7 +254,6 @@ func BenchmarkAddressUsed(b *testing.B) {
 func BenchmarkAddressScripts(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithHTTPClient(&mockHTTPAddressesBenchmark{}),
 	)

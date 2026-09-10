@@ -56,10 +56,7 @@ func NewClient(_ context.Context, opts ...ClientOption) (ClientInterface, error)
 		}
 	}
 
-	// Validate chain and network
-	if !validChains[options.chain] {
-		return nil, ErrInvalidChain
-	}
+	// Validate the network
 	if !validNetworks[options.network] {
 		return nil, ErrInvalidNetwork
 	}
@@ -164,11 +161,13 @@ func (c *Client) RateLimit() int {
 	return c.options.rateLimit
 }
 
-// Chain will return the chain
+// Chain will return the chain.
+//
+// Deprecated: BSV is the only supported chain, so this always returns ChainBSV.
+// It is retained for backward compatibility and will be removed in a future
+// major version.
 func (c *Client) Chain() ChainType {
-	c.optionsMu.RLock()
-	defer c.optionsMu.RUnlock()
-	return c.options.chain
+	return ChainBSV
 }
 
 // Network will return the network
@@ -229,16 +228,12 @@ func (c *Client) SetRateLimit(rateLimit int) {
 	c.options.rateLimit = rateLimit
 }
 
-// SetChain sets the blockchain type.
-// Returns an error if the chain type is invalid.
-// This method is safe for concurrent use.
-func (c *Client) SetChain(chain ChainType) error {
-	if !validChains[chain] {
-		return ErrInvalidChain
-	}
-	c.optionsMu.Lock()
-	defer c.optionsMu.Unlock()
-	c.options.chain = chain
+// SetChain previously set the blockchain type.
+//
+// Deprecated: BSV is the only supported chain. This method is now a no-op that
+// always returns nil and is retained only for backward compatibility. It will
+// be removed in a future major version.
+func (c *Client) SetChain(_ ChainType) error {
 	return nil
 }
 

@@ -35,7 +35,7 @@ func FuzzBuildURL(f *testing.F) {
 		// Test with no args
 		url1 := client.buildURL(path)
 		require.NotEmpty(t, url1, "buildURL should always return a non-empty string")
-		require.Contains(t, url1, client.Chain(), "URL should contain chain")
+		require.Contains(t, url1, string(ChainBSV), "URL should contain the BSV chain")
 		require.Contains(t, url1, client.Network(), "URL should contain network")
 
 		// Test with one arg
@@ -228,7 +228,6 @@ func createTestClient(t *testing.T) *Client {
 	t.Helper()
 
 	opts := defaultClientOptions()
-	opts.chain = ChainBSV
 	opts.network = NetworkMain
 
 	return newClientFromOptions(opts)

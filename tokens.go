@@ -9,10 +9,6 @@ import (
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/1sat-ordinals#get-token-by-origin
 func (c *Client) GetOneSatOrdinalByOrigin(ctx context.Context, origin string) (*OneSatOrdinalToken, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/token/1satordinals/%s/origin", origin)
 	return requestAndUnmarshal[OneSatOrdinalToken](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -21,10 +17,6 @@ func (c *Client) GetOneSatOrdinalByOrigin(ctx context.Context, origin string) (*
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/1sat-ordinals#get-token-by-outpoint
 func (c *Client) GetOneSatOrdinalByOutpoint(ctx context.Context, outpoint string) (*OneSatOrdinalToken, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/token/1satordinals/%s", outpoint)
 	return requestAndUnmarshal[OneSatOrdinalToken](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -33,10 +25,6 @@ func (c *Client) GetOneSatOrdinalByOutpoint(ctx context.Context, outpoint string
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/1sat-ordinals#get-token-content
 func (c *Client) GetOneSatOrdinalContent(ctx context.Context, outpoint string) (*OneSatOrdinalContent, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/token/1satordinals/%s/content", outpoint)
 	return requestAndUnmarshal[OneSatOrdinalContent](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -45,10 +33,6 @@ func (c *Client) GetOneSatOrdinalContent(ctx context.Context, outpoint string) (
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/1sat-ordinals#get-token-latest-transfer
 func (c *Client) GetOneSatOrdinalLatest(ctx context.Context, outpoint string) (*OneSatOrdinalLatest, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/token/1satordinals/%s/latest", outpoint)
 	return requestAndUnmarshal[OneSatOrdinalLatest](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -57,10 +41,6 @@ func (c *Client) GetOneSatOrdinalLatest(ctx context.Context, outpoint string) (*
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/1sat-ordinals#get-token-transfers-history
 func (c *Client) GetOneSatOrdinalHistory(ctx context.Context, outpoint string) ([]*OneSatOrdinalHistory, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/token/1satordinals/%s/history", outpoint)
 	return requestAndUnmarshalSlice[*OneSatOrdinalHistory](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -69,10 +49,6 @@ func (c *Client) GetOneSatOrdinalHistory(ctx context.Context, outpoint string) (
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/1sat-ordinals#get-tokens-by-txid
 func (c *Client) GetOneSatOrdinalsByTxID(ctx context.Context, txid string) ([]*OneSatOrdinalToken, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/token/1satordinals/tx/%s", txid)
 	return requestAndUnmarshalSlice[*OneSatOrdinalToken](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -81,10 +57,6 @@ func (c *Client) GetOneSatOrdinalsByTxID(ctx context.Context, txid string) ([]*O
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/1sat-ordinals#get-stats
 func (c *Client) GetOneSatOrdinalsStats(ctx context.Context) (*OneSatOrdinalStats, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/tokens/1satordinals")
 	return requestAndUnmarshal[OneSatOrdinalStats](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -93,10 +65,6 @@ func (c *Client) GetOneSatOrdinalsStats(ctx context.Context) (*OneSatOrdinalStat
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/stas#get-all-tokens
 func (c *Client) GetAllSTASTokens(ctx context.Context) ([]*STASToken, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/tokens")
 	return requestAndUnmarshalSlice[*STASToken](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -105,10 +73,6 @@ func (c *Client) GetAllSTASTokens(ctx context.Context) ([]*STASToken, error) {
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/stas#get-token-by-id
 func (c *Client) GetSTASTokenByID(ctx context.Context, contractID, symbol string) (*STASToken, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/token/%s/%s", contractID, symbol)
 	return requestAndUnmarshal[STASToken](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -117,10 +81,6 @@ func (c *Client) GetSTASTokenByID(ctx context.Context, contractID, symbol string
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/stas#get-token-utxos-for-address
 func (c *Client) GetTokenUTXOsForAddress(ctx context.Context, address string) ([]*STASTokenUTXO, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/address/%s/tokens/unspent", address)
 	return requestAndUnmarshalSlice[*STASTokenUTXO](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -129,10 +89,6 @@ func (c *Client) GetTokenUTXOsForAddress(ctx context.Context, address string) ([
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/stas#get-address-token-balance
 func (c *Client) GetAddressTokenBalance(ctx context.Context, address string) (*STASTokenBalance, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/address/%s/tokens", address)
 	return requestAndUnmarshal[STASTokenBalance](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -141,10 +97,6 @@ func (c *Client) GetAddressTokenBalance(ctx context.Context, address string) (*S
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/stas#get-token-transactions
 func (c *Client) GetTokenTransactions(ctx context.Context, contractID, symbol string) (TxList, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/token/%s/%s/tx", contractID, symbol)
 	return requestAndUnmarshalSlice[*TxInfo](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }
@@ -153,10 +105,6 @@ func (c *Client) GetTokenTransactions(ctx context.Context, contractID, symbol st
 //
 // For more information: https://docs.whatsonchain.com/api/tokens/stas#get-stats
 func (c *Client) GetSTASStats(ctx context.Context) (*STASStats, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/tokens/stas")
 	return requestAndUnmarshal[STASStats](ctx, c, url, http.MethodGet, nil, ErrTokenNotFound)
 }

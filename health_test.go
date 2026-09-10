@@ -58,32 +58,6 @@ func (m *mockHTTPHealthBSV) Do(req *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
-// mockHTTPHealthBTC for mocking BTC chain requests
-type mockHTTPHealthBTC struct{}
-
-// Do is a mock http request that validates BTC chain in URL
-func (m *mockHTTPHealthBTC) Do(req *http.Request) (*http.Response, error) {
-	resp := new(http.Response)
-	resp.StatusCode = http.StatusBadRequest
-
-	// No req found
-	if req == nil {
-		return resp, ErrMissingRequest
-	}
-
-	// Valid BTC health endpoint
-	if strings.Contains(req.URL.String(), "/btc/") && strings.Contains(req.URL.String(), "/woc") {
-		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(bytes.NewBufferString(`Whats On Chain`))
-	} else {
-		// Return empty body for non-matching requests to avoid nil pointer
-		resp.Body = io.NopCloser(bytes.NewBufferString(""))
-		return resp, ErrBadRequest
-	}
-
-	return resp, nil
-}
-
 // mockHTTPHealthInvalid for mocking requests
 type mockHTTPHealthInvalid struct{}
 
@@ -133,67 +107,25 @@ func TestClient_GetHealth(t *testing.T) {
 	}
 }
 
-// TestClient_GetHealthWithChains tests the GetHealth() method with both BSV and BTC chains
-func TestClient_GetHealthWithChains(t *testing.T) {
+// TestClient_GetHealthWithNetworks tests the GetHealth() method across all BSV networks
+func TestClient_GetHealthWithNetworks(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name       string
-		chain      ChainType
-		network    NetworkType
-		mockClient HTTPInterface
-		expectErr  bool
+		name    string
+		network NetworkType
 	}{
-		{
-			name:       "BSV main network",
-			chain:      ChainBSV,
-			network:    NetworkMain,
-			mockClient: &mockHTTPHealthBSV{},
-			expectErr:  false,
-		},
-		{
-			name:       "BSV test network",
-			chain:      ChainBSV,
-			network:    NetworkTest,
-			mockClient: &mockHTTPHealthBSV{},
-			expectErr:  false,
-		},
-		{
-			name:       "BSV stn network",
-			chain:      ChainBSV,
-			network:    NetworkStn,
-			mockClient: &mockHTTPHealthBSV{},
-			expectErr:  false,
-		},
-		{
-			name:       "BTC main network",
-			chain:      ChainBTC,
-			network:    NetworkMain,
-			mockClient: &mockHTTPHealthBTC{},
-			expectErr:  false,
-		},
-		{
-			name:       "BTC test network",
-			chain:      ChainBTC,
-			network:    NetworkTest,
-			mockClient: &mockHTTPHealthBTC{},
-			expectErr:  false,
-		},
-		{
-			name:       "BTC stn network",
-			chain:      ChainBTC,
-			network:    NetworkStn,
-			mockClient: &mockHTTPHealthBTC{},
-			expectErr:  false,
-		},
+		{name: "main network", network: NetworkMain},
+		{name: "test network", network: NetworkTest},
+		{name: "stn network", network: NetworkStn},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			// Create client with specific chain and network
-			client, err := NewClient(context.Background(), WithChain(tt.chain), WithNetwork(tt.network), WithHTTPClient(tt.mockClient))
+			// Create client with a specific network
+			client, err := NewClient(context.Background(), WithNetwork(tt.network), WithHTTPClient(&mockHTTPHealthBSV{}))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -201,24 +133,14 @@ func TestClient_GetHealthWithChains(t *testing.T) {
 
 			// Test GetHealth
 			result, err := client.GetHealth(ctx)
-
-			if tt.expectErr {
-				if err == nil {
-					t.Errorf("Expected error for %s, but got none", tt.name)
-				}
-			} else {
-				if err != nil {
-					t.Errorf("Unexpected error for %s: %v", tt.name, err)
-				}
-				if result != "Whats On Chain" {
-					t.Errorf("Expected 'Whats On Chain', got '%s'", result)
-				}
+			if err != nil {
+				t.Errorf("Unexpected error for %s: %v", tt.name, err)
+			}
+			if result != "Whats On Chain" {
+				t.Errorf("Expected 'Whats On Chain', got '%s'", result)
 			}
 
-			// Verify the client has the correct chain and network
-			if client.Chain() != tt.chain {
-				t.Errorf("Expected chain %s, got %s", tt.chain, client.Chain())
-			}
+			// Verify the client has the correct network
 			if client.Network() != tt.network {
 				t.Errorf("Expected network %s, got %s", tt.network, client.Network())
 			}
@@ -226,58 +148,29 @@ func TestClient_GetHealthWithChains(t *testing.T) {
 	}
 }
 
-// TestClient_GetHealthURLConstruction tests that the correct URLs are constructed for different chains
+// TestClient_GetHealthURLConstruction tests that the correct BSV URLs are constructed per network
 func TestClient_GetHealthURLConstruction(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name        string
-		chain       ChainType
 		network     NetworkType
 		expectedURL string
-		shouldFail  bool
 	}{
 		{
-			name:        "BSV main network URL",
-			chain:       ChainBSV,
+			name:        "main network URL",
 			network:     NetworkMain,
 			expectedURL: "https://api.whatsonchain.com/v1/bsv/main/woc",
-			shouldFail:  false,
 		},
 		{
-			name:        "BTC main network URL",
-			chain:       ChainBTC,
-			network:     NetworkMain,
-			expectedURL: "https://api.whatsonchain.com/v1/btc/main/woc",
-			shouldFail:  false,
-		},
-		{
-			name:        "BSV test network URL",
-			chain:       ChainBSV,
+			name:        "test network URL",
 			network:     NetworkTest,
 			expectedURL: "https://api.whatsonchain.com/v1/bsv/test/woc",
-			shouldFail:  false,
 		},
 		{
-			name:        "BTC test network URL",
-			chain:       ChainBTC,
-			network:     NetworkTest,
-			expectedURL: "https://api.whatsonchain.com/v1/btc/test/woc",
-			shouldFail:  false,
-		},
-		{
-			name:        "Wrong chain in BSV mock",
-			chain:       ChainBTC,
-			network:     NetworkMain,
-			expectedURL: "https://api.whatsonchain.com/v1/btc/main/woc",
-			shouldFail:  true, // Will use BSV mock which expects /bsv/ in URL
-		},
-		{
-			name:        "Wrong chain in BTC mock",
-			chain:       ChainBSV,
-			network:     NetworkMain,
-			expectedURL: "https://api.whatsonchain.com/v1/bsv/main/woc",
-			shouldFail:  true, // Will use BTC mock which expects /btc/ in URL
+			name:        "stn network URL",
+			network:     NetworkStn,
+			expectedURL: "https://api.whatsonchain.com/v1/bsv/stn/woc",
 		},
 	}
 
@@ -285,38 +178,22 @@ func TestClient_GetHealthURLConstruction(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			// Use wrong mock client for the last two test cases to verify URL validation
-			var mockClient HTTPInterface
-			if tt.shouldFail {
-				if tt.chain == ChainBTC {
-					mockClient = &mockHTTPHealthBSV{} // Wrong mock for BTC
-				} else {
-					mockClient = &mockHTTPHealthBTC{} // Wrong mock for BSV
-				}
-			} else {
-				if tt.chain == ChainBSV {
-					mockClient = &mockHTTPHealthBSV{}
-				} else {
-					mockClient = &mockHTTPHealthBTC{}
-				}
-			}
-
-			client, err := NewClient(context.Background(), WithChain(tt.chain), WithNetwork(tt.network), WithHTTPClient(mockClient))
+			client, err := NewClient(context.Background(), WithNetwork(tt.network), WithHTTPClient(&mockHTTPHealthBSV{}))
 			if err != nil {
 				t.Fatal(err)
 			}
-			ctx := context.Background()
 
-			_, err = client.GetHealth(ctx)
+			c, ok := client.(*Client)
+			if !ok {
+				t.Fatal("expected *Client")
+			}
+			if got := c.buildURL("/woc"); got != tt.expectedURL {
+				t.Errorf("Expected URL %s, got %s", tt.expectedURL, got)
+			}
 
-			if tt.shouldFail {
-				if err == nil {
-					t.Errorf("Expected request to fail for %s due to URL mismatch, but it succeeded", tt.name)
-				}
-			} else {
-				if err != nil {
-					t.Errorf("Unexpected error for %s: %v", tt.name, err)
-				}
+			// The request should succeed against the BSV mock
+			if _, err = client.GetHealth(context.Background()); err != nil {
+				t.Errorf("Unexpected error for %s: %v", tt.name, err)
 			}
 		})
 	}

@@ -337,16 +337,20 @@ func (c *Client) DownloadReceipt(ctx context.Context, hash string) (string, erro
 	return requestString(ctx, c, url)
 }
 
-// GetTransactionPropagationStatus this endpoint retrieves transaction propagation status (BSV only)
+// GetTransactionPropagationStatus this endpoint retrieves transaction propagation status
 //
 // For more information: https://docs.whatsonchain.com/#get-tx-propagation
 func (c *Client) GetTransactionPropagationStatus(ctx context.Context, hash string) (*PropagationStatus, error) {
-	if c.Chain() != ChainBSV {
-		return nil, ErrBSVChainRequired
-	}
-
 	url := c.buildURL("/tx/hash/%s/propagation", hash)
 	return requestAndUnmarshal[PropagationStatus](ctx, c, url, http.MethodGet, nil, ErrTransactionNotFound)
+}
+
+// GetOpReturnData gets OP_RETURN data by transaction hash
+//
+// For more information: https://docs.whatsonchain.com/#get-op_return-data-by-tx-hash
+func (c *Client) GetOpReturnData(ctx context.Context, txHash string) (string, error) {
+	url := c.buildURL("/tx/%s/opreturn", txHash)
+	return requestString(ctx, c, url)
 }
 
 // BulkTransactionStatus this endpoint fetches status for multiple transactions in single request

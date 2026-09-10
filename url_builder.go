@@ -5,18 +5,16 @@ import (
 	"net/url"
 )
 
-// buildURL constructs a URL with the chain and network prefix
-// This centralizes URL construction to avoid repetition across all API methods
+// buildURL constructs a URL with the BSV chain and network prefix.
+// This centralizes URL construction to avoid repetition across all API methods.
 func (c *Client) buildURL(path string, args ...any) string {
-	// Read both chain and network under a single lock to prevent
-	// mismatched values if SetChain/SetNetwork is called concurrently
+	// Read the network under lock for safe concurrent use with SetNetwork
 	c.optionsMu.RLock()
-	chain := c.options.chain
 	network := c.options.network
 	c.optionsMu.RUnlock()
 
-	// Build the base URL with chain and network
-	baseURL := fmt.Sprintf("%s%s/%s", apiEndpointBase, chain, network)
+	// Build the base URL. BSV is the only supported chain.
+	baseURL := fmt.Sprintf("%sbsv/%s", apiEndpointBase, network)
 
 	// If args are provided, escape string arguments and format the path
 	if len(args) > 0 {

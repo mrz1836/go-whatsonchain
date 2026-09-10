@@ -10,22 +10,20 @@ Quick reference for Claude Code working on **go-whatsonchain** -- the unofficial
 | `whatsonchain.go` | `NewClient` constructor, `request()`, getters/setters |
 | `interface.go` | All service interfaces + `ClientInterface` |
 | `definitions.go` | Response types (`TxInfo`, `BlockInfo`, `AddressBalance`, etc.) |
-| `errors.go` | Sentinel errors (`ErrTransactionNotFound`, `ErrBSVChainRequired`, etc.) |
-| `url_builder.go` | `buildURL(path string, args ...any)` -- chain/network-aware URL construction |
+| `errors.go` | Sentinel errors (`ErrTransactionNotFound`, `ErrInvalidNetwork`, etc.) |
+| `url_builder.go` | `buildURL(path string, args ...any)` -- network-aware URL construction (BSV-only) |
 | `request_helpers.go` | `requestAndUnmarshal[T]`, `requestAndUnmarshalSlice[T]`, `requestString` |
 | `http_client.go` | `RetryableHTTPClient`, `ExponentialBackoff`, `SimpleHTTPClient` |
 | `chunk.go` | `chunkSlice[T]` -- generic slice chunker for bulk processors |
 | `addresses.go` | `AddressService` impl + `DownloadStatement` |
 | `blocks.go` | `BlockService` impl |
-| `transactions.go` | `TransactionService` impl + bulk processors |
+| `transactions.go` | `TransactionService` impl + bulk processors + `GetOpReturnData` |
 | `chain_info.go` | `ChainService` impl |
 | `exchange_rates.go` | Exchange rate endpoints (part of `ChainService`) |
 | `mempool.go` | `MempoolService` impl |
 | `scripts.go` | `ScriptService` impl |
 | `stats.go` | `StatsService` impl |
 | `tokens.go` | `TokenService` impl (1Sat Ordinals, STAS) |
-| `bsv_specific.go` | `BSVService` -- `GetOpReturnData` + embeds `TokenService` |
-| `btc_specific.go` | `BTCService` (placeholder interface) |
 | `search.go` | `GetExplorerLinks` (part of `GeneralService`) |
 | `health.go` | `GetHealth` (part of `GeneralService`) |
 | `examples/` | Usage examples |
@@ -37,7 +35,6 @@ Quick reference for Claude Code working on **go-whatsonchain** -- the unofficial
 ```go
 client, err := whatsonchain.NewClient(
     context.Background(),
-    whatsonchain.WithChain(whatsonchain.ChainBSV),
     whatsonchain.WithNetwork(whatsonchain.NetworkMain),
     whatsonchain.WithAPIKey("key"),
     whatsonchain.WithRateLimit(10),
@@ -67,7 +64,7 @@ The `emptyErr` parameter is returned when the response body is empty (e.g., `Err
 func (c *Client) buildURL(path string, args ...any) string
 ```
 
-Constructs `https://api.whatsonchain.com/v1/{chain}/{network}{path}`. String args are automatically `url.PathEscape`d.
+Constructs `https://api.whatsonchain.com/v1/bsv/{network}{path}`. String args are automatically `url.PathEscape`d.
 
 ### 4. Bulk Processors with `chunkSlice` + `time.Ticker`
 
@@ -108,8 +105,6 @@ type ClientInterface interface {
     StatsService
     TokenService
     TransactionService
-    BSVService
-    BTCService
     // + Getters/Setters
 }
 ```
@@ -129,16 +124,10 @@ All services are implemented on `*Client`.
    }
    ```
 5. **Write tests** -- table-driven with mock HTTP client
-6. **Chain guard** if BSV/BTC-only:
-   ```go
-   if c.Chain() != ChainBSV {
-       return nil, ErrBSVChainRequired
-   }
-   ```
 
 ## Constants & Types (`definitions.go`)
 
-**Chains:** `ChainBSV` ("bsv"), `ChainBTC` ("btc")
+**Chains:** `ChainBSV` ("bsv"). BSV is the only supported chain; `ChainType`, `ChainBSV`, `WithChain`, `SetChain`, and `Chain()` are retained as deprecated no-op shims for backward compatibility.
 
 **Networks:** `NetworkMain` ("main"), `NetworkTest` ("test"), `NetworkStn` ("stn")
 
@@ -180,9 +169,9 @@ Tests use a mock HTTP client. Table-driven with `testCase` structs. `interface_t
 
 ## Gotchas
 
-1. **Chain guards**: BSV-only methods must check `c.Chain() != ChainBSV` and return `ErrBSVChainRequired`
+1. **BSV-only**: BSV is the only supported chain. The chain-selection API (`WithChain`, `SetChain`, `Chain()`) is deprecated no-op shims; do not add new chain guards
 2. **Max limits**: Bulk endpoints enforce limits; return wrapped errors (e.g., `ErrMaxTransactionsExceeded`)
 3. **`emptyErr` param**: Pass the right sentinel to request helpers for proper 404/empty handling
 4. **Rate limiting**: Bulk processors use `time.Ticker` -- never manual counter logic
-5. **URL building**: Always use `c.buildURL()` -- it handles chain/network prefix + path escaping
+5. **URL building**: Always use `c.buildURL()` -- it handles the `bsv/{network}` prefix + path escaping
 6. **Concurrency**: `options` and `lastRequest` are mutex-protected; getters/setters are goroutine-safe

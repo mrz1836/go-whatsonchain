@@ -1,6 +1,19 @@
 package whatsonchain
 
-import "context"
+import (
+	"context"
+	"net/http"
+)
+
+// mockHTTPEmpty is a minimal HTTP mock that returns an empty successful response.
+type mockHTTPEmpty struct{}
+
+// Do is a mock http request
+func (m *mockHTTPEmpty) Do(_ *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusOK
+	return resp, nil
+}
 
 const (
 	testKey          = "test-key-for-woc-api"
@@ -31,19 +44,6 @@ func newMockClient(httpClient HTTPInterface) ClientInterface {
 func newMockClientBSV(httpClient HTTPInterface) ClientInterface {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
-		WithNetwork(NetworkTest),
-		WithAPIKey(testKey),
-		WithHTTPClient(httpClient),
-	)
-	return client
-}
-
-// newMockClientBTC returns a BTC client for mocking
-func newMockClientBTC(httpClient HTTPInterface) ClientInterface {
-	client, _ := NewClient(
-		context.Background(),
-		WithChain(ChainBTC),
 		WithNetwork(NetworkTest),
 		WithAPIKey(testKey),
 		WithHTTPClient(httpClient),

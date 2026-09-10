@@ -17,16 +17,14 @@ func BenchmarkClientCreation(b *testing.B) {
 			opts: []ClientOption{},
 		},
 		{
-			name: "WithChainAndNetwork",
+			name: "WithNetwork",
 			opts: []ClientOption{
-				WithChain(ChainBSV),
 				WithNetwork(NetworkMain),
 			},
 		},
 		{
 			name: "FullyConfigured",
 			opts: []ClientOption{
-				WithChain(ChainBSV),
 				WithNetwork(NetworkMain),
 				WithAPIKey("test-api-key"),
 				WithUserAgent("test-agent/1.0"),
@@ -59,7 +57,6 @@ func BenchmarkClientCreation(b *testing.B) {
 func BenchmarkClientGetters(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 		WithAPIKey("test-key"),
 		WithUserAgent("test-agent"),
@@ -70,7 +67,6 @@ func BenchmarkClientGetters(b *testing.B) {
 		name string
 		fn   func()
 	}{
-		{"Chain", func() { _ = client.Chain() }},
 		{"Network", func() { _ = client.Network() }},
 		{"UserAgent", func() { _ = client.UserAgent() }},
 		{"RateLimit", func() { _ = client.RateLimit() }},
@@ -97,7 +93,6 @@ func BenchmarkClientSetters(b *testing.B) {
 		name string
 		fn   func(*Client)
 	}{
-		{"SetChain", func(c *Client) { _ = c.SetChain(ChainBSV) }},
 		{"SetNetwork", func(c *Client) { _ = c.SetNetwork(NetworkMain) }},
 		{"SetAPIKey", func(c *Client) { c.SetAPIKey("test-key") }},
 		{"SetUserAgent", func(c *Client) { c.SetUserAgent("agent") }},
@@ -120,7 +115,6 @@ func BenchmarkClientSetters(b *testing.B) {
 func BenchmarkBuildURL(b *testing.B) {
 	client, _ := NewClient(
 		context.Background(),
-		WithChain(ChainBSV),
 		WithNetwork(NetworkMain),
 	)
 	c := client.(*Client)

@@ -51,7 +51,6 @@ type clientOptions struct {
 	backOffInitialTimeout          time.Duration
 	backOffMaximumJitterInterval   time.Duration
 	backOffMaxTimeout              time.Duration
-	chain                          ChainType
 	customHTTPClient               HTTPInterface
 	dialerKeepAlive                time.Duration
 	dialerTimeout                  time.Duration
@@ -76,7 +75,6 @@ func defaultClientOptions() *clientOptions {
 		backOffInitialTimeout:          2 * time.Millisecond,
 		backOffMaximumJitterInterval:   2 * time.Millisecond,
 		backOffMaxTimeout:              10 * time.Millisecond,
-		chain:                          ChainBSV, // Default to BSV for backward compatibility
 		dialerKeepAlive:                20 * time.Second,
 		dialerTimeout:                  5 * time.Second,
 		network:                        NetworkMain, // Default to main network
@@ -91,12 +89,6 @@ func defaultClientOptions() *clientOptions {
 	}
 }
 
-// validChains contains the set of valid chain types
-var validChains = map[ChainType]bool{ //nolint:gochecknoglobals // read-only lookup table
-	ChainBSV: true,
-	ChainBTC: true,
-}
-
 // validNetworks contains the set of valid network types
 var validNetworks = map[NetworkType]bool{ //nolint:gochecknoglobals // read-only lookup table
 	NetworkMain: true,
@@ -104,11 +96,13 @@ var validNetworks = map[NetworkType]bool{ //nolint:gochecknoglobals // read-only
 	NetworkStn:  true,
 }
 
-// WithChain sets the blockchain type (BSV or BTC)
-func WithChain(chain ChainType) ClientOption {
-	return func(c *clientOptions) {
-		c.chain = chain
-	}
+// WithChain previously selected the blockchain type.
+//
+// Deprecated: BSV is the only supported chain. This option is now a no-op and
+// is retained only for backward compatibility. It will be removed in a future
+// major version.
+func WithChain(_ ChainType) ClientOption {
+	return func(_ *clientOptions) {}
 }
 
 // WithNetwork sets the network type (main, test, stn)
