@@ -487,11 +487,29 @@ type TxHashes struct {
 	TxIDs []string `json:"txids"`
 }
 
-// TxStatus represents the status of a transaction
+// TxStatus represents the status of a transaction as returned by the
+// bulk transaction status endpoint (POST /txs/status).
+//
+// A confirmed transaction is reported with BlockHash, BlockHeight, BlockTime
+// and Confirmations populated. An unknown transaction is reported with only
+// TxID and Error ("unknown") set. An accepted-but-unconfirmed transaction is
+// reported with TxID set and Confirmations absent (0).
 type TxStatus struct {
-	TxID   string `json:"txid"`
-	Valid  bool   `json:"valid"`
-	Height int64  `json:"height"`
+	TxID          string `json:"txid"`
+	BlockHash     string `json:"blockhash,omitempty"`
+	BlockHeight   int64  `json:"blockheight,omitempty"`
+	BlockTime     int64  `json:"blocktime,omitempty"`
+	Confirmations int64  `json:"confirmations,omitempty"`
+	Error         string `json:"error,omitempty"`
+
+	// Deprecated: Valid is not returned by the /txs/status endpoint and is
+	// always false. It is retained only for backward compatibility and will be
+	// removed in a future major release. Use Error to detect unknown transactions.
+	Valid bool `json:"valid,omitempty"`
+	// Deprecated: Height is not returned by the /txs/status endpoint and is
+	// always zero. It is retained only for backward compatibility and will be
+	// removed in a future major release. Use BlockHeight instead.
+	Height int64 `json:"height,omitempty"`
 }
 
 // TxStatusList is the list of transaction statuses
