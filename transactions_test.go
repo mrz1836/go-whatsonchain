@@ -50,7 +50,7 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 		}
 
 		// Valid (two raw txs)
-		if len(bulkRawData.TxIDs) > 0 && strings.Contains(bulkRawData.TxIDs[0], "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa") {
+		if len(bulkRawData.TxIDs) > 0 && strings.Contains(bulkRawData.TxIDs[0], testTxIDConfirmed) {
 			resp.StatusCode = http.StatusOK
 			resp.Body = io.NopCloser(bytes.NewBufferString(`[{"txid":"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa","hex":"0100000001b8dba875299dc159710df0d75a3f8ad3600e09a605c79dc7d9f2254e2be8d057000000008a47304402206b9956a6dd39d7f081f6a2d3731b2b7c875ec563743d7620ea55b37f3c2d1ffd02202594d52b6df818d100a3e721b0d245625cbe200e51a7a846fd37436607e08a0a412103998489e31affb06deaa6890deea42447ac9b4b31c5fc93d023525de9f850b281ffffffff1b00000000000000001a6a1a6761746c696e6720626974636f696e626c6f636b732e6c6976650c030000000000001976a9148432682cb8f5cbbb36913266fbe84176a999ac9988ac0c030000000000001976a914f6b68ada06df7323aca315ec54aa251e806c516888ac0c030000000000001976a914d47ab37ea2bcffe4a7bf98086a65d489acdf2fd688ac0c030000000000001976a914a20568923f3c65f91c0d7a3be3ca4f8b14c7d04888ac0c030000000000001976a9140e80337d887c653d2bd7228281aa7ecf4bf2c9dc88ac0c030000000000001976a9147bc3cebb1dc5ee6356931add1f5f1196fce7b53188ac0c030000000000001976a914a8854465a2bbefeb1d47c5c79b8aef737d62f06f88ac0c030000000000001976a9146c376c6d05ff152e1537667cfb52e628547f620a88ac0c030000000000001976a9147c0bd6447ac246f100fec9392a396191a06fcae288ac0c030000000000001976a9145221bd8f6901612cb1bf0618a39823229233474988ac0c030000000000001976a91432c248707616cd030a3f346aec13c9d5ae8d99b088ac0c030000000000001976a914c31eaefc851f6de4830f51d649e1731706159dc888ac0c030000000000001976a9143d980ead104586cba895d944280f93ca8323b47588ac0c030000000000001976a91473721ce4189c5b996819f81f8cce7366a1bb780488ac0c030000000000001976a9141fd249a4cac1a2c95b95ad8ecbbe23129831232e88ac0c030000000000001976a914ae4661a1c0f8192e79b5c304cadd39470077c8a488ac0c030000000000001976a914e99c1003b189bfe7ababb7cbe2e39b8eb2317ccf88ac0c030000000000001976a914e26673b87c7e644688b0a62f1e2cd5e7cc4db63c88ac0c030000000000001976a9145cce10f43fa0458b2f8c3982a9349e7a67e6736588ac0c030000000000001976a9144f062ff6e6921a8b6f43c79fc0e89f582a22225388ac0c030000000000001976a9146dacfcede9e86678de202cb30d17bd1eb656cec388ac0c030000000000001976a914fcdaf0d9fd36b2c1dbfa90e659a373290795230b88ac0c030000000000001976a91482f1a346d023fd8e5eb976bba6df7e6a2095003288ac0c030000000000001976a9142f82e5b519a351b646d23ceed7d43bd53213209488ac408a7a25000000001976a9143d0e5368bdadddca108a0fe44739919274c726c788ac00000000"},{"txid":"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258","hex":"01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff20033f6b092f636f696e6765656b2e636f6d2f7759319af9d4f815e3a2fae5e60000ffffffff01a715aa4a000000001976a9148460e9a972a8600766a1b38fac4a2cfb8692d3ad88ac00000000"}]`))
 			return resp, nil
@@ -216,7 +216,7 @@ func (m *mockHTTPTransactions) Do(req *http.Request) (*http.Response, error) {
 		}
 
 		// Valid (two txs)
-		if strings.Contains(data.TxIDs[0], "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa") {
+		if strings.Contains(data.TxIDs[0], testTxIDConfirmed) {
 			resp.StatusCode = http.StatusOK
 			resp.Body = io.NopCloser(bytes.NewBufferString(`[{"hex":"","txid":"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa","hash":"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa","version":1,"size":1044,"locktime":0,"vin":[{"coinbase":"","txid":"57a79dbc0be8225f4d9dc705a91096e60d3da8f3a7fdf009715dc28975a8dbb8","vout":0,"scriptSig":{"asm":"304402206b9956a6dd39d7f081f6a2d3731b2b7c875ec563743d7620ea55b37f3c2d1ffd02202594d52b6df818d100a3e721b0d245625cbe200e51a7a846fd37436607e08a0a[ALL|FORKID] 03998489e31affb06deaa6890deea42447ac9b4b31c5fc93d023525de9f850b281","hex":"47304402206b9956a6dd39d7f081f6a2d3731b2b7c875ec563743d7620ea55b37f3c2d1ffd02202594d52b6df818d100a3e721b0d245625cbe200e51a7a846fd37436607e08a0a412103998489e31affb06deaa6890deea42447ac9b4b31c5fc93d023525de9f850b281"},"sequence":4294967295}],"vout":[{"value":0,"n":0,"scriptPubKey":{"asm":"OP_RETURN 6761746c696e6720626974636f696e626c6f636b732e6c697665","hex":"6a1a6761746c696e6720626974636f696e626c6f636b732e6c697665","type":"nulldata","opReturn":{"type":"OP_RETURN","action":"","text":"","parts":null},"isTruncated":false}},{"value":0.000013,"n":1,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 8432682cb8f5cbbb36913266fbe84176a999ac99 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9148432682cb8f5cbbb36913266fbe84176a999ac9988ac","reqSigs":1,"type":"pubkeyhash","addresses":["1D3zaf652ajAPZVC1CrKgMQjesaPuLwcSW"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":2,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 f6b68ada06df7323aca315ec54aa251e806c5168 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a914f6b68ada06df7323aca315ec54aa251e806c516888ac","reqSigs":1,"type":"pubkeyhash","addresses":["1PVVuTZCHdW83ucCviYFWkjqtDvjismrSV"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":3,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 d47ab37ea2bcffe4a7bf98086a65d489acdf2fd6 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a914d47ab37ea2bcffe4a7bf98086a65d489acdf2fd688ac","reqSigs":1,"type":"pubkeyhash","addresses":["1LNVF6RV5dnSAzStK19ZM75EJMG8nfg4iv"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":4,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 a20568923f3c65f91c0d7a3be3ca4f8b14c7d048 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a914a20568923f3c65f91c0d7a3be3ca4f8b14c7d04888ac","reqSigs":1,"type":"pubkeyhash","addresses":["1Fmgws8tbKmc6jcmqnhuShUSGFnLUfjpN3"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":5,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 0e80337d887c653d2bd7228281aa7ecf4bf2c9dc OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9140e80337d887c653d2bd7228281aa7ecf4bf2c9dc88ac","reqSigs":1,"type":"pubkeyhash","addresses":["12Kg3FtBJhZMZLMhDy6BQ12Numjzdp5Pxp"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":6,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 7bc3cebb1dc5ee6356931add1f5f1196fce7b531 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9147bc3cebb1dc5ee6356931add1f5f1196fce7b53188ac","reqSigs":1,"type":"pubkeyhash","addresses":["1CHQgYRLUXfh1kyXYgzVthjkD8u4L7Tppd"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":7,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 a8854465a2bbefeb1d47c5c79b8aef737d62f06f OP_EQUALVERIFY OP_CHECKSIG","hex":"76a914a8854465a2bbefeb1d47c5c79b8aef737d62f06f88ac","reqSigs":1,"type":"pubkeyhash","addresses":["1GN4Ao1PW5A8D9Z7Mwvd1sHnBBqfVT3T9v"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":8,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 6c376c6d05ff152e1537667cfb52e628547f620a OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9146c376c6d05ff152e1537667cfb52e628547f620a88ac","reqSigs":1,"type":"pubkeyhash","addresses":["1AsCNcXyTJoYXoJ9X8TBtWe7aUuEujPHaC"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":9,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 7c0bd6447ac246f100fec9392a396191a06fcae2 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9147c0bd6447ac246f100fec9392a396191a06fcae288ac","reqSigs":1,"type":"pubkeyhash","addresses":["1CJtyEdJQYK5DE8skg6qZH2rfNmy2ZdG4F"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":10,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 5221bd8f6901612cb1bf0618a398232292334749 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9145221bd8f6901612cb1bf0618a39823229233474988ac","reqSigs":1,"type":"pubkeyhash","addresses":["18VGq4RXaKV1xXSPw9efaJkaST8BUFBx4G"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":11,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 32c248707616cd030a3f346aec13c9d5ae8d99b0 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a91432c248707616cd030a3f346aec13c9d5ae8d99b088ac","reqSigs":1,"type":"pubkeyhash","addresses":["15dPXcJWgkskbpHppUrPkGStf3ZxCh7qaz"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":12,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 c31eaefc851f6de4830f51d649e1731706159dc8 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a914c31eaefc851f6de4830f51d649e1731706159dc888ac","reqSigs":1,"type":"pubkeyhash","addresses":["1JnhXLXhSEB4oYJaAEHFL8iBd3isjcyw4s"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":13,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 3d980ead104586cba895d944280f93ca8323b475 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9143d980ead104586cba895d944280f93ca8323b47588ac","reqSigs":1,"type":"pubkeyhash","addresses":["16cgNq9FwK531hi8QPBjjNEM9V5iZXTqaM"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":14,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 73721ce4189c5b996819f81f8cce7366a1bb7804 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a91473721ce4189c5b996819f81f8cce7366a1bb780488ac","reqSigs":1,"type":"pubkeyhash","addresses":["1BXRQm7ytETWWLrDy5M5c5qRuc1LXwbLu8"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":15,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 1fd249a4cac1a2c95b95ad8ecbbe23129831232e OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9141fd249a4cac1a2c95b95ad8ecbbe23129831232e88ac","reqSigs":1,"type":"pubkeyhash","addresses":["13uFrzSE6YfxH7nmf9JVAoTmQRY5FbeTxz"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":16,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 ae4661a1c0f8192e79b5c304cadd39470077c8a4 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a914ae4661a1c0f8192e79b5c304cadd39470077c8a488ac","reqSigs":1,"type":"pubkeyhash","addresses":["1GtUtZby195ofFR1Wzwy1QacVYH2QCPfhj"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":17,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 e99c1003b189bfe7ababb7cbe2e39b8eb2317ccf OP_EQUALVERIFY OP_CHECKSIG","hex":"76a914e99c1003b189bfe7ababb7cbe2e39b8eb2317ccf88ac","reqSigs":1,"type":"pubkeyhash","addresses":["1NJDQ7Z8w9CybHQwKJmCEP43rYKkoPmTCm"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":18,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 e26673b87c7e644688b0a62f1e2cd5e7cc4db63c OP_EQUALVERIFY OP_CHECKSIG","hex":"76a914e26673b87c7e644688b0a62f1e2cd5e7cc4db63c88ac","reqSigs":1,"type":"pubkeyhash","addresses":["1Me6Sr4CRn766zaTKepxPo3Fo6MmhVoRzj"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":19,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 5cce10f43fa0458b2f8c3982a9349e7a67e67365 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9145cce10f43fa0458b2f8c3982a9349e7a67e6736588ac","reqSigs":1,"type":"pubkeyhash","addresses":["19Ti2P6ByGxhVR4rFdv6d82o8x8agHDwJU"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":20,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 4f062ff6e6921a8b6f43c79fc0e89f582a222253 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9144f062ff6e6921a8b6f43c79fc0e89f582a22225388ac","reqSigs":1,"type":"pubkeyhash","addresses":["18Cqo4UpM7bcN8Vsy8dg7RqKWyMYTcdWUX"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":21,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 6dacfcede9e86678de202cb30d17bd1eb656cec3 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9146dacfcede9e86678de202cb30d17bd1eb656cec388ac","reqSigs":1,"type":"pubkeyhash","addresses":["1AzutKxUnCTu9H8oETDCw7euH1oUpWnNu7"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":22,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 fcdaf0d9fd36b2c1dbfa90e659a373290795230b OP_EQUALVERIFY OP_CHECKSIG","hex":"76a914fcdaf0d9fd36b2c1dbfa90e659a373290795230b88ac","reqSigs":1,"type":"pubkeyhash","addresses":["1Q3yZcm7nGKCabp5nWNNfsu9Fci2m1gNbP"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":23,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 82f1a346d023fd8e5eb976bba6df7e6a20950032 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a91482f1a346d023fd8e5eb976bba6df7e6a2095003288ac","reqSigs":1,"type":"pubkeyhash","addresses":["1CwNKE9EF8eEid1Lt2NQQHtHqB9qh4i5eV"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":24,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 2f82e5b519a351b646d23ceed7d43bd532132094 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9142f82e5b519a351b646d23ceed7d43bd53213209488ac","reqSigs":1,"type":"pubkeyhash","addresses":["15LDZvLDJnt3hWqpDLXmsXX1YkH9HxcCbY"],"opReturn":null,"isTruncated":false}},{"value":0.000013,"n":25,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 3d0e5368bdadddca108a0fe44739919274c726c7 OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9143d0e5368bdadddca108a0fe44739919274c726c788ac","reqSigs":1,"type":"pubkeyhash","addresses":["16ZqP5Tb22KJuvSAbjNkoiZs13mmRmexZA"],"opReturn":null,"isTruncated":false}}],"blockhash":"000000000000000004b5ce6670f2ff27354a1e87d0a01bf61f3307f4ccd358b5","confirmations":28395,"time":1575841517,"blocktime":1575841517},{"hex":"","txid":"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258","hash":"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258","version":1,"size":118,"locktime":0,"vin":[{"coinbase":"033f6b092f636f696e6765656b2e636f6d2f7759319af9d4f815e3a2fae5e60000","txid":"","vout":0,"scriptSig":{"asm":"","hex":""},"sequence":4294967295}],"vout":[{"value":12.5133703,"n":0,"scriptPubKey":{"asm":"OP_DUP OP_HASH160 8460e9a972a8600766a1b38fac4a2cfb8692d3ad OP_EQUALVERIFY OP_CHECKSIG","hex":"76a9148460e9a972a8600766a1b38fac4a2cfb8692d3ad88ac","reqSigs":1,"type":"pubkeyhash","addresses":["1D4xHwLxA8E9vU87N1ELHtPEZdKeLhywY1"],"opReturn":null,"isTruncated":false}}],"blockhash":"000000000000000002e8d4b4c0385abd195709c82f16d9917f081b70000e8804","confirmations":23367,"time":1578837295,"blocktime":1578837295}]`))
 		}
@@ -691,7 +691,7 @@ func TestClient_BulkTransactionDetails(t *testing.T) {
 		expectedError bool
 		statusCode    int
 	}{
-		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", testTxID2}}, "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", testTxID2, false, http.StatusOK},
+		{&TxHashes{TxIDs: []string{testTxIDConfirmed, testTxID2}}, testTxIDConfirmed, testTxID2, false, http.StatusOK},
 		{&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1ZZ", testTxID2}}, testTxID2, "", false, http.StatusOK},
 		{&TxHashes{TxIDs: []string{testTxIDInvalid, testTxID2Invalid}}, "", "", false, http.StatusOK},
 		{&TxHashes{TxIDs: []string{testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid}}, "", "", true, http.StatusOK},
@@ -919,10 +919,10 @@ func TestClient_BulkTransactionDetailsProcessor(t *testing.T) {
 		{
 			"valid transactions",
 			&TxHashes{TxIDs: []string{
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
+				testTxIDConfirmed,
 				testTxID2,
 			}},
-			"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
+			testTxIDConfirmed,
 			testTxID2,
 			false,
 			http.StatusOK,
@@ -1028,10 +1028,10 @@ func TestClient_BulkRawTransactionDataProcessor(t *testing.T) {
 		{
 			"valid transactions",
 			&TxHashes{TxIDs: []string{
-				"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
+				testTxIDConfirmed,
 				testTxID2,
 			}},
-			"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
+			testTxIDConfirmed,
 			testTxID2,
 			false,
 			http.StatusOK,
@@ -1189,10 +1189,11 @@ func (m *mockHTTPTransactionStatus) Do(req *http.Request) (*http.Response, error
 		return resp, errTxMissingRequest
 	}
 
-	// Valid
+	// Valid - mirrors the real /txs/status shape: a confirmed transaction
+	// (blockhash/blockheight/blocktime/confirmations) and an unknown one (error).
 	if strings.Contains(req.URL.String(), "txs/status") && req.Method == http.MethodPost {
 		resp.StatusCode = http.StatusOK
-		resp.Body = io.NopCloser(strings.NewReader(`[{"txid":"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa","valid":true,"height":575191},{"txid":"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258","valid":true,"height":575191}]`))
+		resp.Body = io.NopCloser(strings.NewReader(`[{"txid":"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa","blockhash":"000000000000000004b5ce6670f2ff27354a1e87d0a01bf61f3307f4ccd358b5","blockheight":612251,"blocktime":1575841517,"confirmations":354059},{"txid":"91f68c2c598bc73812dd32d60ab67005eac498bef5f0c45b822b3c9468ba3258","error":"unknown"}]`))
 	}
 	return resp, nil
 }
@@ -1214,8 +1215,8 @@ func TestClient_BulkTransactionStatus(t *testing.T) {
 		statusCode    int
 	}{
 		{
-			&TxHashes{TxIDs: []string{"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", testTxID2}},
-			"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
+			&TxHashes{TxIDs: []string{testTxIDConfirmed, testTxID2}},
+			testTxIDConfirmed,
 			testTxID2,
 			false,
 			http.StatusOK,
@@ -1243,6 +1244,131 @@ func TestClient_BulkTransactionStatus(t *testing.T) {
 			// Only check status code if no error occurred (HTTP request was made)
 			t.Errorf("%s Expected status code to be %d, got %d, [%s] inputted", t.Name(), test.statusCode, client.LastRequest().StatusCode, test.input)
 		}
+	}
+}
+
+// TestClient_BulkTransactionStatus_Fields verifies that the real /txs/status
+// response fields (blockhash/blockheight/blocktime/confirmations, and error for
+// unknown transactions) are parsed into TxStatus.
+func TestClient_BulkTransactionStatus_Fields(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPTransactionStatus{})
+	ctx := context.Background()
+
+	output, err := client.BulkTransactionStatus(ctx, &TxHashes{TxIDs: []string{
+		testTxIDConfirmed,
+		testTxID2,
+	}})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(output) != 2 {
+		t.Fatalf("expected 2 statuses, got %d", len(output))
+	}
+
+	// Confirmed transaction populates the block fields.
+	confirmed := output[0]
+	if confirmed.BlockHash != "000000000000000004b5ce6670f2ff27354a1e87d0a01bf61f3307f4ccd358b5" {
+		t.Errorf("unexpected block hash: %s", confirmed.BlockHash)
+	}
+	if confirmed.BlockHeight != 612251 {
+		t.Errorf("expected block height 612251, got %d", confirmed.BlockHeight)
+	}
+	if confirmed.BlockTime != 1575841517 {
+		t.Errorf("expected block time 1575841517, got %d", confirmed.BlockTime)
+	}
+	if confirmed.Confirmations != 354059 {
+		t.Errorf("expected confirmations 354059, got %d", confirmed.Confirmations)
+	}
+	if confirmed.Error != "" {
+		t.Errorf("expected no error for confirmed tx, got %q", confirmed.Error)
+	}
+
+	// Unknown transaction is reported via the error field.
+	unknown := output[1]
+	if unknown.Error != "unknown" {
+		t.Errorf("expected error \"unknown\", got %q", unknown.Error)
+	}
+	if unknown.Confirmations != 0 {
+		t.Errorf("expected 0 confirmations for unknown tx, got %d", unknown.Confirmations)
+	}
+}
+
+// mockHTTPBroadcastReject mocks realistic node rejections: a non-2xx status with
+// the reason in the plain-text body and no transport error, which is how the
+// WhatsOnChain /tx/raw endpoint reports a rejected broadcast.
+type mockHTTPBroadcastReject struct{}
+
+// Do is a mock http request
+func (m *mockHTTPBroadcastReject) Do(req *http.Request) (*http.Response, error) {
+	resp := new(http.Response)
+	resp.StatusCode = http.StatusBadRequest
+
+	if req == nil {
+		return resp, errTxMissingRequest
+	}
+
+	decoder := json.NewDecoder(req.Body)
+	var data txBroadcast
+	if err := decoder.Decode(&data); err != nil {
+		return resp, err
+	}
+
+	resp.StatusCode = http.StatusInternalServerError
+	switch {
+	case strings.Contains(data.TxHex, "already-known"):
+		resp.Body = io.NopCloser(bytes.NewBufferString(`257: txn-already-known`))
+	case strings.Contains(data.TxHex, "mempool-conflict"):
+		resp.Body = io.NopCloser(bytes.NewBufferString(`258: txn-mempool-conflict`))
+	case strings.Contains(data.TxHex, "missing-inputs"):
+		resp.Body = io.NopCloser(bytes.NewBufferString(`Missing inputs`))
+	default:
+		resp.Body = io.NopCloser(bytes.NewBufferString(`some other error`))
+	}
+	return resp, nil
+}
+
+// TestClient_BroadcastTx_Classification verifies that node rejection reasons are
+// classified into typed sentinel errors while remaining wrapped by ErrBroadcastFailed.
+func TestClient_BroadcastTx_Classification(t *testing.T) {
+	t.Parallel()
+
+	client := newMockClient(&mockHTTPBroadcastReject{})
+	ctx := context.Background()
+
+	tests := []struct {
+		name     string
+		txHex    string
+		sentinel error
+	}{
+		{"already known", "already-known", ErrTxAlreadyInMempool},
+		{"mempool conflict", "mempool-conflict", ErrTxMempoolConflict},
+		{"missing inputs", "missing-inputs", ErrTxMissingInputs},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			_, err := client.BroadcastTx(ctx, test.txHex)
+			if err == nil {
+				t.Fatalf("expected an error, got nil")
+			}
+			if !errors.Is(err, ErrBroadcastFailed) {
+				t.Errorf("expected error to wrap ErrBroadcastFailed, got %v", err)
+			}
+			if !errors.Is(err, test.sentinel) {
+				t.Errorf("expected error to wrap %v, got %v", test.sentinel, err)
+			}
+		})
+	}
+
+	// An unclassified rejection still wraps ErrBroadcastFailed but no sentinel.
+	_, err := client.BroadcastTx(ctx, "some-unknown-rejection")
+	if !errors.Is(err, ErrBroadcastFailed) {
+		t.Errorf("expected ErrBroadcastFailed for unclassified rejection, got %v", err)
+	}
+	if errors.Is(err, ErrTxAlreadyInMempool) || errors.Is(err, ErrTxMempoolConflict) || errors.Is(err, ErrTxMissingInputs) {
+		t.Errorf("did not expect a typed sentinel for unclassified rejection, got %v", err)
 	}
 }
 
@@ -1396,13 +1522,13 @@ func TestClient_BulkRawTransactionData(t *testing.T) {
 		client := newMockClient(&mockHTTPTransactions{})
 		ctx := context.Background()
 		txList, err := client.BulkRawTransactionData(ctx, &TxHashes{TxIDs: []string{
-			"294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa",
+			testTxIDConfirmed,
 			testTxID2,
 		}})
 		require.NoError(t, err)
 		assert.NotNil(t, txList)
 		assert.Len(t, txList, 2)
-		assert.Equal(t, "294cd1ebd5689fdee03509f92c32184c0f52f037d4046af250229b97e0c8f1aa", txList[0].TxID)
+		assert.Equal(t, testTxIDConfirmed, txList[0].TxID)
 		assert.NotEmpty(t, txList[0].Hex)
 	})
 

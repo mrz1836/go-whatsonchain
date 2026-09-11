@@ -224,12 +224,40 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 
 	// Check for non-OK status codes using the standard helper
 	if err = checkStatusCode(statusCode, resp); err != nil {
+		// Classify well-known node rejection reasons into typed sentinel errors
+		// so callers can react (errors.Is) without string matching. The reason is
+		// wrapped alongside ErrBroadcastFailed, so both matchers succeed.
+		if reason := classifyBroadcastRejection(resp); reason != nil {
+			return "", fmt.Errorf("%w: %w: %w", ErrBroadcastFailed, reason, err)
+		}
 		return "", fmt.Errorf("%w: %w", ErrBroadcastFailed, err)
 	}
 
 	// Remove quotes or spaces from successful response
 	txID = strings.TrimSpace(strings.ReplaceAll(string(resp), `"`, ""))
 	return txID, nil
+}
+
+// classifyBroadcastRejection inspects a broadcast rejection body and returns a
+// typed sentinel error describing the reason, or nil if the reason is unknown.
+//
+// The WhatsOnChain /tx/raw endpoint returns the node's rejection reason as plain
+// text on a non-2xx response (e.g. "257: txn-already-known",
+// "258: txn-mempool-conflict", "Missing inputs").
+func classifyBroadcastRejection(resp []byte) error {
+	body := strings.ToLower(string(resp))
+	switch {
+	case strings.Contains(body, "already in mempool"),
+		strings.Contains(body, "already in the mempool"),
+		strings.Contains(body, "txn-already-known"):
+		return ErrTxAlreadyInMempool
+	case strings.Contains(body, "txn-mempool-conflict"):
+		return ErrTxMempoolConflict
+	case strings.Contains(body, "missing inputs"):
+		return ErrTxMissingInputs
+	default:
+		return nil
+	}
 }
 
 // BulkBroadcastTx will broadcast many transactions at once

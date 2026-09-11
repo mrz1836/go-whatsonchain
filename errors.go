@@ -41,6 +41,23 @@ var ErrMaxScriptsExceeded = errors.New("max limit of scripts exceeded")
 // ErrBroadcastFailed is when transaction broadcasting fails
 var ErrBroadcastFailed = errors.New("error broadcasting transaction")
 
+// ErrTxAlreadyInMempool is when a broadcast is rejected because the transaction
+// is already known to the node (e.g. "txn-already-known" or "already in mempool").
+// The transaction is effectively accepted; callers usually treat this as success.
+// It is returned wrapped by ErrBroadcastFailed, so errors.Is matches both.
+var ErrTxAlreadyInMempool = errors.New("transaction already in mempool")
+
+// ErrTxMempoolConflict is when a broadcast is rejected because the transaction
+// conflicts with the mempool ("txn-mempool-conflict"), i.e. it double spends at
+// least one input. It is returned wrapped by ErrBroadcastFailed, so errors.Is
+// matches both.
+var ErrTxMempoolConflict = errors.New("transaction mempool conflict (double spend)")
+
+// ErrTxMissingInputs is when a broadcast is rejected because the transaction is
+// missing inputs ("missing inputs"), often the result of a double spend. It is
+// returned wrapped by ErrBroadcastFailed, so errors.Is matches both.
+var ErrTxMissingInputs = errors.New("transaction missing inputs")
+
 // ErrMaxTransactionsExceeded is when the max transactions limit is exceeded
 var ErrMaxTransactionsExceeded = errors.New("max transactions limit exceeded")
 
