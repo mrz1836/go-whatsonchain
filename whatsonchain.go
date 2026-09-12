@@ -177,6 +177,13 @@ func (c *Client) Network() NetworkType {
 	return c.options.network
 }
 
+// BaseURL will return the current base API endpoint
+func (c *Client) BaseURL() string {
+	c.optionsMu.RLock()
+	defer c.optionsMu.RUnlock()
+	return c.options.baseURL
+}
+
 // LastRequest will return a copy of the last request information.
 // The returned value is a snapshot; it is safe to read without synchronization.
 func (c *Client) LastRequest() *LastRequest {

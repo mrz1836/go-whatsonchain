@@ -3,6 +3,7 @@ package whatsonchain
 import (
 	"net"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -51,6 +52,7 @@ type clientOptions struct {
 	backOffInitialTimeout          time.Duration
 	backOffMaximumJitterInterval   time.Duration
 	backOffMaxTimeout              time.Duration
+	baseURL                        string
 	customHTTPClient               HTTPInterface
 	dialerKeepAlive                time.Duration
 	dialerTimeout                  time.Duration
@@ -75,6 +77,7 @@ func defaultClientOptions() *clientOptions {
 		backOffInitialTimeout:          2 * time.Millisecond,
 		backOffMaximumJitterInterval:   2 * time.Millisecond,
 		backOffMaxTimeout:              10 * time.Millisecond,
+		baseURL:                        apiEndpointBase,
 		dialerKeepAlive:                20 * time.Second,
 		dialerTimeout:                  5 * time.Second,
 		network:                        NetworkMain, // Default to main network
@@ -123,6 +126,29 @@ func WithAPIKey(apiKey string) ClientOption {
 func WithUserAgent(userAgent string) ClientOption {
 	return func(c *clientOptions) {
 		c.userAgent = userAgent
+	}
+}
+
+// WithBaseURL overrides the base API endpoint.
+//
+// The default is "https://api.whatsonchain.com/v1/". The value should include
+// the API version path and end with a trailing slash; a missing trailing slash
+// is added automatically. The SDK still appends "bsv/<network>" and the request
+// path, so a value of "https://example.com/v1/" produces requests against
+// "https://example.com/v1/bsv/main/...".
+//
+// An empty string leaves the default unchanged. This is useful for pointing the
+// client at a mirror, a reverse proxy, or a local test server (for example an
+// httptest.Server) without swapping out the whole HTTP client.
+func WithBaseURL(baseURL string) ClientOption {
+	return func(c *clientOptions) {
+		if baseURL == "" {
+			return
+		}
+		if !strings.HasSuffix(baseURL, "/") {
+			baseURL += "/"
+		}
+		c.baseURL = baseURL
 	}
 }
 
