@@ -175,6 +175,7 @@ func main() {
 ### Available Options
 
 - `WithNetwork(network)` - Set network (NetworkMain, NetworkTest, NetworkStn)
+- `WithBaseURL(url)` - Override the base API endpoint (mirror, proxy, or test server)
 - `WithAPIKey(key)` - Set API key for authenticated requests
 - `WithUserAgent(agent)` - Set custom user agent
 - `WithRateLimit(limit)` - Set rate limit per second

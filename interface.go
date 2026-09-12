@@ -167,6 +167,7 @@ type ClientInterface interface {
 	// Getters
 	APIKey() string
 	BackoffConfig() (initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration)
+	BaseURL() string
 	// Chain returns the configured chain.
 	//
 	// Deprecated: BSV is the only supported chain; this always returns ChainBSV.
