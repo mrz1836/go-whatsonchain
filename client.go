@@ -71,6 +71,7 @@ type clientOptions struct {
 	rateLimit                      int
 	requestRetryCount              int
 	requestTimeout                 time.Duration
+	roundTripper                   http.RoundTripper
 	transportExpectContinueTimeout time.Duration
 	transportIdleTimeout           time.Duration
 	transportMaxIdleConnections    int
@@ -174,10 +175,34 @@ func WithRateLimit(rateLimit int) ClientOption {
 	}
 }
 
-// WithHTTPClient sets a custom HTTP client
+// WithHTTPClient sets a custom HTTP client, which is used as is.
+//
+// The SDK does not wrap the client, so its own retry logic does not run:
+// WithRequestRetryCount, WithBackoff, Retry-After handling, WithRequestTimeout,
+// WithDialer, WithTransport and WithRoundTripper have no effect. Any retries
+// and timeouts are up to the client you pass. This option takes precedence over
+// WithRoundTripper when both are set.
+//
+// To customize the transport (a proxy, TLS settings, instrumentation or a test
+// double) and keep the SDK's retries, use WithRoundTripper instead.
 func WithHTTPClient(httpClient HTTPInterface) ClientOption {
 	return func(c *clientOptions) {
 		c.customHTTPClient = httpClient
+	}
+}
+
+// WithRoundTripper sets the http.RoundTripper that sends requests, in place of
+// the SDK's default http.Transport.
+//
+// Unlike WithHTTPClient, the SDK still wraps it with its retries, backoff,
+// Retry-After handling and request timeout. Use it to add a proxy, custom TLS
+// settings, tracing or metrics, or a test double. WithDialer and WithTransport
+// configure only the default transport, so they have no effect when a round
+// tripper is set. A nil round tripper keeps the default transport.
+// WithHTTPClient takes precedence over this option.
+func WithRoundTripper(rt http.RoundTripper) ClientOption {
+	return func(c *clientOptions) {
+		c.roundTripper = rt
 	}
 }
 
@@ -214,7 +239,8 @@ func WithBackoff(initialTimeout, maxTimeout time.Duration, exponentFactor float6
 	}
 }
 
-// WithDialer sets the dialer configuration
+// WithDialer sets the dialer configuration of the default transport.
+// It has no effect with WithRoundTripper or WithHTTPClient.
 func WithDialer(keepAlive, timeout time.Duration) ClientOption {
 	return func(c *clientOptions) {
 		c.dialerKeepAlive = keepAlive
@@ -222,7 +248,8 @@ func WithDialer(keepAlive, timeout time.Duration) ClientOption {
 	}
 }
 
-// WithTransport sets the transport configuration
+// WithTransport sets the configuration of the default transport.
+// It has no effect with WithRoundTripper or WithHTTPClient.
 func WithTransport(idleTimeout, tlsTimeout, expectContinueTimeout time.Duration, maxIdleConnections int) ClientOption {
 	return func(c *clientOptions) {
 		c.transportIdleTimeout = idleTimeout
@@ -257,23 +284,13 @@ func newClientFromOptions(opts *clientOptions) *Client {
 		return c
 	}
 
-	// dial is the net dialer for clientDefaultTransport
-	dial := &net.Dialer{KeepAlive: opts.dialerKeepAlive, Timeout: opts.dialerTimeout}
-
-	// clientDefaultTransport is the default transport struct for the HTTP client
-	clientDefaultTransport := &http.Transport{
-		DialContext:           dial.DialContext,
-		ExpectContinueTimeout: opts.transportExpectContinueTimeout,
-		IdleConnTimeout:       opts.transportIdleTimeout,
-		MaxIdleConns:          opts.transportMaxIdleConnections,
-		Proxy:                 http.ProxyFromEnvironment,
-		TLSHandshakeTimeout:   opts.transportTLSHandshakeTimeout,
-	}
-
-	// Create the base HTTP client with custom transport
+	// Create the base HTTP client with the custom or default transport
 	baseHTTPClient := &http.Client{
-		Transport: clientDefaultTransport,
+		Transport: opts.roundTripper,
 		Timeout:   opts.requestTimeout,
+	}
+	if baseHTTPClient.Transport == nil {
+		baseHTTPClient.Transport = newDefaultTransport(opts)
 	}
 
 	// Determine the strategy for the http client (no retry enabled)
@@ -292,4 +309,19 @@ func newClientFromOptions(opts *clientOptions) *Client {
 	}
 
 	return c
+}
+
+// newDefaultTransport builds the http.Transport used when no round tripper is
+// configured, from the dialer and transport options.
+func newDefaultTransport(opts *clientOptions) *http.Transport {
+	dial := &net.Dialer{KeepAlive: opts.dialerKeepAlive, Timeout: opts.dialerTimeout}
+
+	return &http.Transport{
+		DialContext:           dial.DialContext,
+		ExpectContinueTimeout: opts.transportExpectContinueTimeout,
+		IdleConnTimeout:       opts.transportIdleTimeout,
+		MaxIdleConns:          opts.transportMaxIdleConnections,
+		Proxy:                 http.ProxyFromEnvironment,
+		TLSHandshakeTimeout:   opts.transportTLSHandshakeTimeout,
+	}
 }
