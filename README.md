@@ -176,15 +176,36 @@ func main() {
 
 - `WithNetwork(network)` - Set network (NetworkMain, NetworkTest, NetworkStn)
 - `WithBaseURL(url)` - Override the base API endpoint (mirror, proxy, or test server)
-- `WithAPIKey(key)` - Set API key for authenticated requests
-- `WithUserAgent(agent)` - Set custom user agent
+- `WithAPIKey(key)` - Set API key for authenticated requests (defaults to the `WHATS_ON_CHAIN_API_KEY` environment variable)
+- `WithoutEnvAPIKey()` - Don't read the API key from `WHATS_ON_CHAIN_API_KEY`
+- `WithUserAgent(agent)` - Set custom user agent (default: `go-whatsonchain: <module version>`)
 - `WithRateLimit(limit)` - Set rate limit per second
-- `WithHTTPClient(client)` - Use custom HTTP client
+- `WithRoundTripper(rt)` - Send requests through your own `http.RoundTripper` (proxy, TLS, tracing, test double); retries still apply
+- `WithHTTPClient(client)` - Use custom HTTP client as is; **the SDK's retries, backoff and timeout don't apply** (prefer `WithRoundTripper`)
 - `WithRequestTimeout(timeout)` - Set request timeout
-- `WithRequestRetryCount(count)` - Set retry count for failed requests
-- `WithBackoff(initial, max, factor, jitter)` - Configure exponential backoff
-- `WithDialer(keepAlive, timeout)` - Configure dialer settings
-- `WithTransport(idle, tls, expect, maxIdle)` - Configure transport settings
+- `WithRequestRetryCount(count)` - Set retry count for failed requests (default: 2)
+- `WithBackoff(initial, max, factor, jitter)` - Configure exponential backoff (default: 250ms, 2s, 2.0, 100ms)
+- `WithDialer(keepAlive, timeout)` - Configure dialer settings of the default transport
+- `WithTransport(idle, tls, expect, maxIdle)` - Configure the default transport
+
+### Retries & Errors
+
+- **Retries:** network errors and HTTP 429, 500, 502, 503 and 504 are retried (2 retries by default) with exponential backoff: about 250ms, then 500ms, capped at 2s, plus up to 100ms of jitter.
+- **`Retry-After`:** on a 429 or 503 the client waits at least as long as the server's `Retry-After` header asks (seconds or an HTTP date). If the server asks for longer than the maximum backoff, or the wait would outlast your context deadline, the client stops retrying and returns that response straight away, so you see the real 429/503 instead of waiting.
+- **Not found:** a 404 returns the endpoint's not-found error (`ErrTransactionNotFound`, `ErrAddressNotFound`, `ErrExchangeRateNotFound`, ...). Check it with `errors.Is`. `GetExchangeRate` also returns `ErrExchangeRateNotFound` when the API answers without a positive rate.
+- **Other failures:** any other non-200 status, and a 404 from an endpoint that has no not-found error (health, bulk and broadcast endpoints), returns `ErrRequestFailed` with the status code and up to 512 bytes of the response body. Broadcasts wrap it in `ErrBroadcastFailed`.
+
+```go
+_, err := client.GetTxByHash(ctx, txID)
+switch {
+case errors.Is(err, whatsonchain.ErrTransactionNotFound):
+	// unknown transaction
+case errors.Is(err, whatsonchain.ErrRequestFailed):
+	// rate limited, server error, bad API key, ...
+case err != nil:
+	// network error, context canceled, ...
+}
+```
 
 ### Usage Example
 

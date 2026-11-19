@@ -126,7 +126,7 @@ func (c *Client) AddressUnspentTransactionDetails(ctx context.Context, address s
 func (c *Client) DownloadStatement(ctx context.Context, address string) (string, error) {
 	// This endpoint does not follow the convention of the WOC API v1
 	url := fmt.Sprintf("https://%s.whatsonchain.com/statement/%s", c.Network(), netURL.PathEscape(address))
-	return requestString(ctx, c, url)
+	return requestString(ctx, c, url, ErrAddressNotFound)
 }
 
 // bulkRequest is the common parts of the bulk requests

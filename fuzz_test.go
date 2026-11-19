@@ -1,10 +1,14 @@
 package whatsonchain
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"testing"
+	"time"
+	"unicode/utf8"
 
 	"github.com/stretchr/testify/require"
 )
@@ -220,6 +224,81 @@ func FuzzBroadcastTxResponse(f *testing.F) {
 			_ = json.Unmarshal([]byte(response), &decoded)
 			// Error is acceptable, panic is not
 		}
+	})
+}
+
+// FuzzErrorBodySnippet tests the truncation of response bodies quoted in errors.
+// The snippet must stay within maxErrorBodyLength (plus the truncation note), be a
+// prefix of the trimmed body, and never split a rune of a valid UTF-8 body.
+func FuzzErrorBodySnippet(f *testing.F) {
+	f.Add([]byte(""))
+	f.Add([]byte("404 page not found\n"))
+	f.Add([]byte(strings.Repeat("a", maxErrorBodyLength-1) + "é"))
+	f.Add([]byte(strings.Repeat("😀", 200)))
+	f.Add(bytes.Repeat([]byte{0x80}, 2*maxErrorBodyLength))
+	f.Add([]byte("\n\n" + strings.Repeat("x", maxErrorBodyLength) + "\n\n"))
+
+	f.Fuzz(func(t *testing.T, body []byte) {
+		got := errorBodySnippet(body)
+		trimmed := bytes.TrimSpace(body)
+
+		if len(trimmed) <= maxErrorBodyLength {
+			require.Equal(t, string(trimmed), got)
+			return
+		}
+
+		suffix := fmt.Sprintf("... (truncated, %d bytes total)", len(body))
+		require.True(t, strings.HasSuffix(got, suffix), "missing truncation note in %q", got)
+		kept := strings.TrimSuffix(got, suffix)
+		require.LessOrEqual(t, len(kept), maxErrorBodyLength)
+		require.GreaterOrEqual(t, len(kept), maxErrorBodyLength-(utf8.UTFMax-1))
+		require.True(t, bytes.HasPrefix(trimmed, []byte(kept)), "snippet is not a prefix of the body")
+		if utf8.Valid(trimmed) {
+			require.True(t, utf8.ValidString(kept), "valid UTF-8 was split mid-rune")
+		}
+	})
+}
+
+// FuzzRetryAfter tests Retry-After parsing with arbitrary header values.
+// It must never panic or return a negative wait, must report no wait when it
+// finds no usable value, and must ignore statuses other than 429 and 503.
+func FuzzRetryAfter(f *testing.F) {
+	f.Add("5", true)
+	f.Add("0", false)
+	f.Add("-1", true)
+	f.Add("+5", true)
+	f.Add("1.5", true)
+	f.Add("007", false)
+	f.Add("9223372036", true)
+	f.Add("99999999999999999999999", true)
+	f.Add("Thu, 19 Nov 2026 12:00:30 GMT", true)
+	f.Add("Thursday, 19-Nov-26 12:00:30 GMT", false)
+	f.Add("Thu Nov 19 12:00:30 2026", true)
+	f.Add("Mon, 01 Jan 0001 00:00:00 GMT", true)
+	f.Add("Fri, 31 Dec 9999 23:59:59 GMT", false)
+	f.Add("", true)
+	f.Add("   ", false)
+
+	now := time.Date(2026, time.November, 19, 12, 0, 0, 0, time.UTC)
+
+	f.Fuzz(func(t *testing.T, value string, tooManyRequests bool) {
+		status := http.StatusServiceUnavailable
+		if tooManyRequests {
+			status = http.StatusTooManyRequests
+		}
+		resp := &http.Response{StatusCode: status, Header: http.Header{}}
+		resp.Header.Set("Retry-After", value)
+
+		wait, ok := retryAfter(resp, now)
+		require.GreaterOrEqual(t, wait, time.Duration(0), "negative wait for %q", value)
+		if !ok {
+			require.Zero(t, wait, "no usable value must mean no wait")
+		}
+
+		resp.StatusCode = http.StatusInternalServerError
+		wait, ok = retryAfter(resp, now)
+		require.False(t, ok)
+		require.Zero(t, wait)
 	})
 }
 

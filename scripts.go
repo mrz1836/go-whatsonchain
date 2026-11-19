@@ -31,7 +31,7 @@ func (c *Client) requestScriptList(ctx context.Context, url string) (ScriptList,
 	if err != nil {
 		return nil, err
 	}
-	if err = checkStatusCode(statusCode, resp); err != nil {
+	if err = checkStatusCode(statusCode, resp, ErrScriptNotFound); err != nil {
 		return nil, err
 	}
 	if len(resp) == 0 {
@@ -169,7 +169,7 @@ func (c *Client) BulkScriptConfirmedUTXOs(ctx context.Context, list *ScriptsList
 // For more information: https://docs.whatsonchain.com/api/script#get-script-usage
 func (c *Client) GetScriptUsed(ctx context.Context, scriptHash string) (bool, error) {
 	url := c.buildURL("/script/%s/used", scriptHash)
-	resp, err := requestString(ctx, c, url)
+	resp, err := requestString(ctx, c, url, ErrScriptNotFound)
 	if err != nil {
 		return false, err
 	}

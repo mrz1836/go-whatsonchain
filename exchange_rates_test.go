@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // mockHTTPExchangeValid for mocking requests
@@ -167,4 +170,81 @@ func TestClient_GetHistoricalExchangeRate(t *testing.T) {
 	if err == nil {
 		t.Errorf("%s Failed: error should have occurred", t.Name())
 	}
+}
+
+// TestClient_GetExchangeRate_NoRate checks that GetExchangeRate never reports a
+// missing or non-positive rate as a price (issue #223). Before the fix, a 404 with
+// a JSON body, or a 200 with {} or null, returned &ExchangeRate{Rate: 0} and no error.
+func TestClient_GetExchangeRate_NoRate(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		status   int
+		body     string
+		wantRate float64 // 0: ErrExchangeRateNotFound is expected
+		wantBare bool    // the error must be ErrExchangeRateNotFound itself
+	}{
+		{"positive rate", http.StatusOK, `{"rate":38.542,"time":1668439893,"currency":"USD"}`, 38.542, false},
+		{"tiny positive rate", http.StatusOK, `{"rate":0.0001,"time":1668439893,"currency":"USD"}`, 0.0001, false},
+		{"zero rate", http.StatusOK, `{"rate":0,"time":1668439893,"currency":"USD"}`, 0, true},
+		{"negative rate", http.StatusOK, `{"rate":-1.5,"time":1668439893,"currency":"USD"}`, 0, true},
+		{"empty object", http.StatusOK, `{}`, 0, true},
+		{"null", http.StatusOK, `null`, 0, true},
+		{"rate missing", http.StatusOK, `{"time":1668439893,"currency":"USD"}`, 0, true},
+		{"empty 200 body", http.StatusOK, ``, 0, true},
+		{"empty 404 body", http.StatusNotFound, ``, 0, true},
+		{"404 with JSON body", http.StatusNotFound, `{"error":"not found"}`, 0, false},
+		{"404 with zero rate in body", http.StatusNotFound, `{"rate":0}`, 0, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			client := newMockClient(&mockHTTPStatusCode{statusCode: tt.status, body: tt.body})
+			rate, err := client.GetExchangeRate(context.Background())
+
+			if tt.wantRate > 0 {
+				require.NoError(t, err)
+				require.NotNil(t, rate)
+				assert.InDelta(t, tt.wantRate, rate.Rate, 1e-12)
+				assert.Equal(t, "USD", rate.Currency)
+				return
+			}
+
+			require.ErrorIs(t, err, ErrExchangeRateNotFound)
+			require.NotErrorIs(t, err, ErrRequestFailed)
+			assert.Nil(t, rate)
+			if tt.wantBare {
+				assert.Same(t, ErrExchangeRateNotFound, err)
+			}
+		})
+	}
+}
+
+// TestClient_GetExchangeRate_Failures checks that real failures are not mistaken
+// for a missing rate.
+func TestClient_GetExchangeRate_Failures(t *testing.T) {
+	t.Parallel()
+
+	t.Run("server error", func(t *testing.T) {
+		t.Parallel()
+
+		client := newMockClient(&mockHTTPStatusCode{statusCode: http.StatusInternalServerError, body: "boom"})
+		rate, err := client.GetExchangeRate(context.Background())
+		require.ErrorIs(t, err, ErrRequestFailed)
+		require.NotErrorIs(t, err, ErrExchangeRateNotFound)
+		assert.Nil(t, rate)
+	})
+
+	t.Run("malformed JSON", func(t *testing.T) {
+		t.Parallel()
+
+		client := newMockClient(&mockHTTPStatusCode{statusCode: http.StatusOK, body: "not json"})
+		rate, err := client.GetExchangeRate(context.Background())
+		require.Error(t, err)
+		require.NotErrorIs(t, err, ErrExchangeRateNotFound)
+		assert.Nil(t, rate)
+	})
 }

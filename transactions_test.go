@@ -622,9 +622,9 @@ func TestClient_GetRawTransactionData(t *testing.T) {
 		statusCode    int
 	}{
 		{testTxID1, "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff1c03d7c6082f7376706f6f6c2e636f6d2f3edff034600055b8467f0040ffffffff01247e814a000000001976a914492558fb8ca71a3591316d095afc0f20ef7d42f788ac00000000", false, http.StatusOK},
-		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz", "", false, http.StatusNotFound},
+		{"c1d32f28baa27a376ba977f6a8de6ce0a87041157cef0274b20bfda2b0d8dfzz", "", true, http.StatusNotFound},
 		{testMockError, "", true, http.StatusBadRequest},
-		{testMockNotFound, "", false, http.StatusNotFound},
+		{testMockNotFound, "", true, http.StatusNotFound},
 	}
 
 	// Test all
@@ -696,7 +696,7 @@ func TestClient_BulkTransactionDetails(t *testing.T) {
 		{&TxHashes{TxIDs: []string{testTxIDInvalid, testTxID2Invalid}}, "", "", false, http.StatusOK},
 		{&TxHashes{TxIDs: []string{testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid, testTxIDInvalid, testTxID2Invalid}}, "", "", true, http.StatusOK},
 		{&TxHashes{TxIDs: []string{testMockError}}, "", "", true, http.StatusBadRequest},
-		{&TxHashes{TxIDs: []string{testMockNotFound}}, "", "", false, http.StatusNotFound},
+		{&TxHashes{TxIDs: []string{testMockNotFound}}, "", "", true, http.StatusNotFound},
 	}
 
 	// Test all

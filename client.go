@@ -10,12 +10,6 @@ import (
 
 const (
 
-	// version is the current version
-	version = "v1.0.0"
-
-	// defaultUserAgent is the default user agent for all requests
-	defaultUserAgent string = "go-whatsonchain: " + version
-
 	// defaultRateLimit is the default rate limit for API requests
 	defaultRateLimit int = 3
 
@@ -24,6 +18,17 @@ const (
 
 	// apiHeaderKey is the header key for the API key
 	apiHeaderKey string = "woc-api-key"
+)
+
+// Default retry backoff. The first retry waits about 250 ms and later retries
+// double the wait up to 2 s, so the default two retries span roughly 750 ms:
+// long enough for a brief rate limit or a node restart to clear, short enough
+// not to stall a caller. Each wait gets up to 100 ms of random jitter.
+const (
+	defaultBackOffInitialTimeout    = 250 * time.Millisecond
+	defaultBackOffMaxTimeout        = 2 * time.Second
+	defaultBackOffExponentFactor    = 2.0
+	defaultBackOffMaxJitterInterval = 100 * time.Millisecond
 )
 
 // HTTPInterface is used for the http client
@@ -60,6 +65,8 @@ type clientOptions struct {
 	rateLimit                      int
 	requestRetryCount              int
 	requestTimeout                 time.Duration
+	roundTripper                   http.RoundTripper
+	skipEnvAPIKey                  bool
 	transportExpectContinueTimeout time.Duration
 	transportIdleTimeout           time.Duration
 	transportMaxIdleConnections    int
@@ -73,10 +80,10 @@ type ClientOption func(*clientOptions)
 // defaultClientOptions returns the default client options
 func defaultClientOptions() *clientOptions {
 	return &clientOptions{
-		backOffExponentFactor:          2.0,
-		backOffInitialTimeout:          2 * time.Millisecond,
-		backOffMaximumJitterInterval:   2 * time.Millisecond,
-		backOffMaxTimeout:              10 * time.Millisecond,
+		backOffExponentFactor:          defaultBackOffExponentFactor,
+		backOffInitialTimeout:          defaultBackOffInitialTimeout,
+		backOffMaximumJitterInterval:   defaultBackOffMaxJitterInterval,
+		backOffMaxTimeout:              defaultBackOffMaxTimeout,
 		baseURL:                        apiEndpointBase,
 		dialerKeepAlive:                20 * time.Second,
 		dialerTimeout:                  5 * time.Second,
@@ -88,7 +95,7 @@ func defaultClientOptions() *clientOptions {
 		transportIdleTimeout:           20 * time.Second,
 		transportMaxIdleConnections:    10,
 		transportTLSHandshakeTimeout:   5 * time.Second,
-		userAgent:                      defaultUserAgent,
+		userAgent:                      defaultUserAgent(),
 	}
 }
 
@@ -115,10 +122,26 @@ func WithNetwork(network NetworkType) ClientOption {
 	}
 }
 
-// WithAPIKey sets the API key for authenticated requests
+// WithAPIKey sets the API key for authenticated requests.
+//
+// When no key is set (or the key is empty), NewClient falls back to the
+// WHATS_ON_CHAIN_API_KEY environment variable; use WithoutEnvAPIKey to turn
+// that off.
 func WithAPIKey(apiKey string) ClientOption {
 	return func(c *clientOptions) {
 		c.apiKey = apiKey
+	}
+}
+
+// WithoutEnvAPIKey stops NewClient from reading the API key from the
+// WHATS_ON_CHAIN_API_KEY environment variable (see EnvAPIKey).
+//
+// Use it when the client must make unauthenticated requests even if the
+// variable is set, or when the key comes only from your own configuration.
+// A key passed with WithAPIKey is still used.
+func WithoutEnvAPIKey() ClientOption {
+	return func(c *clientOptions) {
+		c.skipEnvAPIKey = true
 	}
 }
 
@@ -163,10 +186,34 @@ func WithRateLimit(rateLimit int) ClientOption {
 	}
 }
 
-// WithHTTPClient sets a custom HTTP client
+// WithHTTPClient sets a custom HTTP client, which is used as is.
+//
+// The SDK does not wrap the client, so its own retry logic does not run:
+// WithRequestRetryCount, WithBackoff, Retry-After handling, WithRequestTimeout,
+// WithDialer, WithTransport and WithRoundTripper have no effect. Any retries
+// and timeouts are up to the client you pass. This option takes precedence over
+// WithRoundTripper when both are set.
+//
+// To customize the transport (a proxy, TLS settings, instrumentation or a test
+// double) and keep the SDK's retries, use WithRoundTripper instead.
 func WithHTTPClient(httpClient HTTPInterface) ClientOption {
 	return func(c *clientOptions) {
 		c.customHTTPClient = httpClient
+	}
+}
+
+// WithRoundTripper sets the http.RoundTripper that sends requests, in place of
+// the SDK's default http.Transport.
+//
+// Unlike WithHTTPClient, the SDK still wraps it with its retries, backoff,
+// Retry-After handling and request timeout. Use it to add a proxy, custom TLS
+// settings, tracing or metrics, or a test double. WithDialer and WithTransport
+// configure only the default transport, so they have no effect when a round
+// tripper is set. A nil round tripper keeps the default transport.
+// WithHTTPClient takes precedence over this option.
+func WithRoundTripper(rt http.RoundTripper) ClientOption {
+	return func(c *clientOptions) {
+		c.roundTripper = rt
 	}
 }
 
@@ -184,7 +231,16 @@ func WithRequestRetryCount(count int) ClientOption {
 	}
 }
 
-// WithBackoff sets the exponential backoff parameters
+// WithBackoff sets the exponential backoff parameters used between retries.
+//
+// The wait before retry n (counting from 0) is initialTimeout * exponentFactor^n,
+// capped at maxTimeout, plus a random jitter of up to maxJitter. The defaults
+// are 250 ms, 2 s, 2.0 and 100 ms.
+//
+// On a 429 or 503 response with a Retry-After header, the client waits for the
+// longer of the backoff and the Retry-After value. If Retry-After asks for more
+// than maxTimeout, or the wait would outlast the request context's deadline,
+// the client returns that response at once instead of retrying.
 func WithBackoff(initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration) ClientOption {
 	return func(c *clientOptions) {
 		c.backOffInitialTimeout = initialTimeout
@@ -194,7 +250,8 @@ func WithBackoff(initialTimeout, maxTimeout time.Duration, exponentFactor float6
 	}
 }
 
-// WithDialer sets the dialer configuration
+// WithDialer sets the dialer configuration of the default transport.
+// It has no effect with WithRoundTripper or WithHTTPClient.
 func WithDialer(keepAlive, timeout time.Duration) ClientOption {
 	return func(c *clientOptions) {
 		c.dialerKeepAlive = keepAlive
@@ -202,7 +259,8 @@ func WithDialer(keepAlive, timeout time.Duration) ClientOption {
 	}
 }
 
-// WithTransport sets the transport configuration
+// WithTransport sets the configuration of the default transport.
+// It has no effect with WithRoundTripper or WithHTTPClient.
 func WithTransport(idleTimeout, tlsTimeout, expectContinueTimeout time.Duration, maxIdleConnections int) ClientOption {
 	return func(c *clientOptions) {
 		c.transportIdleTimeout = idleTimeout
@@ -237,23 +295,13 @@ func newClientFromOptions(opts *clientOptions) *Client {
 		return c
 	}
 
-	// dial is the net dialer for clientDefaultTransport
-	dial := &net.Dialer{KeepAlive: opts.dialerKeepAlive, Timeout: opts.dialerTimeout}
-
-	// clientDefaultTransport is the default transport struct for the HTTP client
-	clientDefaultTransport := &http.Transport{
-		DialContext:           dial.DialContext,
-		ExpectContinueTimeout: opts.transportExpectContinueTimeout,
-		IdleConnTimeout:       opts.transportIdleTimeout,
-		MaxIdleConns:          opts.transportMaxIdleConnections,
-		Proxy:                 http.ProxyFromEnvironment,
-		TLSHandshakeTimeout:   opts.transportTLSHandshakeTimeout,
-	}
-
-	// Create the base HTTP client with custom transport
+	// Create the base HTTP client with the custom or default transport
 	baseHTTPClient := &http.Client{
-		Transport: clientDefaultTransport,
+		Transport: opts.roundTripper,
 		Timeout:   opts.requestTimeout,
+	}
+	if baseHTTPClient.Transport == nil {
+		baseHTTPClient.Transport = newDefaultTransport(opts)
 	}
 
 	// Determine the strategy for the http client (no retry enabled)
@@ -272,4 +320,19 @@ func newClientFromOptions(opts *clientOptions) *Client {
 	}
 
 	return c
+}
+
+// newDefaultTransport builds the http.Transport used when no round tripper is
+// configured, from the dialer and transport options.
+func newDefaultTransport(opts *clientOptions) *http.Transport {
+	dial := &net.Dialer{KeepAlive: opts.dialerKeepAlive, Timeout: opts.dialerTimeout}
+
+	return &http.Transport{
+		DialContext:           dial.DialContext,
+		ExpectContinueTimeout: opts.transportExpectContinueTimeout,
+		IdleConnTimeout:       opts.transportIdleTimeout,
+		MaxIdleConns:          opts.transportMaxIdleConnections,
+		Proxy:                 http.ProxyFromEnvironment,
+		TLSHandshakeTimeout:   opts.transportTLSHandshakeTimeout,
+	}
 }

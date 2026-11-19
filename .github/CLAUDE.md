@@ -12,8 +12,9 @@ Quick reference for Claude Code working on **go-whatsonchain** -- the unofficial
 | `definitions.go` | Response types (`TxInfo`, `BlockInfo`, `AddressBalance`, etc.) |
 | `errors.go` | Sentinel errors (`ErrTransactionNotFound`, `ErrInvalidNetwork`, etc.) |
 | `url_builder.go` | `buildURL(path string, args ...any)` -- network-aware URL construction (BSV-only) |
-| `request_helpers.go` | `requestAndUnmarshal[T]`, `requestAndUnmarshalSlice[T]`, `requestString` |
-| `http_client.go` | `RetryableHTTPClient`, `ExponentialBackoff`, `SimpleHTTPClient` |
+| `request_helpers.go` | `requestAndUnmarshal[T]`, `requestAndUnmarshalSlice[T]`, `requestString`, `checkStatusCode`, `errorBodySnippet` |
+| `http_client.go` | `RetryableHTTPClient` (retries, backoff, `Retry-After`), `ExponentialBackoff`, `SimpleHTTPClient` |
+| `version.go` | `defaultUserAgent()` -- module version read from build info (`moduleVersion`) |
 | `chunk.go` | `chunkSlice[T]` -- generic slice chunker for bulk processors |
 | `addresses.go` | `AddressService` impl + `DownloadStatement` |
 | `blocks.go` | `BlockService` impl |
@@ -41,7 +42,9 @@ client, err := whatsonchain.NewClient(
 )
 ```
 
-`ClientOption` is `func(*clientOptions)`. All `With*` functions modify the internal `clientOptions` struct. Auto-loads `WHATS_ON_CHAIN_API_KEY` env var if no explicit key.
+`ClientOption` is `func(*clientOptions)`. All `With*` functions modify the internal `clientOptions` struct. Auto-loads `WHATS_ON_CHAIN_API_KEY` env var if no explicit key, unless `WithoutEnvAPIKey()` is passed.
+
+`WithHTTPClient` replaces the whole HTTP stack, so retries, backoff and timeouts don't apply; `WithRoundTripper` swaps only the transport and keeps them. Default backoff constants (`defaultBackOff*`) live in `client.go`.
 
 ### 2. Generic Request Helpers (`request_helpers.go`)
 
@@ -53,10 +56,10 @@ requestAndUnmarshal[T any](ctx, c, url, method, payload, emptyErr) (*T, error)
 requestAndUnmarshalSlice[T any](ctx, c, url, method, payload, emptyErr) ([]T, error)
 
 // Raw string (GET only)
-requestString(ctx, c, url) (string, error)
+requestString(ctx, c, url, notFoundErr) (string, error)
 ```
 
-The `emptyErr` parameter is returned when the response body is empty (e.g., `ErrTransactionNotFound`). Non-200/404 status codes are caught by `checkStatusCode`.
+`emptyErr` / `notFoundErr` is the endpoint's not-found sentinel (e.g., `ErrTransactionNotFound`). `checkStatusCode` maps a 404 to it: the bare sentinel for an empty body (how the API reports an unknown resource), or the sentinel wrapped with `HTTP 404: <body>` otherwise (e.g. `404 page not found` for an unknown route). `emptyErr` is also returned for an empty 200 body. Pass `nil` where a 404 is never "not found" (bulk POST, broadcast, health): the 404 then becomes `ErrRequestFailed`. Every other non-200 status returns `ErrRequestFailed: HTTP <code>: <body>`, with the body cut to 512 bytes by `errorBodySnippet`.
 
 ### 3. URL Building (`url_builder.go`)
 
@@ -171,7 +174,7 @@ Tests use a mock HTTP client. Table-driven with `testCase` structs. `interface_t
 
 1. **BSV-only**: BSV is the only supported chain. The chain-selection API (`WithChain`, `SetChain`, `Chain()`) is deprecated no-op shims; do not add new chain guards
 2. **Max limits**: Bulk endpoints enforce limits; return wrapped errors (e.g., `ErrMaxTransactionsExceeded`)
-3. **`emptyErr` param**: Pass the right sentinel to request helpers for proper 404/empty handling
+3. **`emptyErr` / `notFoundErr` param**: Pass the endpoint's not-found sentinel to request helpers for 404/empty handling; pass `nil` for bulk POST endpoints (the API answers unknown items there with a 200 and per-item errors, so a 404 is a real failure)
 4. **Rate limiting**: Bulk processors use `time.Ticker` -- never manual counter logic
 5. **URL building**: Always use `c.buildURL()` -- it handles the `bsv/{network}` prefix + path escaping
 6. **Concurrency**: `options` and `lastRequest` are mutex-protected; getters/setters are goroutine-safe

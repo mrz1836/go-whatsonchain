@@ -20,7 +20,7 @@ func (c *Client) GetChainInfo(ctx context.Context) (*ChainInfo, error) {
 // For more information: https://docs.whatsonchain.com/#get-circulating-supply
 func (c *Client) GetCirculatingSupply(ctx context.Context) (float64, error) {
 	url := c.buildURL("/circulatingsupply")
-	resp, err := requestString(ctx, c, url)
+	resp, err := requestString(ctx, c, url, ErrChainInfoNotFound)
 	if err != nil {
 		return 0, err
 	}

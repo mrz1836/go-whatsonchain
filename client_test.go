@@ -2,7 +2,13 @@ package whatsonchain
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"net/http"
+	"net/http/httptest"
+	"runtime/debug"
+	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -20,7 +26,7 @@ func TestNewClient(t *testing.T) {
 
 	// Check defaults
 	assert.Equal(t, NetworkMain, client.Network())
-	assert.Equal(t, defaultUserAgent, client.UserAgent())
+	assert.Equal(t, defaultUserAgent(), client.UserAgent())
 	assert.Equal(t, defaultRateLimit, client.RateLimit())
 	assert.Empty(t, client.APIKey())
 }
@@ -274,6 +280,289 @@ func TestNewClient_EnvAPIKey_NotSet(t *testing.T) {
 	client, err := NewClient(context.Background())
 	require.NoError(t, err)
 	assert.Empty(t, client.APIKey())
+}
+
+// TestDefaultBackoff checks the default retry backoff (issue #223: the old 2ms to
+// 10ms default sent both retries of a 429 within about 10ms) and that the default
+// HTTP client is built with it.
+func TestDefaultBackoff(t *testing.T) {
+	t.Parallel()
+
+	client, err := NewClient(context.Background())
+	require.NoError(t, err)
+
+	initial, maxBackoff, factor, jitter := client.BackoffConfig()
+	assert.Equal(t, 250*time.Millisecond, initial)
+	assert.Equal(t, 2*time.Second, maxBackoff)
+	assert.InDelta(t, 2.0, factor, 1e-9)
+	assert.Equal(t, 100*time.Millisecond, jitter)
+	assert.Equal(t, 2, client.RequestRetryCount())
+
+	retryClient, ok := client.HTTPClient().(*RetryableHTTPClient)
+	require.True(t, ok, "the default client must retry")
+	assert.Equal(t, initial, retryClient.backoff.initialTimeout)
+	assert.Equal(t, maxBackoff, retryClient.backoff.maxTimeout)
+	assert.InDelta(t, factor, retryClient.backoff.exponentFactor, 1e-9)
+	assert.Equal(t, jitter, retryClient.backoff.maxJitterInterval)
+}
+
+// countingRoundTripper answers each request with the next status from statuses
+// (repeating the last one), using the status text as the body. It counts calls
+// and records the last User-Agent it saw.
+type countingRoundTripper struct {
+	statuses  []int
+	calls     atomic.Int32
+	userAgent atomic.Value
+}
+
+// RoundTrip implements http.RoundTripper
+func (rt *countingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	n := int(rt.calls.Add(1))
+	rt.userAgent.Store(req.Header.Get("User-Agent"))
+	status := rt.statuses[min(n, len(rt.statuses))-1]
+
+	return &http.Response{
+		StatusCode: status,
+		Header:     http.Header{},
+		Body:       io.NopCloser(strings.NewReader(http.StatusText(status))),
+		Request:    req,
+	}, nil
+}
+
+// TestWithRoundTripper checks that a custom round tripper sends the requests
+// while the SDK's retries, backoff and timeout still apply (issue #223).
+func TestWithRoundTripper(t *testing.T) {
+	t.Parallel()
+
+	fastBackoff := WithBackoff(time.Millisecond, 10*time.Millisecond, 2.0, 0)
+
+	t.Run("retries run through the round tripper", func(t *testing.T) {
+		t.Parallel()
+
+		rt := &countingRoundTripper{statuses: []int{http.StatusServiceUnavailable, http.StatusOK}}
+		client, err := NewClient(context.Background(), WithRoundTripper(rt), fastBackoff, WithUserAgent("rt-test/1.0"))
+		require.NoError(t, err)
+
+		health, err := client.GetHealth(context.Background())
+		require.NoError(t, err)
+		assert.Equal(t, "OK", health)
+		assert.Equal(t, int32(2), rt.calls.Load(), "the 503 must be retried")
+		assert.Equal(t, "rt-test/1.0", rt.userAgent.Load(), "requests must carry the SDK headers")
+	})
+
+	t.Run("retry count is honored", func(t *testing.T) {
+		t.Parallel()
+
+		rt := &countingRoundTripper{statuses: []int{http.StatusBadGateway}}
+		client, err := NewClient(context.Background(), WithRoundTripper(rt), fastBackoff, WithRequestRetryCount(3))
+		require.NoError(t, err)
+
+		_, err = client.GetHealth(context.Background())
+		require.ErrorIs(t, err, ErrRequestFailed)
+		assert.Equal(t, int32(4), rt.calls.Load(), "one attempt plus three retries")
+	})
+
+	t.Run("no retries when disabled", func(t *testing.T) {
+		t.Parallel()
+
+		rt := &countingRoundTripper{statuses: []int{http.StatusServiceUnavailable, http.StatusOK}}
+		client, err := NewClient(context.Background(), WithRoundTripper(rt), WithRequestRetryCount(0))
+		require.NoError(t, err)
+
+		simple, ok := client.HTTPClient().(*SimpleHTTPClient)
+		require.True(t, ok)
+		assert.Same(t, rt, simple.client.Transport)
+
+		_, err = client.GetHealth(context.Background())
+		require.EqualError(t, err, "API request failed: HTTP 503: Service Unavailable")
+		assert.Equal(t, int32(1), rt.calls.Load())
+	})
+
+	t.Run("wrapped with the request timeout", func(t *testing.T) {
+		t.Parallel()
+
+		rt := &countingRoundTripper{statuses: []int{http.StatusOK}}
+		client, err := NewClient(context.Background(), WithRoundTripper(rt), WithRequestTimeout(7*time.Second))
+		require.NoError(t, err)
+
+		retryClient, ok := client.HTTPClient().(*RetryableHTTPClient)
+		require.True(t, ok)
+		assert.Same(t, rt, retryClient.client.Transport)
+		assert.Equal(t, 7*time.Second, retryClient.client.Timeout)
+	})
+
+	t.Run("nil keeps the default transport and its options", func(t *testing.T) {
+		t.Parallel()
+
+		client, err := NewClient(
+			context.Background(),
+			WithRoundTripper(nil),
+			WithTransport(31*time.Second, 6*time.Second, 4*time.Second, 12),
+		)
+		require.NoError(t, err)
+
+		retryClient, ok := client.HTTPClient().(*RetryableHTTPClient)
+		require.True(t, ok)
+		transport, ok := retryClient.client.Transport.(*http.Transport)
+		require.True(t, ok, "expected the default *http.Transport, got %T", retryClient.client.Transport)
+		assert.Equal(t, 31*time.Second, transport.IdleConnTimeout)
+		assert.Equal(t, 6*time.Second, transport.TLSHandshakeTimeout)
+		assert.Equal(t, 4*time.Second, transport.ExpectContinueTimeout)
+		assert.Equal(t, 12, transport.MaxIdleConns)
+		assert.NotNil(t, transport.DialContext)
+		assert.NotNil(t, transport.Proxy)
+	})
+}
+
+// TestWithHTTPClient_TakesPrecedence checks that WithHTTPClient wins over
+// WithRoundTripper, whatever the order of the options.
+func TestWithHTTPClient_TakesPrecedence(t *testing.T) {
+	t.Parallel()
+
+	for _, httpClientFirst := range []bool{true, false} {
+		t.Run(fmt.Sprintf("http client first: %t", httpClientFirst), func(t *testing.T) {
+			t.Parallel()
+
+			custom := &mockHTTPStatusCode{statusCode: http.StatusOK, body: "custom"}
+			rt := &countingRoundTripper{statuses: []int{http.StatusOK}}
+			opts := []ClientOption{WithRoundTripper(rt), WithHTTPClient(custom)}
+			if httpClientFirst {
+				opts = []ClientOption{WithHTTPClient(custom), WithRoundTripper(rt)}
+			}
+
+			client, err := NewClient(context.Background(), opts...)
+			require.NoError(t, err)
+			assert.Same(t, custom, client.HTTPClient())
+
+			health, err := client.GetHealth(context.Background())
+			require.NoError(t, err)
+			assert.Equal(t, "custom", health)
+			assert.Equal(t, int32(0), rt.calls.Load(), "the round tripper must not be used")
+		})
+	}
+}
+
+// TestWithHTTPClient_SkipsRetries documents the trade-off of WithHTTPClient: the
+// client is used as is, so the SDK's retry options do not apply to it.
+func TestWithHTTPClient_SkipsRetries(t *testing.T) {
+	t.Parallel()
+
+	rt := &countingRoundTripper{statuses: []int{http.StatusServiceUnavailable, http.StatusOK}}
+	client, err := NewClient(
+		context.Background(),
+		WithHTTPClient(&http.Client{Transport: rt}),
+		WithRequestRetryCount(5),
+		WithBackoff(time.Millisecond, 10*time.Millisecond, 2.0, 0),
+	)
+	require.NoError(t, err)
+
+	_, err = client.GetHealth(context.Background())
+	require.ErrorIs(t, err, ErrRequestFailed)
+	assert.Equal(t, int32(1), rt.calls.Load(), "a custom HTTP client is never retried by the SDK")
+}
+
+// TestWithoutEnvAPIKey checks that the WHATS_ON_CHAIN_API_KEY lookup can be turned
+// off (issue #223), and that an explicit key still wins in every combination.
+func TestWithoutEnvAPIKey(t *testing.T) {
+	t.Setenv(EnvAPIKey, "env-api-key-123")
+
+	tests := []struct {
+		name string
+		opts []ClientOption
+		want string
+	}{
+		{"env key is used by default", nil, "env-api-key-123"},
+		{"empty explicit key falls back to the env key", []ClientOption{WithAPIKey("")}, "env-api-key-123"},
+		{"opt-out ignores the env key", []ClientOption{WithoutEnvAPIKey()}, ""},
+		{"opt-out with an empty explicit key stays empty", []ClientOption{WithAPIKey(""), WithoutEnvAPIKey()}, ""},
+		{"opt-out keeps an explicit key", []ClientOption{WithoutEnvAPIKey(), WithAPIKey("explicit-key")}, "explicit-key"},
+		{"explicit key before the opt-out is kept", []ClientOption{WithAPIKey("explicit-key"), WithoutEnvAPIKey()}, "explicit-key"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client, err := NewClient(context.Background(), tt.opts...)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, client.APIKey())
+		})
+	}
+}
+
+// TestWithoutEnvAPIKey_NoHeaderSent checks on the wire that the opt-out keeps
+// the environment key out of requests.
+func TestWithoutEnvAPIKey_NoHeaderSent(t *testing.T) {
+	t.Setenv(EnvAPIKey, "env-api-key-123")
+
+	var gotKey atomic.Value
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotKey.Store(r.Header.Get(apiHeaderKey))
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	tests := []struct {
+		name       string
+		optOut     bool
+		wantHeader string
+	}{
+		{"env key is sent by default", false, "env-api-key-123"},
+		{"opt-out sends no key", true, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts := []ClientOption{WithBaseURL(server.URL + "/v1/")}
+			if tt.optOut {
+				opts = append(opts, WithoutEnvAPIKey())
+			}
+
+			client, err := NewClient(context.Background(), opts...)
+			require.NoError(t, err)
+
+			_, err = client.GetHealth(context.Background())
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantHeader, gotKey.Load())
+		})
+	}
+}
+
+// TestDefaultUserAgent checks that the default user agent reports this module's
+// version from the build info, not the stale "v1.0.0" constant (issue #223).
+func TestDefaultUserAgent(t *testing.T) {
+	t.Parallel()
+
+	ua := defaultUserAgent()
+	assert.True(t, strings.HasPrefix(ua, "go-whatsonchain: "), "unexpected user agent %q", ua)
+	assert.Greater(t, len(ua), len("go-whatsonchain: "), "the version must not be empty")
+	assert.NotEqual(t, "go-whatsonchain: v1.0.0", ua)
+
+	info, ok := debug.ReadBuildInfo()
+	require.True(t, ok, "test binaries carry build info")
+	assert.Equal(t, "go-whatsonchain: "+moduleVersion(info), ua)
+	assert.Equal(t, ua, defaultUserAgent(), "the value is computed once")
+
+	client, err := NewClient(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, ua, client.UserAgent())
+}
+
+// TestDefaultUserAgent_SentOnRequests checks the default user agent on the wire
+func TestDefaultUserAgent_SentOnRequests(t *testing.T) {
+	t.Parallel()
+
+	var gotUA atomic.Value
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA.Store(r.Header.Get("User-Agent"))
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	client, err := NewClient(context.Background(), WithBaseURL(server.URL+"/v1/"))
+	require.NoError(t, err)
+
+	_, err = client.GetHealth(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, defaultUserAgent(), gotUA.Load())
 }
 
 // BenchmarkNewClient benchmarks the NewClient method
