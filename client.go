@@ -10,12 +10,6 @@ import (
 
 const (
 
-	// version is the current version
-	version = "v1.0.0"
-
-	// defaultUserAgent is the default user agent for all requests
-	defaultUserAgent string = "go-whatsonchain: " + version
-
 	// defaultRateLimit is the default rate limit for API requests
 	defaultRateLimit int = 3
 
@@ -101,7 +95,7 @@ func defaultClientOptions() *clientOptions {
 		transportIdleTimeout:           20 * time.Second,
 		transportMaxIdleConnections:    10,
 		transportTLSHandshakeTimeout:   5 * time.Second,
-		userAgent:                      defaultUserAgent,
+		userAgent:                      defaultUserAgent(),
 	}
 }
 

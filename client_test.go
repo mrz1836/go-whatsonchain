@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"runtime/debug"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -25,7 +26,7 @@ func TestNewClient(t *testing.T) {
 
 	// Check defaults
 	assert.Equal(t, NetworkMain, client.Network())
-	assert.Equal(t, defaultUserAgent, client.UserAgent())
+	assert.Equal(t, defaultUserAgent(), client.UserAgent())
 	assert.Equal(t, defaultRateLimit, client.RateLimit())
 	assert.Empty(t, client.APIKey())
 }
@@ -523,6 +524,45 @@ func TestWithoutEnvAPIKey_NoHeaderSent(t *testing.T) {
 			assert.Equal(t, tt.wantHeader, gotKey.Load())
 		})
 	}
+}
+
+// TestDefaultUserAgent checks that the default user agent reports this module's
+// version from the build info, not the stale "v1.0.0" constant (issue #223).
+func TestDefaultUserAgent(t *testing.T) {
+	t.Parallel()
+
+	ua := defaultUserAgent()
+	assert.True(t, strings.HasPrefix(ua, "go-whatsonchain: "), "unexpected user agent %q", ua)
+	assert.Greater(t, len(ua), len("go-whatsonchain: "), "the version must not be empty")
+	assert.NotEqual(t, "go-whatsonchain: v1.0.0", ua)
+
+	info, ok := debug.ReadBuildInfo()
+	require.True(t, ok, "test binaries carry build info")
+	assert.Equal(t, "go-whatsonchain: "+moduleVersion(info), ua)
+	assert.Equal(t, ua, defaultUserAgent(), "the value is computed once")
+
+	client, err := NewClient(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, ua, client.UserAgent())
+}
+
+// TestDefaultUserAgent_SentOnRequests checks the default user agent on the wire
+func TestDefaultUserAgent_SentOnRequests(t *testing.T) {
+	t.Parallel()
+
+	var gotUA atomic.Value
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA.Store(r.Header.Get("User-Agent"))
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	client, err := NewClient(context.Background(), WithBaseURL(server.URL+"/v1/"))
+	require.NoError(t, err)
+
+	_, err = client.GetHealth(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, defaultUserAgent(), gotUA.Load())
 }
 
 // BenchmarkNewClient benchmarks the NewClient method
