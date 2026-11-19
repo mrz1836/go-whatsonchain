@@ -276,6 +276,30 @@ func TestNewClient_EnvAPIKey_NotSet(t *testing.T) {
 	assert.Empty(t, client.APIKey())
 }
 
+// TestDefaultBackoff checks the default retry backoff (issue #223: the old 2ms to
+// 10ms default sent both retries of a 429 within about 10ms) and that the default
+// HTTP client is built with it.
+func TestDefaultBackoff(t *testing.T) {
+	t.Parallel()
+
+	client, err := NewClient(context.Background())
+	require.NoError(t, err)
+
+	initial, maxBackoff, factor, jitter := client.BackoffConfig()
+	assert.Equal(t, 250*time.Millisecond, initial)
+	assert.Equal(t, 2*time.Second, maxBackoff)
+	assert.InDelta(t, 2.0, factor, 1e-9)
+	assert.Equal(t, 100*time.Millisecond, jitter)
+	assert.Equal(t, 2, client.RequestRetryCount())
+
+	retryClient, ok := client.HTTPClient().(*RetryableHTTPClient)
+	require.True(t, ok, "the default client must retry")
+	assert.Equal(t, initial, retryClient.backoff.initialTimeout)
+	assert.Equal(t, maxBackoff, retryClient.backoff.maxTimeout)
+	assert.InDelta(t, factor, retryClient.backoff.exponentFactor, 1e-9)
+	assert.Equal(t, jitter, retryClient.backoff.maxJitterInterval)
+}
+
 // BenchmarkNewClient benchmarks the NewClient method
 func BenchmarkNewClient(b *testing.B) {
 	for i := 0; i < b.N; i++ {

@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
 	"testing"
+	"time"
 	"unicode/utf8"
 
 	"github.com/stretchr/testify/require"
@@ -254,6 +256,49 @@ func FuzzErrorBodySnippet(f *testing.F) {
 		if utf8.Valid(trimmed) {
 			require.True(t, utf8.ValidString(kept), "valid UTF-8 was split mid-rune")
 		}
+	})
+}
+
+// FuzzRetryAfter tests Retry-After parsing with arbitrary header values.
+// It must never panic or return a negative wait, must report no wait when it
+// finds no usable value, and must ignore statuses other than 429 and 503.
+func FuzzRetryAfter(f *testing.F) {
+	f.Add("5", true)
+	f.Add("0", false)
+	f.Add("-1", true)
+	f.Add("+5", true)
+	f.Add("1.5", true)
+	f.Add("007", false)
+	f.Add("9223372036", true)
+	f.Add("99999999999999999999999", true)
+	f.Add("Thu, 19 Nov 2026 12:00:30 GMT", true)
+	f.Add("Thursday, 19-Nov-26 12:00:30 GMT", false)
+	f.Add("Thu Nov 19 12:00:30 2026", true)
+	f.Add("Mon, 01 Jan 0001 00:00:00 GMT", true)
+	f.Add("Fri, 31 Dec 9999 23:59:59 GMT", false)
+	f.Add("", true)
+	f.Add("   ", false)
+
+	now := time.Date(2026, time.November, 19, 12, 0, 0, 0, time.UTC)
+
+	f.Fuzz(func(t *testing.T, value string, tooManyRequests bool) {
+		status := http.StatusServiceUnavailable
+		if tooManyRequests {
+			status = http.StatusTooManyRequests
+		}
+		resp := &http.Response{StatusCode: status, Header: http.Header{}}
+		resp.Header.Set("Retry-After", value)
+
+		wait, ok := retryAfter(resp, now)
+		require.GreaterOrEqual(t, wait, time.Duration(0), "negative wait for %q", value)
+		if !ok {
+			require.Zero(t, wait, "no usable value must mean no wait")
+		}
+
+		resp.StatusCode = http.StatusInternalServerError
+		wait, ok = retryAfter(resp, now)
+		require.False(t, ok)
+		require.Zero(t, wait)
 	})
 }
 

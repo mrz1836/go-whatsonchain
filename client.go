@@ -26,6 +26,17 @@ const (
 	apiHeaderKey string = "woc-api-key"
 )
 
+// Default retry backoff. The first retry waits about 250 ms and later retries
+// double the wait up to 2 s, so the default two retries span roughly 750 ms:
+// long enough for a brief rate limit or a node restart to clear, short enough
+// not to stall a caller. Each wait gets up to 100 ms of random jitter.
+const (
+	defaultBackOffInitialTimeout    = 250 * time.Millisecond
+	defaultBackOffMaxTimeout        = 2 * time.Second
+	defaultBackOffExponentFactor    = 2.0
+	defaultBackOffMaxJitterInterval = 100 * time.Millisecond
+)
+
 // HTTPInterface is used for the http client
 type HTTPInterface interface {
 	Do(req *http.Request) (*http.Response, error)
@@ -73,10 +84,10 @@ type ClientOption func(*clientOptions)
 // defaultClientOptions returns the default client options
 func defaultClientOptions() *clientOptions {
 	return &clientOptions{
-		backOffExponentFactor:          2.0,
-		backOffInitialTimeout:          2 * time.Millisecond,
-		backOffMaximumJitterInterval:   2 * time.Millisecond,
-		backOffMaxTimeout:              10 * time.Millisecond,
+		backOffExponentFactor:          defaultBackOffExponentFactor,
+		backOffInitialTimeout:          defaultBackOffInitialTimeout,
+		backOffMaximumJitterInterval:   defaultBackOffMaxJitterInterval,
+		backOffMaxTimeout:              defaultBackOffMaxTimeout,
 		baseURL:                        apiEndpointBase,
 		dialerKeepAlive:                20 * time.Second,
 		dialerTimeout:                  5 * time.Second,
@@ -184,7 +195,16 @@ func WithRequestRetryCount(count int) ClientOption {
 	}
 }
 
-// WithBackoff sets the exponential backoff parameters
+// WithBackoff sets the exponential backoff parameters used between retries.
+//
+// The wait before retry n (counting from 0) is initialTimeout * exponentFactor^n,
+// capped at maxTimeout, plus a random jitter of up to maxJitter. The defaults
+// are 250 ms, 2 s, 2.0 and 100 ms.
+//
+// On a 429 or 503 response with a Retry-After header, the client waits for the
+// longer of the backoff and the Retry-After value. If Retry-After asks for more
+// than maxTimeout, or the wait would outlast the request context's deadline,
+// the client returns that response at once instead of retrying.
 func WithBackoff(initialTimeout, maxTimeout time.Duration, exponentFactor float64, maxJitter time.Duration) ClientOption {
 	return func(c *clientOptions) {
 		c.backOffInitialTimeout = initialTimeout

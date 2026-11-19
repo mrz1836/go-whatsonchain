@@ -2,11 +2,14 @@ package whatsonchain
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"io"
 	"math"
 	"math/big"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -26,6 +29,16 @@ func NewExponentialBackoff(initialTimeout, maxTimeout time.Duration, exponentFac
 		exponentFactor:    exponentFactor,
 		maxJitterInterval: maxJitterInterval,
 	}
+}
+
+// newDefaultExponentialBackoff returns the backoff used when none is configured
+func newDefaultExponentialBackoff() *ExponentialBackoff {
+	return NewExponentialBackoff(
+		defaultBackOffInitialTimeout,
+		defaultBackOffMaxTimeout,
+		defaultBackOffExponentFactor,
+		defaultBackOffMaxJitterInterval,
+	)
 }
 
 // NextInterval calculates the next backoff interval for the given attempt
@@ -63,10 +76,16 @@ type RetryableHTTPClient struct {
 	backoff    *ExponentialBackoff
 }
 
-// NewRetryableHTTPClient creates a new retryable HTTP client
+// NewRetryableHTTPClient creates a new retryable HTTP client.
+//
+// A nil httpClient uses a plain http.Client, and a nil backoff uses the SDK's
+// default backoff (250 ms initial, 2 s maximum, factor 2.0, 100 ms jitter).
 func NewRetryableHTTPClient(httpClient *http.Client, retryCount int, backoff *ExponentialBackoff) *RetryableHTTPClient {
 	if httpClient == nil {
 		httpClient = &http.Client{}
+	}
+	if backoff == nil {
+		backoff = newDefaultExponentialBackoff()
 	}
 
 	return &RetryableHTTPClient{
@@ -76,7 +95,14 @@ func NewRetryableHTTPClient(httpClient *http.Client, retryCount int, backoff *Ex
 	}
 }
 
-// Do will execute an HTTP request with retry logic
+// Do will execute an HTTP request with retry logic.
+//
+// Network errors and 429, 500, 502, 503 and 504 responses are retried up to the
+// configured retry count, waiting for the backoff interval between attempts.
+// On a 429 or 503 with a Retry-After header the wait is at least the requested
+// time. When Retry-After asks for longer than the maximum backoff, or the wait
+// would outlast the request context's deadline, Do returns that response (body
+// unread) straight away so the caller sees the real status.
 func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	var lastResp *http.Response
 	var lastErr error
@@ -147,6 +173,12 @@ func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 			return resp, err
 		}
 
+		// Work out the wait, and give up now if waiting cannot produce an answer
+		delay, ok := r.retryDelay(req.Context(), resp, attempt)
+		if !ok {
+			return resp, err
+		}
+
 		// Store the response/error for potential return
 		lastResp = resp
 		lastErr = err
@@ -156,17 +188,8 @@ func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 			_ = resp.Body.Close()
 		}
 
-		// Calculate backoff duration
-		var backoffDuration time.Duration
-		if r.backoff != nil {
-			backoffDuration = r.backoff.NextInterval(attempt)
-		} else {
-			// Default exponential backoff if none provided
-			backoffDuration = time.Duration(math.Pow(2, float64(attempt))) * time.Millisecond * 100
-		}
-
 		// Wait before retrying, respecting context cancellation
-		timer := time.NewTimer(backoffDuration)
+		timer := time.NewTimer(delay)
 		select {
 		case <-req.Context().Done():
 			timer.Stop()
@@ -177,6 +200,66 @@ func (r *RetryableHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	}
 
 	return lastResp, lastErr
+}
+
+// retryDelay returns how long to wait before retrying after the given attempt
+// (counting from 0). The wait is the backoff interval, raised to the server's
+// Retry-After value when there is one.
+//
+// It returns false when retrying is pointless: Retry-After asks for longer than
+// the maximum backoff, or the wait would end after the context's deadline.
+func (r *RetryableHTTPClient) retryDelay(ctx context.Context, resp *http.Response, attempt int) (time.Duration, bool) {
+	delay := r.backoff.NextInterval(attempt)
+
+	if wait, ok := retryAfter(resp, time.Now()); ok {
+		if wait > r.backoff.maxTimeout {
+			return 0, false
+		}
+		delay = max(delay, wait)
+	}
+
+	if deadline, ok := ctx.Deadline(); ok && time.Until(deadline) < delay {
+		return 0, false
+	}
+
+	return delay, true
+}
+
+// maxRetryAfterSeconds is the largest Retry-After delta-seconds value that fits
+// in a time.Duration; larger values are clamped to the maximum duration.
+const maxRetryAfterSeconds = math.MaxInt64 / int64(time.Second)
+
+// retryAfter returns the wait requested by the Retry-After header of a 429 or
+// 503 response, relative to now. The header holds either a non-negative number
+// of seconds or an HTTP date; a date in the past means no wait. It returns false
+// for other status codes and for a missing or malformed header.
+func retryAfter(resp *http.Response, now time.Time) (time.Duration, bool) {
+	if resp == nil ||
+		(resp.StatusCode != http.StatusTooManyRequests && resp.StatusCode != http.StatusServiceUnavailable) {
+		return 0, false
+	}
+
+	value := strings.TrimSpace(resp.Header.Get("Retry-After"))
+	if value == "" {
+		return 0, false
+	}
+
+	// delta-seconds: one or more digits, no sign
+	if strings.Trim(value, "0123456789") == "" {
+		seconds, err := strconv.ParseInt(value, 10, 64)
+		if err != nil || seconds > maxRetryAfterSeconds {
+			// Only an overflow fails here; it means "far longer than we would wait"
+			return time.Duration(math.MaxInt64), true
+		}
+		return time.Duration(seconds) * time.Second, true
+	}
+
+	// HTTP-date
+	date, err := http.ParseTime(value)
+	if err != nil {
+		return 0, false
+	}
+	return max(date.Sub(now), 0), true
 }
 
 // shouldRetry determines if a request should be retried based on the response
