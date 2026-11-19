@@ -1,12 +1,15 @@
 package whatsonchain
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -446,4 +449,164 @@ func TestRequestHelpers_EmptyAndMalformed200(t *testing.T) {
 		require.NoError(t, err)
 		assert.Empty(t, health)
 	})
+}
+
+// TestErrorBodySnippet checks that error messages quote at most maxErrorBodyLength
+// bytes of a response body, never split a UTF-8 character, and say how much was cut.
+func TestErrorBodySnippet(t *testing.T) {
+	t.Parallel()
+
+	htmlPage := "<html><body>" + strings.Repeat("<p>Service temporarily unavailable</p>", 1400) + "</body></html>"
+	require.Greater(t, len(htmlPage), 50_000)
+
+	tests := []struct {
+		name       string
+		body       []byte
+		wantPrefix string // the snippet must start with this
+		wantExact  string // when set, the snippet must equal this
+		wantTotal  int    // when set, the body length reported as truncated
+	}{
+		{name: "nil body", body: nil, wantExact: ""},
+		{name: "whitespace only", body: []byte(" \n\t\r\n "), wantExact: ""},
+		{name: "short body is trimmed", body: []byte("  Unauthorized \n"), wantExact: "Unauthorized"},
+		{name: "exactly the limit is kept whole", body: []byte(strings.Repeat("a", maxErrorBodyLength)), wantExact: strings.Repeat("a", maxErrorBodyLength)},
+		{name: "limit after trimming is kept whole", body: []byte("\n" + strings.Repeat("a", maxErrorBodyLength) + "\n"), wantExact: strings.Repeat("a", maxErrorBodyLength)},
+		{
+			name:      "one byte over the limit is truncated",
+			body:      []byte(strings.Repeat("a", maxErrorBodyLength+1)),
+			wantExact: strings.Repeat("a", maxErrorBodyLength) + "... (truncated, 513 bytes total)",
+			wantTotal: maxErrorBodyLength + 1,
+		},
+		{
+			name:       "large HTML page is truncated",
+			body:       []byte(htmlPage),
+			wantPrefix: htmlPage[:maxErrorBodyLength],
+			wantTotal:  len(htmlPage),
+		},
+		{
+			name:       "total counts the untrimmed body",
+			body:       []byte("\n\n" + strings.Repeat("b", 600) + "\n\n"),
+			wantPrefix: strings.Repeat("b", maxErrorBodyLength),
+			wantTotal:  604,
+		},
+		{
+			// "é" is 2 bytes and straddles the cut: it must be dropped, not split
+			name:      "two-byte rune across the cut",
+			body:      []byte(strings.Repeat("a", maxErrorBodyLength-1) + "é" + "tail"),
+			wantExact: strings.Repeat("a", maxErrorBodyLength-1) + "... (truncated, 517 bytes total)",
+			wantTotal: maxErrorBodyLength + 5,
+		},
+		{
+			// "😀" is 4 bytes, starting 2 bytes before the cut
+			name:      "four-byte rune across the cut",
+			body:      []byte(strings.Repeat("a", maxErrorBodyLength-2) + "😀" + "tail"),
+			wantExact: strings.Repeat("a", maxErrorBodyLength-2) + "... (truncated, 518 bytes total)",
+			wantTotal: maxErrorBodyLength + 6,
+		},
+		{
+			// "é" ends exactly at the cut, so it is kept
+			name:      "rune ending at the cut is kept",
+			body:      []byte(strings.Repeat("a", maxErrorBodyLength-2) + "é" + "tail"),
+			wantExact: strings.Repeat("a", maxErrorBodyLength-2) + "é... (truncated, 516 bytes total)",
+			wantTotal: maxErrorBodyLength + 4,
+		},
+		{
+			// Invalid UTF-8 (all continuation bytes) must not scan back through the whole body
+			name:      "binary body is cut close to the limit",
+			body:      bytes.Repeat([]byte{0x80}, 2048),
+			wantTotal: 2048,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got := errorBodySnippet(tt.body)
+			if tt.wantExact != "" || tt.wantTotal == 0 {
+				assert.Equal(t, tt.wantExact, got)
+			}
+			assert.True(t, strings.HasPrefix(got, tt.wantPrefix), "snippet should start with %q", tt.wantPrefix)
+
+			if tt.wantTotal == 0 {
+				assert.NotContains(t, got, "truncated")
+				return
+			}
+
+			suffix := fmt.Sprintf("... (truncated, %d bytes total)", tt.wantTotal)
+			require.True(t, strings.HasSuffix(got, suffix), "snippet %q should end with %q", got, suffix)
+			kept := strings.TrimSuffix(got, suffix)
+			assert.LessOrEqual(t, len(kept), maxErrorBodyLength)
+			assert.GreaterOrEqual(t, len(kept), maxErrorBodyLength-(utf8.UTFMax-1))
+			if utf8.Valid(tt.body) {
+				assert.True(t, utf8.ValidString(kept), "a valid UTF-8 body must not be split mid-rune")
+			}
+		})
+	}
+}
+
+// TestErrorMessages_TruncateLargeBodies checks, through the public client, that an
+// error quotes only the start of a large body (issue #223: a 50 MB body used to be
+// quoted in full).
+func TestErrorMessages_TruncateLargeBodies(t *testing.T) {
+	t.Parallel()
+
+	htmlPage := "<html><body>" + strings.Repeat("<p>Bad gateway</p>", 3000) + "<p>END-OF-PAGE</p></body></html>"
+
+	tests := []struct {
+		name   string
+		status int
+		call   func(ctx context.Context, c ClientInterface) error
+		is     error
+	}{
+		{"JSON endpoint 502", http.StatusBadGateway, func(ctx context.Context, c ClientInterface) error {
+			_, err := c.GetTxByHash(ctx, testTxID1)
+			return err
+		}, ErrRequestFailed},
+		{"string endpoint 500", http.StatusInternalServerError, func(ctx context.Context, c ClientInterface) error {
+			_, err := c.GetRawTransactionData(ctx, testTxID1)
+			return err
+		}, ErrRequestFailed},
+		{"string endpoint 404 with page", http.StatusNotFound, func(ctx context.Context, c ClientInterface) error {
+			_, err := c.GetRawTransactionData(ctx, testTxID1)
+			return err
+		}, ErrTransactionNotFound},
+		{"broadcast 400", http.StatusBadRequest, func(ctx context.Context, c ClientInterface) error {
+			_, err := c.BroadcastTx(ctx, "0100000001")
+			return err
+		}, ErrBroadcastFailed},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			client := newMockClient(&mockHTTPStatusCode{statusCode: tt.status, body: htmlPage})
+			err := tt.call(context.Background(), client)
+
+			require.ErrorIs(t, err, tt.is)
+			msg := err.Error()
+			assert.Contains(t, msg, fmt.Sprintf("HTTP %d: <html><body>", tt.status))
+			assert.Contains(t, msg, fmt.Sprintf("... (truncated, %d bytes total)", len(htmlPage)))
+			assert.NotContains(t, msg, "END-OF-PAGE", "the end of the body must not be quoted")
+			assert.Less(t, len(msg), maxErrorBodyLength+200, "the message must stay small")
+		})
+	}
+}
+
+// TestBroadcastTx_ClassifiesFullBody checks that broadcast rejection reasons are
+// still recognized when they appear past the truncation point of the error message.
+func TestBroadcastTx_ClassifiesFullBody(t *testing.T) {
+	t.Parallel()
+
+	body := strings.Repeat("x", 2*maxErrorBodyLength) + " 257: txn-already-known"
+	client := newMockClient(&mockHTTPStatusCode{statusCode: http.StatusBadRequest, body: body})
+
+	txID, err := client.BroadcastTx(context.Background(), "0100000001")
+	require.ErrorIs(t, err, ErrTxAlreadyInMempool)
+	require.ErrorIs(t, err, ErrBroadcastFailed)
+	require.ErrorIs(t, err, ErrRequestFailed)
+	assert.Empty(t, txID)
+	assert.NotContains(t, err.Error(), "txn-already-known", "the reason is past the truncation point")
+	assert.Contains(t, err.Error(), "truncated")
 }

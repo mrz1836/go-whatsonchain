@@ -1,10 +1,12 @@
 package whatsonchain
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/stretchr/testify/require"
 )
@@ -219,6 +221,38 @@ func FuzzBroadcastTxResponse(f *testing.F) {
 			var decoded map[string]interface{}
 			_ = json.Unmarshal([]byte(response), &decoded)
 			// Error is acceptable, panic is not
+		}
+	})
+}
+
+// FuzzErrorBodySnippet tests the truncation of response bodies quoted in errors.
+// The snippet must stay within maxErrorBodyLength (plus the truncation note), be a
+// prefix of the trimmed body, and never split a rune of a valid UTF-8 body.
+func FuzzErrorBodySnippet(f *testing.F) {
+	f.Add([]byte(""))
+	f.Add([]byte("404 page not found\n"))
+	f.Add([]byte(strings.Repeat("a", maxErrorBodyLength-1) + "é"))
+	f.Add([]byte(strings.Repeat("😀", 200)))
+	f.Add(bytes.Repeat([]byte{0x80}, 2*maxErrorBodyLength))
+	f.Add([]byte("\n\n" + strings.Repeat("x", maxErrorBodyLength) + "\n\n"))
+
+	f.Fuzz(func(t *testing.T, body []byte) {
+		got := errorBodySnippet(body)
+		trimmed := bytes.TrimSpace(body)
+
+		if len(trimmed) <= maxErrorBodyLength {
+			require.Equal(t, string(trimmed), got)
+			return
+		}
+
+		suffix := fmt.Sprintf("... (truncated, %d bytes total)", len(body))
+		require.True(t, strings.HasSuffix(got, suffix), "missing truncation note in %q", got)
+		kept := strings.TrimSuffix(got, suffix)
+		require.LessOrEqual(t, len(kept), maxErrorBodyLength)
+		require.GreaterOrEqual(t, len(kept), maxErrorBodyLength-(utf8.UTFMax-1))
+		require.True(t, bytes.HasPrefix(trimmed, []byte(kept)), "snippet is not a prefix of the body")
+		if utf8.Valid(trimmed) {
+			require.True(t, utf8.ValidString(kept), "valid UTF-8 was split mid-rune")
 		}
 	})
 }
