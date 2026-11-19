@@ -64,7 +64,7 @@ func (c *Client) GetLatestHeaderBytes(ctx context.Context, count int) (string, e
 		path = fmt.Sprintf("%s?count=%d", path, count)
 	}
 	url := c.buildURL(path)
-	resp, err := requestString(ctx, c, url)
+	resp, err := requestString(ctx, c, url, ErrHeadersNotFound)
 	if err != nil {
 		return "", err
 	}

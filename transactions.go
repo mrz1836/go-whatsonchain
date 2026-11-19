@@ -114,7 +114,7 @@ func (c *Client) GetMerkleProofTSC(ctx context.Context, hash string) (MerkleTSCR
 // For more information: https://docs.whatsonchain.com/#get-raw-transaction-data
 func (c *Client) GetRawTransactionData(ctx context.Context, hash string) (string, error) {
 	url := c.buildURL("/tx/%s/hex", hash)
-	return requestString(ctx, c, url)
+	return requestString(ctx, c, url, ErrTransactionNotFound)
 }
 
 // BulkRawTransactionData this fetches raw hex data for multiple
@@ -197,7 +197,7 @@ func (c *Client) BulkRawTransactionDataProcessor(ctx context.Context, hashes *Tx
 // For more information: https://docs.whatsonchain.com/#get-raw-transaction-output-data
 func (c *Client) GetRawTransactionOutputData(ctx context.Context, hash string, vOutIndex int) (string, error) {
 	url := c.buildURL("/tx/%s/out/%d/hex", hash, vOutIndex)
-	return requestString(ctx, c, url)
+	return requestString(ctx, c, url, ErrTransactionNotFound)
 }
 
 // BroadcastTx will broadcast transaction using this endpoint.
@@ -223,7 +223,7 @@ func (c *Client) BroadcastTx(ctx context.Context, txHex string) (txID string, er
 	}
 
 	// Check for non-OK status codes using the standard helper
-	if err = checkStatusCode(statusCode, resp); err != nil {
+	if err = checkStatusCode(statusCode, resp, nil); err != nil {
 		// Classify well-known node rejection reasons into typed sentinel errors
 		// so callers can react (errors.Is) without string matching. The reason is
 		// wrapped alongside ErrBroadcastFailed, so both matchers succeed.
@@ -329,7 +329,7 @@ func (c *Client) BulkBroadcastTx(ctx context.Context, rawTxs []string,
 	}
 
 	// Check for non-OK status codes using the standard helper
-	if err = checkStatusCode(statusCode, resp); err != nil {
+	if err = checkStatusCode(statusCode, resp, nil); err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrBroadcastFailed, err)
 	}
 
@@ -362,7 +362,7 @@ func (c *Client) DecodeTransaction(ctx context.Context, txHex string) (*TxInfo, 
 func (c *Client) DownloadReceipt(ctx context.Context, hash string) (string, error) {
 	// This endpoint does not follow the convention of the WOC API v1
 	url := fmt.Sprintf("https://%s.whatsonchain.com/receipt/%s", c.Network(), netURL.PathEscape(hash))
-	return requestString(ctx, c, url)
+	return requestString(ctx, c, url, ErrTransactionNotFound)
 }
 
 // GetTransactionPropagationStatus this endpoint retrieves transaction propagation status
@@ -378,7 +378,7 @@ func (c *Client) GetTransactionPropagationStatus(ctx context.Context, hash strin
 // For more information: https://docs.whatsonchain.com/#get-op_return-data-by-tx-hash
 func (c *Client) GetOpReturnData(ctx context.Context, txHash string) (string, error) {
 	url := c.buildURL("/tx/%s/opreturn", txHash)
-	return requestString(ctx, c, url)
+	return requestString(ctx, c, url, ErrTransactionNotFound)
 }
 
 // BulkTransactionStatus this endpoint fetches status for multiple transactions in single request
@@ -407,7 +407,7 @@ func (c *Client) BulkTransactionStatus(ctx context.Context, hashes *TxHashes) (T
 // For more information: https://docs.whatsonchain.com/#get-tx-binary
 func (c *Client) GetTransactionAsBinary(ctx context.Context, hash string) ([]byte, error) {
 	url := c.buildURL("/tx/%s/bin", hash)
-	resp, err := requestString(ctx, c, url)
+	resp, err := requestString(ctx, c, url, ErrTransactionNotFound)
 	if err != nil {
 		return nil, err
 	}
