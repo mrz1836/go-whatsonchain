@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -457,6 +458,71 @@ func TestWithHTTPClient_SkipsRetries(t *testing.T) {
 	_, err = client.GetHealth(context.Background())
 	require.ErrorIs(t, err, ErrRequestFailed)
 	assert.Equal(t, int32(1), rt.calls.Load(), "a custom HTTP client is never retried by the SDK")
+}
+
+// TestWithoutEnvAPIKey checks that the WHATS_ON_CHAIN_API_KEY lookup can be turned
+// off (issue #223), and that an explicit key still wins in every combination.
+func TestWithoutEnvAPIKey(t *testing.T) {
+	t.Setenv(EnvAPIKey, "env-api-key-123")
+
+	tests := []struct {
+		name string
+		opts []ClientOption
+		want string
+	}{
+		{"env key is used by default", nil, "env-api-key-123"},
+		{"empty explicit key falls back to the env key", []ClientOption{WithAPIKey("")}, "env-api-key-123"},
+		{"opt-out ignores the env key", []ClientOption{WithoutEnvAPIKey()}, ""},
+		{"opt-out with an empty explicit key stays empty", []ClientOption{WithAPIKey(""), WithoutEnvAPIKey()}, ""},
+		{"opt-out keeps an explicit key", []ClientOption{WithoutEnvAPIKey(), WithAPIKey("explicit-key")}, "explicit-key"},
+		{"explicit key before the opt-out is kept", []ClientOption{WithAPIKey("explicit-key"), WithoutEnvAPIKey()}, "explicit-key"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client, err := NewClient(context.Background(), tt.opts...)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, client.APIKey())
+		})
+	}
+}
+
+// TestWithoutEnvAPIKey_NoHeaderSent checks on the wire that the opt-out keeps
+// the environment key out of requests.
+func TestWithoutEnvAPIKey_NoHeaderSent(t *testing.T) {
+	t.Setenv(EnvAPIKey, "env-api-key-123")
+
+	var gotKey atomic.Value
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotKey.Store(r.Header.Get(apiHeaderKey))
+		_, _ = w.Write([]byte("ok"))
+	}))
+	defer server.Close()
+
+	tests := []struct {
+		name       string
+		optOut     bool
+		wantHeader string
+	}{
+		{"env key is sent by default", false, "env-api-key-123"},
+		{"opt-out sends no key", true, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			opts := []ClientOption{WithBaseURL(server.URL + "/v1/")}
+			if tt.optOut {
+				opts = append(opts, WithoutEnvAPIKey())
+			}
+
+			client, err := NewClient(context.Background(), opts...)
+			require.NoError(t, err)
+
+			_, err = client.GetHealth(context.Background())
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantHeader, gotKey.Load())
+		})
+	}
 }
 
 // BenchmarkNewClient benchmarks the NewClient method

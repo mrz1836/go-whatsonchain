@@ -72,6 +72,7 @@ type clientOptions struct {
 	requestRetryCount              int
 	requestTimeout                 time.Duration
 	roundTripper                   http.RoundTripper
+	skipEnvAPIKey                  bool
 	transportExpectContinueTimeout time.Duration
 	transportIdleTimeout           time.Duration
 	transportMaxIdleConnections    int
@@ -127,10 +128,26 @@ func WithNetwork(network NetworkType) ClientOption {
 	}
 }
 
-// WithAPIKey sets the API key for authenticated requests
+// WithAPIKey sets the API key for authenticated requests.
+//
+// When no key is set (or the key is empty), NewClient falls back to the
+// WHATS_ON_CHAIN_API_KEY environment variable; use WithoutEnvAPIKey to turn
+// that off.
 func WithAPIKey(apiKey string) ClientOption {
 	return func(c *clientOptions) {
 		c.apiKey = apiKey
+	}
+}
+
+// WithoutEnvAPIKey stops NewClient from reading the API key from the
+// WHATS_ON_CHAIN_API_KEY environment variable (see EnvAPIKey).
+//
+// Use it when the client must make unauthenticated requests even if the
+// variable is set, or when the key comes only from your own configuration.
+// A key passed with WithAPIKey is still used.
+func WithoutEnvAPIKey() ClientOption {
+	return func(c *clientOptions) {
+		c.skipEnvAPIKey = true
 	}
 }
 
